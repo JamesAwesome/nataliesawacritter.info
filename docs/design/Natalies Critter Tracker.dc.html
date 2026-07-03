@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #f4ecf7; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;background:linear-gradient(180deg,#EAF6FF,#FDF1FF);font-family:'Quicksand',sans-serif;">
+  <div style="max-width:1100px;margin:0 auto;padding:32px 24px 60px;">
+
+    <div style="background:linear-gradient(90deg,#FFD1DC,#FFE1B8,#FFF6B8,#D7F5C8,#C8F0E4,#C7E3FA,#D9CFF2);border-radius:24px 24px 0 0;padding:18px 22px 14px;">
+      <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:18px;color:#4a3b63;text-align:center;">🐾 Natalie Saw a Critter!</div>
+    </div>
+
+    <div style="display:flex;gap:2px;padding:0 8px;border-bottom:1px solid #E3ECFA;background:#fff;">
+      <button onclick="{{ app.setTab }}" style="{{ app.tabStyle_calendar }}">Calendar</button>
+      <button onclick="{{ app.setTabHistory }}" style="{{ app.tabStyle_history }}">History</button>
+      <button onclick="{{ app.setTabLeader }}" style="{{ app.tabStyle_leader }}">Top Critters</button>
+    </div>
+
+    <div style="display:flex;gap:24px;align-items:flex-start;padding:16px 0 60px;">
+    <div style="flex:1;min-width:0;">
+
+      <sc-if value="{{ app.isMobile }}" hint-placeholder-val="{{ false }}">
+        <button onclick="{{ app.openAdd }}" style="{{ app.addBtnStyle }}margin-bottom:16px;"><span style="font-size:18px;">+</span> Log a sighting</button>
+      </sc-if>
+
+      <sc-if value="{{ app.isCalendar }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border-radius:18px;box-shadow:0 4px 14px rgba(90,100,150,0.08);overflow:hidden;">
+          <div style="height:5px;background:linear-gradient(90deg,#FFD6E8,#FFE9C7,#E8FFDB,#D3F0FF,#E6DBFF);"></div>
+          <div style="padding:14px 16px 16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <button onclick="{{ app.prevMonth }}" style="width:30px;height:30px;border-radius:50%;border:1px solid #E3ECFA;background:#F0F7FF;color:#4a5f8e;font-size:15px;cursor:pointer;">‹</button>
+              <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:16px;color:#4a3b63;">{{ app.monthLabel }}</div>
+              <button onclick="{{ app.nextMonth }}" style="width:30px;height:30px;border-radius:50%;border:1px solid #E3ECFA;background:#F0F7FF;color:#4a5f8e;font-size:15px;cursor:pointer;">›</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;">
+              <sc-for list="{{ app.weekdayLabels }}" as="wd" hint-placeholder-count="7">
+                <div style="text-align:center;font-size:11px;font-weight:700;color:#AFC0DE;">{{ wd }}</div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">
+              <sc-for list="{{ app.calendarCells }}" as="cell" hint-placeholder-count="42">
+                <button onclick="{{ cell.onTap }}" style="{{ cell.style }}">
+                  <span style="{{ cell.dayStyle }}">{{ cell.day }}</span>
+                  <span style="font-size:13px;line-height:1;">{{ cell.emojiLine }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ app.isMobile }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:16px;">
+            <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:14px;color:#4a3b63;margin:14px 0 8px;">Recent Critters</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ app.recentRows }}" as="row" hint-placeholder-count="4">
+                <button onclick="{{ row.onTap }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 13px;border-radius:14px;border:1px solid #E3ECFA;background:#fff;cursor:pointer;font:inherit;">
+                  <span style="font-size:20px;">{{ row.emoji }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+                    <span style="font-weight:700;font-size:13px;color:#4a3b63;">{{ row.name }}</span>
+                    <span style="font-size:11px;color:#9AA8C7;">{{ row.when }}</span>
+                  </span>
+                  <span style="color:#C6D2EE;font-size:18px;">›</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ app.isHistory }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+          <input type="date" value="{{ app.filterFrom }}" onchange="{{ app.setFilterFrom }}" style="padding:8px 10px;border-radius:10px;border:1px solid #E3ECFA;background:#F0F7FF;font:inherit;font-size:12px;color:#4a3b63;"/>
+          <span style="font-size:12px;color:#9AA8C7;">to</span>
+          <input type="date" value="{{ app.filterTo }}" onchange="{{ app.setFilterTo }}" style="padding:8px 10px;border-radius:10px;border:1px solid #E3ECFA;background:#F0F7FF;font:inherit;font-size:12px;color:#4a3b63;"/>
+          <sc-if value="{{ app.hasFilter }}" hint-placeholder-val="{{ false }}">
+            <button onclick="{{ app.clearFilter }}" style="padding:8px 12px;border-radius:10px;border:1px solid #E3ECFA;background:#fff;color:#5F80C7;font:inherit;font-size:12px;font-weight:700;cursor:pointer;">Clear</button>
+          </sc-if>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <sc-for list="{{ app.historyRows }}" as="row" hint-placeholder-count="6">
+            <button onclick="{{ row.onTap }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 13px;border-radius:16px;border:1px solid #E3ECFA;background:#fff;cursor:pointer;font:inherit;">
+              <span style="font-size:24px;">{{ row.emoji }}</span>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+                <span style="font-weight:700;font-size:14px;color:#4a3b63;">{{ row.name }}</span>
+                <span style="font-size:12px;color:#9AA8C7;">{{ row.when }}</span>
+              </span>
+              <span style="color:#C6D2EE;font-size:20px;">›</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ app.isLeader }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ app.leaderRowsFull }}" as="lr" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:22px 28px 1fr auto;align-items:center;gap:10px;">
+              <span style="font-size:13px;font-weight:700;color:#AFC0DE;text-align:center;">{{ lr.rankLabel }}</span>
+              <span style="font-size:20px;text-align:center;">{{ lr.emoji }}</span>
+              <span style="height:10px;background:#EEF3FB;border-radius:999px;overflow:hidden;">
+                <span style="{{ lr.barStyle }}"></span>
+              </span>
+              <span style="font-weight:700;font-size:14px;color:#4a3b63;min-width:16px;text-align:right;">{{ lr.count }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <sc-if value="{{ app.isDesktop }}" hint-placeholder-val="{{ false }}">
+      <div style="width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:20px;padding-bottom:90px;">
+        <div>
+          <button onclick="{{ app.openAdd }}" style="{{ app.addBtnStyle }}"><span style="font-size:18px;">+</span> Log a sighting</button>
+        </div>
+        <div>
+          <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:14px;color:#4a3b63;margin-bottom:8px;">Recent Critters</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <sc-for list="{{ app.recentRows }}" as="row" hint-placeholder-count="4">
+              <button onclick="{{ row.onTap }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 13px;border-radius:14px;border:1px solid #E3ECFA;background:#fff;cursor:pointer;font:inherit;">
+                <span style="font-size:20px;">{{ row.emoji }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+                  <span style="font-weight:700;font-size:13px;color:#4a3b63;">{{ row.name }}</span>
+                  <span style="font-size:11px;color:#9AA8C7;">{{ row.when }}</span>
+                </span>
+                <span style="color:#C6D2EE;font-size:18px;">›</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:14px;color:#4a3b63;margin-bottom:8px;">Top Critters</div>
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <sc-for list="{{ app.leaderRows }}" as="lr" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:20px 24px 1fr auto;align-items:center;gap:8px;">
+                <span style="font-size:12px;font-weight:700;color:#AFC0DE;text-align:center;">{{ lr.rankLabel }}</span>
+                <span style="font-size:17px;text-align:center;">{{ lr.emoji }}</span>
+                <span style="height:8px;background:#EEF3FB;border-radius:999px;overflow:hidden;">
+                  <span style="{{ lr.barStyle }}"></span>
+                </span>
+                <span style="font-weight:700;font-size:13px;color:#4a3b63;min-width:14px;text-align:right;">{{ lr.count }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    </div>
+
+    <sc-if value="{{ app.sheetOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ app.overlayStyle }}">
+        <div style="{{ app.sheetStyle }}">
+          <div style="height:5px;width:36px;background:#E3ECFA;border-radius:3px;margin:2px auto 14px;"></div>
+
+          <sc-if value="{{ app.stepEmoji }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:17px;color:#4a3b63;margin-bottom:12px;">What did Natalie see?</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+              <sc-for list="{{ app.critterTiles }}" as="ct" hint-placeholder-count="12">
+                <button onclick="{{ ct.onTap }}" style="aspect-ratio:1;border-radius:14px;border:1px solid #E3ECFA;background:{{ ct.bg }};font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;">{{ ct.emoji }}</button>
+              </sc-for>
+              <button onclick="{{ app.toggleOther }}" style="aspect-ratio:1;border-radius:14px;border:1.5px dashed #9DB6E8;background:#F0F7FF;font-size:12px;font-weight:700;color:#5F80C7;cursor:pointer;">Other</button>
+            </div>
+            <sc-if value="{{ app.otherOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid #E3ECFA;display:grid;grid-template-columns:repeat(6,1fr);gap:7px;">
+                <sc-for list="{{ app.otherTiles }}" as="ot" hint-placeholder-count="16">
+                  <button onclick="{{ ot.onTap }}" style="aspect-ratio:1;border-radius:10px;border:1px solid #E3ECFA;background:#F0F7FF;font-size:17px;cursor:pointer;">{{ ot.emoji }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <button onclick="{{ app.closeSheet }}" style="margin-top:16px;width:100%;padding:11px;border-radius:12px;border:1px solid #E3ECFA;background:#fff;color:#9AA8C7;font:inherit;font-weight:600;cursor:pointer;">Cancel</button>
+          </sc-if>
+
+          <sc-if value="{{ app.stepDetails }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <span style="font-size:34px;">{{ app.draftEmoji }}</span>
+              <input value="{{ app.draftName }}" oninput="{{ app.setName }}" placeholder="Critter name" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid #E3ECFA;background:#F0F7FF;font:inherit;font-size:15px;font-weight:700;color:#4a3b63;"/>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <input type="date" value="{{ app.draftDate }}" onchange="{{ app.setDate }}" style="padding:10px 12px;border-radius:10px;border:1px solid #E3ECFA;background:#F0F7FF;font:inherit;font-size:13px;color:#4a3b63;"/>
+              <input value="{{ app.draftTime }}" oninput="{{ app.setTime }}" placeholder="Time" style="padding:10px 12px;border-radius:10px;border:1px solid #E3ECFA;background:#F0F7FF;font:inherit;font-size:13px;color:#4a3b63;"/>
+            </div>
+            <input value="{{ app.draftPlace }}" oninput="{{ app.setPlace }}" placeholder="Where? (backyard, trail...)" style="margin-top:10px;width:100%;padding:10px 12px;border-radius:10px;border:1px solid #E3ECFA;background:#F0F7FF;font:inherit;font-size:13px;color:#4a3b63;"/>
+            <textarea value="{{ app.draftComment }}" oninput="{{ app.setComment }}" placeholder="Comment (optional)" rows="2" style="margin-top:10px;width:100%;padding:10px 12px;border-radius:10px;border:1px solid #E3ECFA;background:#F0F7FF;font:inherit;font-size:13px;color:#4a3b63;resize:none;"></textarea>
+            <button onclick="{{ app.togglePhoto }}" style="{{ app.photoBoxStyle }}">{{ app.photoBoxLabel }}</button>
+            <div style="display:flex;gap:9px;margin-top:16px;">
+              <button onclick="{{ app.backToEmoji }}" style="padding:11px 16px;border-radius:12px;border:1px solid #E3ECFA;background:#fff;color:#9AA8C7;font:inherit;font-weight:600;cursor:pointer;">Back</button>
+              <button onclick="{{ app.saveSighting }}" style="flex:1;padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#8FD8C4,#8FB8FF);color:#fff;font:inherit;font-weight:700;cursor:pointer;">Save sighting</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ app.stepDay }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:16px;color:#4a3b63;margin-bottom:10px;">{{ app.dayTitle }}</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ app.dayRows }}" as="dr" hint-placeholder-count="3">
+                <button onclick="{{ dr.onTap }}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border-radius:14px;border:1px solid #E3ECFA;background:#F0F7FF;cursor:pointer;font:inherit;">
+                  <span style="font-size:20px;">{{ dr.emoji }}</span>
+                  <span style="flex:1;font-size:13px;font-weight:700;color:#4a3b63;">{{ dr.name }}</span>
+                  <span style="font-size:12px;color:#9AA8C7;">{{ dr.time }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <button onclick="{{ app.closeSheet }}" style="margin-top:16px;width:100%;padding:11px;border-radius:12px;border:1px solid #E3ECFA;background:#fff;color:#9AA8C7;font:inherit;font-weight:600;cursor:pointer;">Close</button>
+          </sc-if>
+
+          <sc-if value="{{ app.stepSighting }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;">
+              <div style="font-size:44px;">{{ app.sel.emoji }}</div>
+              <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:18px;color:#4a3b63;margin-top:4px;">{{ app.sel.name }}</div>
+              <div style="font-size:13px;color:#9AA8C7;margin-top:2px;">{{ app.sel.when }}</div>
+            </div>
+            <sc-if value="{{ app.sel.place }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:14px;font-size:13px;color:#4a3b63;"><b>📍 {{ app.sel.place }}</b></div>
+            </sc-if>
+            <sc-if value="{{ app.sel.hasPhoto }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:12px;height:120px;border-radius:14px;background:repeating-linear-gradient(45deg,#F0F7FF,#F0F7FF 10px,#E3ECFA 10px,#E3ECFA 20px);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;color:#5F80C7;">photo</div>
+            </sc-if>
+            <sc-if value="{{ app.sel.comment }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:12px;padding:10px 12px;background:#F0F7FF;border-radius:12px;font-size:13px;color:#4a3b63;line-height:1.4;">{{ app.sel.comment }}</div>
+            </sc-if>
+            <div style="display:flex;gap:9px;margin-top:18px;">
+              <button onclick="{{ app.backFromSighting }}" style="flex:1;padding:11px;border-radius:12px;border:1px solid #E3ECFA;background:#fff;color:#9AA8C7;font:inherit;font-weight:600;cursor:pointer;">Back</button>
+              <button onclick="{{ app.deleteSighting }}" style="padding:11px 16px;border-radius:12px;border:none;background:#FFE3E3;color:#D2555C;font:inherit;font-weight:700;cursor:pointer;">Delete</button>
+            </div>
+          </sc-if>
+
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ app.toastMsg }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:#4a5f8e;color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:700;z-index:60;">{{ app.toastMsg }}</div>
+    </sc-if>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CRITTERS = [
+  { e: '🦌', n: 'Deer', c: '#FFD1DC' },
+  { e: '🐿️', n: 'Squirrel', c: '#FFE1B8' },
+  { e: '🐦', n: 'Bird', c: '#FFF6B8' },
+  { e: '🐇', n: 'Rabbit', c: '#D7F5C8' },
+  { e: '🦋', n: 'Butterfly', c: '#C8F0E4' },
+  { e: '🐢', n: 'Turtle', c: '#C7E3FA' },
+  { e: '🦉', n: 'Owl', c: '#D9CFF2' },
+  { e: '🦊', n: 'Fox', c: '#F3CDEE' },
+  { e: '🦝', n: 'Raccoon', c: '#FFD1DC' },
+  { e: '🦔', n: 'Hedgehog', c: '#FFE1B8' },
+  { e: '🐸', n: 'Frog', c: '#D7F5C8' },
+  { e: '🦆', n: 'Duck', c: '#C7E3FA' },
+];
+const OTHER_EMOJIS = ['🐝','🐌','🦎','🐍','🦇','🐁','🦅','🐺','🦫','🐊','🦭','🦩','🐙','🦂','🐞','🕷️'];
+const RAINBOW = ['#FFD1DC','#FFE1B8','#FFF6B8','#D7F5C8','#C8F0E4','#C7E3FA','#D9CFF2'];
+const WEEKDAYS = ['S','M','T','W','T','F','S'];
+
+const THEME = { tabColors: { calendar: '#8FB8FF', history: '#5FBFA6', leader: '#B79BF2' }, tabInactive: '#9AA8C7', cellBorder: '#E3ECFA', cellToday: '#8FB8FF', cellBgHas: '#F0F7FF', cellBgNone: '#fff', cellBgOut: '#F5F8FC', dayNumColor: '#9AA8C7' };
+
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+function dstr(y, m, d) { return y + '-' + pad(m + 1) + '-' + pad(d); }
+
+function seedSightings() {
+  const raw = [
+    ['2026-06-10','8:10 AM','🦌','Deer','Backyard fence line','She froze for a full minute before bounding off.',false],
+    ['2026-06-11','5:40 PM','🐿️','Squirrel','Front porch','Stole a peanut right off the railing.',true],
+    ['2026-06-12','7:15 AM','🐦','Bird','Kitchen window','A bright red cardinal, first of the season!',false],
+    ['2026-06-14','12:30 PM','🦋','Butterfly','Garden','Monarch resting on the milkweed.',true],
+    ['2026-06-16','6:05 PM','🐇','Rabbit','Side yard','',false],
+    ['2026-06-18','9:20 AM','🦆','Duck','Neighborhood pond','Whole family of ducklings in tow.',true],
+    ['2026-06-19','7:50 PM','🦉','Owl','Backyard tree','Heard it before she saw it.',false],
+    ['2026-06-21','8:00 AM','🐿️','Squirrel','Front porch','',false],
+    ['2026-06-22','4:15 PM','🦊','Fox','Trailhead','Trotted right across the path.',true],
+    ['2026-06-24','1:05 PM','🐢','Turtle','Creek bed','',false],
+    ['2026-06-25','6:30 PM','🦌','Deer','Backyard fence line','Two fawns this time!',true],
+    ['2026-06-27','8:45 AM','🐦','Bird','Kitchen window','',false],
+    ['2026-06-28','3:20 PM','🐸','Frog','Garden pond','',false],
+    ['2026-06-29','7:00 PM','🦔','Hedgehog','Compost pile','Tiny and grumpy looking.',true],
+    ['2026-06-30','9:10 AM','🐿️','Squirrel','Front porch','',false],
+    ['2026-07-01','5:55 PM','🦝','Raccoon','Back alley','Rummaging through the bins again.',false],
+    ['2026-07-01','7:40 PM','🦌','Deer','Backyard fence line','',false],
+    ['2026-07-02','7:30 AM','🐦','Bird','Kitchen window','A whole flock of finches at the feeder.',true],
+  ];
+  return raw.map((r, i) => ({ id: 'seed' + i, date: r[0], time: r[1], emoji: r[2], name: r[3], place: r[4], comment: r[5], hasPhoto: r[6] }));
+}
+
+function critterMeta(emoji) {
+  return CRITTERS.find(c => c.e === emoji) || { e: emoji, n: emoji, c: '#EEE' };
+}
+
+function fmtDateLabel(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return names[m - 1] + ' ' + d;
+}
+function fmtWhen(s) { return fmtDateLabel(s.date) + ' · ' + s.time; }
+
+class Component extends DCLogic {
+  state = {
+    sightings: seedSightings(),
+    tab: 'calendar',
+    y: 2026, m: 6, // July (0-indexed)
+    sheet: null, // 'emoji' | 'details' | 'day' | 'sighting'
+    otherOpen: false,
+    draft: {},
+    selDate: null,
+    selSighting: null,
+    cameFromDay: false,
+    toast: '',
+    isDesktop: false,
+    filterFrom: '', filterTo: '',
+  };
+
+  componentDidMount() {
+    const measure = (w) => this.setState(s => s.isDesktop === (w >= 880) ? null : { isDesktop: w >= 880 });
+    if (typeof ResizeObserver !== 'undefined') {
+      this._ro = new ResizeObserver((entries) => {
+        for (const entry of entries) measure(entry.contentRect.width);
+      });
+      this._ro.observe(document.body);
+    } else {
+      this._onResize = () => measure(window.innerWidth);
+      window.addEventListener('resize', this._onResize);
+    }
+  }
+
+  componentWillUnmount() {
+    if (this._ro) this._ro.disconnect();
+    if (this._onResize) window.removeEventListener('resize', this._onResize);
+  }
+
+  set(patch) {
+    this.setState(s => Object.assign({}, patch));
+  }
+
+  showToast(msg) {
+    this.setState({ toast: msg });
+    setTimeout(() => this.setState({ toast: '' }), 1800);
+  }
+
+  renderVals() {
+    const st = this.state;
+    const self = this;
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const monthLabel = monthNames[st.m] + ' ' + st.y;
+
+    const firstDow = new Date(st.y, st.m, 1).getDay();
+    const daysInMonth = new Date(st.y, st.m + 1, 0).getDate();
+    const daysInPrev = new Date(st.y, st.m, 0).getDate();
+    const todayStr = '2026-07-02';
+
+    const cellsRaw = [];
+    for (let i = 0; i < firstDow; i++) {
+      const d = daysInPrev - firstDow + 1 + i;
+      cellsRaw.push({ day: d, inMonth: false, dateStr: null });
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      cellsRaw.push({ day: d, inMonth: true, dateStr: dstr(st.y, st.m, d) });
+    }
+    while (cellsRaw.length < 42) {
+      const d = cellsRaw.length - firstDow - daysInMonth + 1;
+      cellsRaw.push({ day: d, inMonth: false, dateStr: null });
+    }
+
+    const sightingsByDate = {};
+    st.sightings.forEach(s => {
+      (sightingsByDate[s.date] = sightingsByDate[s.date] || []).push(s);
+    });
+
+    const calendarCells = cellsRaw.map(cell => {
+      const daySightings = cell.dateStr ? (sightingsByDate[cell.dateStr] || []) : [];
+      const isToday = cell.dateStr === todayStr;
+      const hasAny = daySightings.length > 0;
+      const emojiLine = daySightings.slice(0, 2).map(s => s.emoji).join(' ') + (daySightings.length > 2 ? ' +' + (daySightings.length - 2) : '');
+
+      const style = 'aspect-ratio:1;border-radius:12px;border:1px solid ' + (isToday ? THEME.cellToday : THEME.cellBorder) + ';background:' + (cell.inMonth ? (hasAny ? THEME.cellBgHas : THEME.cellBgNone) : THEME.cellBgOut) + ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:' + (hasAny ? 'pointer' : 'default') + ';opacity:' + (cell.inMonth ? 1 : 0.35) + ';padding:2px;';
+      const dayStyle = 'font-size:10px;font-weight:700;color:' + THEME.dayNumColor + ';';
+      const onTap = hasAny ? () => self.openDay(cell.dateStr) : () => {};
+
+      return { day: cell.day, style, dayStyle, emojiLine, onTap };
+    });
+
+    const filtered = st.sightings.filter(s => (!st.filterFrom || s.date >= st.filterFrom) && (!st.filterTo || s.date <= st.filterTo));
+    const sorted = filtered.slice().sort((x, y) => (x.date + x.time) < (y.date + y.time) ? 1 : -1);
+    const historyRows = sorted.map(s => ({
+      emoji: s.emoji, name: s.name, when: fmtWhen(s),
+      onTap: () => self.openSighting(s, false),
+    }));
+
+    const counts = {};
+    st.sightings.forEach(s => { counts[s.emoji] = (counts[s.emoji] || 0) + 1; });
+    const rankedAll = Object.keys(counts).map(e => ({ emoji: e, count: counts[e] })).sort((x, y) => y.count - x.count);
+    const maxCount = rankedAll.length ? rankedAll[0].count : 1;
+    const medals = ['🥇','🥈','🥉'];
+    const makeLeaderRow = (r, i) => ({
+      emoji: r.emoji, count: r.count,
+      rankLabel: i < 3 ? medals[i] : ('#' + (i + 1)),
+      barStyle: 'display:block;height:100%;width:' + Math.max(8, (r.count / maxCount) * 100) + '%;background:linear-gradient(90deg,' + RAINBOW[i % RAINBOW.length] + ',' + RAINBOW[(i + 2) % RAINBOW.length] + ');border-radius:999px;',
+    });
+    const leaderRowsFull = rankedAll.map(makeLeaderRow);
+    const leaderRows = rankedAll.slice(0, 10).map(makeLeaderRow);
+
+    const critterTiles = CRITTERS.map(c => ({ emoji: c.e, bg: c.c, onTap: () => self.pickEmoji(c) }));
+    const otherTiles = OTHER_EMOJIS.map(e => ({ emoji: e, onTap: () => self.pickOther(e) }));
+
+    const daySightingsList = st.selDate ? (sightingsByDate[st.selDate] || []) : [];
+    const dayRows = daySightingsList.map(s => ({
+      emoji: s.emoji, name: s.name, time: s.time,
+      onTap: () => self.openSighting(s, true),
+    }));
+
+    const dayTitle = st.selDate ? fmtDateLabel(st.selDate) : '';
+    const sel = st.selSighting ? {
+      emoji: st.selSighting.emoji, name: st.selSighting.name, when: fmtWhen(st.selSighting),
+      place: st.selSighting.place, comment: st.selSighting.comment, hasPhoto: st.selSighting.hasPhoto,
+    } : { emoji: '', name: '', when: '', place: '', comment: '', hasPhoto: false };
+
+    const tabBtnBase = 'flex:1;padding:9px 0 12px;border:none;background:none;cursor:pointer;font:inherit;font-size:13px;font-weight:700;border-bottom:3px solid transparent;';
+    function tabStyle(name) {
+      const active = st.tab === name;
+      return tabBtnBase + 'color:' + (active ? THEME.tabColors[name] : THEME.tabInactive) + ';' + (active ? 'border-bottom-color:' + THEME.tabColors[name] + ';' : '');
+    }
+
+    const isDesktop = st.isDesktop;
+    const overlayStyle = 'position:fixed;inset:0;background:rgba(70,90,140,0.28);display:flex;align-items:' + (isDesktop ? 'center' : 'flex-end') + ';justify-content:center;z-index:50;';
+    const addBtnStyle = 'display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border:none;border-radius:14px;background:linear-gradient(135deg,#FFD1DC,#FFE1B8,#FFF6B8,#D7F5C8,#C8F0E4,#C7E3FA,#D9CFF2);color:#4a3b63;font:inherit;font-size:14px;font-weight:700;cursor:pointer;';
+    const sheetStyle = 'width:100%;max-width:' + (isDesktop ? '460px' : '100%') + ';max-height:88vh;overflow-y:auto;background:#fff;border-radius:' + (isDesktop ? '24px' : '26px 26px 0 0') + ';padding:8px 20px 24px;margin:' + (isDesktop ? '0' : '0') + ';';
+
+    return { app: {
+      isDesktop, isMobile: !isDesktop,
+      isCalendar: st.tab === 'calendar', isHistory: st.tab === 'history', isLeader: st.tab === 'leader',
+      monthLabel, weekdayLabels: WEEKDAYS, calendarCells,
+      historyRows, leaderRows, leaderRowsFull, recentRows: historyRows.slice(0, 4),
+      filterFrom: st.filterFrom, filterTo: st.filterTo, hasFilter: !!(st.filterFrom || st.filterTo),
+      setFilterFrom: (e) => self.setState({ filterFrom: e.target.value }),
+      setFilterTo: (e) => self.setState({ filterTo: e.target.value }),
+      clearFilter: () => self.setState({ filterFrom: '', filterTo: '' }),
+      overlayStyle, sheetStyle, addBtnStyle,
+      sheetOpen: !!st.sheet,
+      stepEmoji: st.sheet === 'emoji', stepDetails: st.sheet === 'details', stepDay: st.sheet === 'day', stepSighting: st.sheet === 'sighting',
+      otherOpen: st.otherOpen, critterTiles, otherTiles,
+      draftEmoji: st.draft.emoji || '', draftName: st.draft.name || '', draftDate: st.draft.date || todayStr, draftTime: st.draft.time || '',
+      draftPlace: st.draft.place || '', draftComment: st.draft.comment || '',
+      photoBoxLabel: st.draft.hasPhoto ? '📷 Photo added' : '📷 Add a photo',
+      photoBoxStyle: 'margin-top:10px;width:100%;padding:11px;border-radius:12px;border:1.5px dashed ' + (st.draft.hasPhoto ? '#5FBFA6' : '#9DB6E8') + ';background:' + (st.draft.hasPhoto ? '#EFFAF3' : 'transparent') + ';color:' + (st.draft.hasPhoto ? '#3E9C81' : '#5F80C7') + ';font:inherit;font-weight:600;font-size:13px;cursor:pointer;',
+      dayTitle, dayRows, sel, toastMsg: st.toast,
+
+      setTab: () => self.setState({ tab: 'calendar' }),
+      setTabHistory: () => self.setState({ tab: 'history' }),
+      setTabLeader: () => self.setState({ tab: 'leader' }),
+      tabStyle_calendar: tabStyle('calendar'), tabStyle_history: tabStyle('history'), tabStyle_leader: tabStyle('leader'),
+
+      prevMonth: () => self.setState(s => {
+        let m = s.m - 1, y = s.y; if (m < 0) { m = 11; y--; }
+        return { m, y };
+      }),
+      nextMonth: () => self.setState(s => {
+        let m = s.m + 1, y = s.y; if (m > 11) { m = 0; y++; }
+        return { m, y };
+      }),
+
+      openAdd: () => self.setState({ sheet: 'emoji', draft: {}, otherOpen: false }),
+      closeSheet: () => self.setState({ sheet: null, otherOpen: false, selDate: null, selSighting: null }),
+      toggleOther: () => self.setState(s => ({ otherOpen: !s.otherOpen })),
+
+      setName: (e) => self.setState(s => ({ draft: Object.assign({}, s.draft, { name: e.target.value }) })),
+      setDate: (e) => self.setState(s => ({ draft: Object.assign({}, s.draft, { date: e.target.value }) })),
+      setTime: (e) => self.setState(s => ({ draft: Object.assign({}, s.draft, { time: e.target.value }) })),
+      setPlace: (e) => self.setState(s => ({ draft: Object.assign({}, s.draft, { place: e.target.value }) })),
+      setComment: (e) => self.setState(s => ({ draft: Object.assign({}, s.draft, { comment: e.target.value }) })),
+      togglePhoto: () => self.setState(s => ({ draft: Object.assign({}, s.draft, { hasPhoto: !s.draft.hasPhoto }) })),
+      backToEmoji: () => self.setState({ sheet: 'emoji' }),
+
+      saveSighting: () => self.setState(s => {
+        const d = s.draft;
+        const newS = {
+          id: 'n' + Date.now(), emoji: d.emoji, name: d.name || critterMeta(d.emoji).n,
+          date: d.date || todayStr, time: d.time || 'just now', place: d.place || '', comment: d.comment || '', hasPhoto: !!d.hasPhoto,
+        };
+        return { sightings: [newS].concat(s.sightings), sheet: null, draft: {} };
+      }, () => self.showToast('🎉 Logged!')),
+
+      backFromSighting: () => self.setState(s => s.cameFromDay ? { sheet: 'day', selSighting: null } : { sheet: null, selSighting: null }),
+      deleteSighting: () => self.setState(s => ({
+        sightings: s.sightings.filter(x => x.id !== s.selSighting.id), sheet: null, selSighting: null,
+      })),
+    } };
+  }
+
+  pickEmoji(critter) { this.setState({ draft: { emoji: critter.e, name: critter.n }, sheet: 'details', otherOpen: false }); }
+  pickOther(emoji) { this.setState({ draft: { emoji, name: '' }, sheet: 'details', otherOpen: false }); }
+  openDay(dateStr) { this.setState({ sheet: 'day', selDate: dateStr }); }
+  openSighting(sighting, fromDay) { this.setState({ sheet: 'sighting', selSighting: sighting, cameFromDay: !!fromDay }); }
+}
+</script>
+</body>
+</html>
