@@ -29,6 +29,16 @@ App: http://localhost:8080 — `GET /api/health` reports DB connectivity.
 For public hosting via Cloudflare tunnel, set `CLOUDFLARE_TUNNEL_TOKEN` in
 `.env` and run `docker compose --profile tunnel up -d`.
 
+## API
+
+    GET    /api/sightings?from=YYYY-MM-DD&to=YYYY-MM-DD   # public; filters optional/inclusive
+    POST   /api/sightings                                 # basic auth (WRITE_USER/WRITE_PASSWORD)
+    DELETE /api/sightings/:id                             # basic auth
+
+POST body: `emoji` and `sightedOn` (YYYY-MM-DD) required; `name`, `sightedTime`,
+`place`, `comment` optional. With blank write credentials the write endpoints
+return 503.
+
 ## Development
 
     docker compose up -d postgres
