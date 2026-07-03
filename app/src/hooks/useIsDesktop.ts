@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 
 // Keep in sync with the `@media (min-width: 880px)` breakpoint in index.css.
-const DESKTOP_QUERY = '(min-width: 880px)'
+// (Enforced by the sync-guard test in useIsDesktop.test.ts.)
+export const DESKTOP_QUERY = '(min-width: 880px)'
 
 function matchesDesktop(): boolean {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false

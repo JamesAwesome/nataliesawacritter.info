@@ -81,4 +81,19 @@ describe('App shell', () => {
     await vi.advanceTimersByTimeAsync(2000)
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
+
+  it('renders only the sidebar RecentCritters on desktop viewports', async () => {
+    vi.stubGlobal('matchMedia', vi.fn((query: string) => ({
+      matches: true,
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })))
+    stubFetchQueue([{ status: 200, body: [ROW] }])
+    render(<App />)
+    expect(await screen.findByText('Fox')).toBeInTheDocument()
+    const instances = screen.getAllByTestId('recent-critters')
+    expect(instances).toHaveLength(1)
+    expect(instances[0].closest('aside')).not.toBeNull()
+  })
 })
