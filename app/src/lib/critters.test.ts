@@ -13,8 +13,18 @@ describe('critter sets', () => {
     }
   })
 
-  it('has 16 extended emoji with no duplicates', () => {
-    expect(EXTENDED).toHaveLength(16)
-    expect(new Set(EXTENDED).size).toBe(16)
+  it('has a full extended animal set with no duplicates or overlap with curated', () => {
+    expect(new Set(EXTENDED).size).toBe(EXTENDED.length)
+    const curatedEmoji = new Set(CURATED.map((c) => c.emoji))
+    for (const emoji of EXTENDED) {
+      expect(curatedEmoji.has(emoji)).toBe(false)
+    }
+    expect(EXTENDED).toContain('🐱')
+    expect(EXTENDED).toContain('🐶')
+    expect(EXTENDED).toContain('🦁')
+    expect(EXTENDED.length).toBeGreaterThanOrEqual(100)
+    for (const emoji of EXTENDED) {
+      expect(emoji.length).toBeLessThanOrEqual(16)
+    }
   })
 })
