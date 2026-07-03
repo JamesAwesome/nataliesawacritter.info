@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgres:18.4
+    container_name: critter-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-critters}
+      POSTGRES_USER: ${POSTGRES_USER:-critters}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    ports:
+      - "5432:5432"
+    volumes:
+      # postgres:18 images keep PGDATA under /var/lib/postgresql (not .../data)
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-critters} -d ${POSTGRES_DB:-critters}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  app:
+    build:
+      context: ./app
+    container_name: critter-app
+    restart: unless-stopped
+    # Defense-in-depth: drop privileges, read-only root FS (pool_monitor convention)
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-critters}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-critters}
+      WRITE_USER: ${WRITE_USER:-}
+      WRITE_PASSWORD: ${WRITE_PASSWORD:-}
+      TZ: ${TIMEZONE:-America/New_York}
+    volumes:
+      - photos:/data/photos
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.6.1
+    container_name: critter-cloudflared
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  photos:
