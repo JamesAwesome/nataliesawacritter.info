@@ -52,12 +52,12 @@ export default function App() {
                 </button>
               </p>
             )}
-            <PlaceholderPane label={PANE_LABELS[activeTab]} />
-            {activeTab === 'calendar' && !isDesktop && (
-              <div className="mobile-only">
+            <div role="tabpanel" id={'pane-' + activeTab}>
+              <PlaceholderPane label={PANE_LABELS[activeTab]} />
+              {activeTab === 'calendar' && !isDesktop && (
                 <RecentCritters sightings={sightings} status={status} onRetry={retry} />
-              </div>
-            )}
+              )}
+            </div>
           </main>
           <aside className="sidebar desktop-only">
             {logButton}

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { Sheet } from './Sheet'
@@ -29,5 +29,13 @@ describe('Sheet', () => {
     render(<Sheet open onClose={onClose}>x</Sheet>)
     await userEvent.keyboard('{Escape}')
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not close when a press starts inside the content and ends on the scrim', () => {
+    const onClose = vi.fn()
+    render(<Sheet open onClose={onClose}><p>content</p></Sheet>)
+    fireEvent.pointerDown(screen.getByText('content'))
+    fireEvent.click(screen.getByTestId('sheet-scrim'))
+    expect(onClose).not.toHaveBeenCalled()
   })
 })

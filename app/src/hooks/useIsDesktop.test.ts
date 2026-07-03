@@ -2,11 +2,20 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { stubMatchMedia } from '../test/helpers'
 import { DESKTOP_QUERY, useIsDesktop } from './useIsDesktop'
 
 type Listener = (event: MediaQueryListEvent) => void
 
-function stubMatchMedia(matches: boolean) {
+// useIsDesktop reads `mql.matches` off the single MediaQueryList object it
+// captures in its effect (matching real browser behavior, where that object
+// is live) rather than off the dispatched event. The shared `stubMatchMedia`
+// helper hands back a fresh object literal on every `matchMedia()` call, so
+// its `fireChange` can't mutate the reference the hook already captured — it
+// only suits consumers that read `event.matches`. Keep this small
+// mutable-reference stub for the two tests that depend on that captured
+// object staying live (the change-event toggle and listener cleanup).
+function stubMatchMediaLive(matches: boolean) {
   const listeners = new Set<Listener>()
   const mql = {
     matches,
@@ -18,11 +27,9 @@ function stubMatchMedia(matches: boolean) {
       if (event === 'change') listeners.delete(listener)
     }),
   }
-  const matchMedia = vi.fn(() => mql)
-  vi.stubGlobal('matchMedia', matchMedia)
+  vi.stubGlobal('matchMedia', vi.fn(() => mql))
   return {
     mql,
-    matchMedia,
     fireChange(nextMatches: boolean) {
       mql.matches = nextMatches
       for (const listener of listeners) {
@@ -49,7 +56,7 @@ describe('useIsDesktop', () => {
   })
 
   it('toggles when the stubbed MediaQueryList fires a change event', () => {
-    const { fireChange } = stubMatchMedia(false)
+    const { fireChange } = stubMatchMediaLive(false)
     const { result } = renderHook(() => useIsDesktop())
     expect(result.current).toBe(false)
     act(() => {
@@ -59,7 +66,7 @@ describe('useIsDesktop', () => {
   })
 
   it('removes its listener on unmount', () => {
-    const { mql } = stubMatchMedia(false)
+    const { mql } = stubMatchMediaLive(false)
     const { unmount } = renderHook(() => useIsDesktop())
     expect(mql.addEventListener).toHaveBeenCalledWith('change', expect.any(Function))
     unmount()

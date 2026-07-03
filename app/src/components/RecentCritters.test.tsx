@@ -1,25 +1,20 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { Sighting } from '../api'
+import { makeSighting } from '../test/helpers'
 import { RecentCritters } from './RecentCritters'
 
-function row(overrides: Partial<Sighting>): Sighting {
-  return {
-    id: crypto.randomUUID(), emoji: '🦊', name: 'Fox', sightedOn: '2026-07-03',
-    sightedTime: null, place: null, comment: null, photoPath: null,
-    createdAt: '2026-07-03T12:00:00.000Z', ...overrides,
-  }
-}
+const SIGHTED_ON = '2026-07-03'
+const CREATED_AT = '2026-07-03T12:00:00.000Z'
 
 describe('RecentCritters', () => {
   it('renders at most 4 rows, most recent first, with formatted meta', () => {
     const sightings = [
-      row({ name: 'Fox', sightedTime: 'dusk' }),
-      row({ name: 'Owl', emoji: '🦉' }),
-      row({ name: 'Deer', emoji: '🦌' }),
-      row({ name: 'Duck', emoji: '🦆' }),
-      row({ name: 'Frog', emoji: '🐸' }),
+      makeSighting({ name: 'Fox', sightedTime: 'dusk', sightedOn: SIGHTED_ON, createdAt: CREATED_AT }),
+      makeSighting({ name: 'Owl', emoji: '🦉', sightedOn: SIGHTED_ON, createdAt: CREATED_AT }),
+      makeSighting({ name: 'Deer', emoji: '🦌', sightedOn: SIGHTED_ON, createdAt: CREATED_AT }),
+      makeSighting({ name: 'Duck', emoji: '🦆', sightedOn: SIGHTED_ON, createdAt: CREATED_AT }),
+      makeSighting({ name: 'Frog', emoji: '🐸', sightedOn: SIGHTED_ON, createdAt: CREATED_AT }),
     ]
     render(<RecentCritters sightings={sightings} status="ready" onRetry={() => {}} />)
     const items = screen.getAllByRole('listitem')
@@ -31,7 +26,13 @@ describe('RecentCritters', () => {
   })
 
   it('falls back to the emoji when name is null', () => {
-    render(<RecentCritters sightings={[row({ name: null })]} status="ready" onRetry={() => {}} />)
+    render(
+      <RecentCritters
+        sightings={[makeSighting({ name: null, sightedOn: SIGHTED_ON, createdAt: CREATED_AT })]}
+        status="ready"
+        onRetry={() => {}}
+      />,
+    )
     expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('🦊')
   })
 

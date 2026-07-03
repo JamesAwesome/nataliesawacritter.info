@@ -419,3 +419,9 @@ body {
   gap: 10px;
   margin-top: 16px;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    animation: none;
+  }
+}
