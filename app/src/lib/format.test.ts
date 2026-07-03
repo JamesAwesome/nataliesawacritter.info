@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { formatWhen } from './format'
+import { formatDay, formatWhen } from './format'
+
+describe('formatDay', () => {
+  it('formats date without time', () => {
+    expect(formatDay('2026-12-25')).toBe('Dec 25')
+  })
+})
 
 describe('formatWhen', () => {
   it('formats date and free-text time', () => {
