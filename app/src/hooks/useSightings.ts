@@ -29,7 +29,10 @@ export function useSightings(): SightingsState {
     }
   }, [loadCount])
 
-  const retry = useCallback(() => setLoadCount((n) => n + 1), [])
+  const retry = useCallback(() => {
+    setStatus('loading')
+    setLoadCount((n) => n + 1)
+  }, [])
 
   const addSighting = useCallback(async (fields: NewSightingInput, authHeader: string) => {
     const created = await createSighting(fields, authHeader)

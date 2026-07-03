@@ -38,6 +38,7 @@ describe('useSightings', () => {
     const { result } = renderHook(() => useSightings())
     await waitFor(() => expect(result.current.status).toBe('error'))
     act(() => result.current.retry())
+    expect(result.current.status).toBe('loading')
     await waitFor(() => expect(result.current.status).toBe('ready'))
     expect(result.current.sightings).toEqual([ROW])
   })
