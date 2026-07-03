@@ -14,3 +14,7 @@ export async function withServer(app: Express, fn: (baseUrl: string) => Promise<
     )
   }
 }
+
+export function basic(user: string, pass: string): string {
+  return 'Basic ' + Buffer.from(`${user}:${pass}`).toString('base64')
+}

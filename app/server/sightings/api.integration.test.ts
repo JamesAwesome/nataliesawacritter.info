@@ -1,30 +1,25 @@
-import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql'
-import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createApp } from '../app.js'
 import { createDb } from '../db/index.js'
-import { withServer } from '../testUtils.js'
+import { basic, withServer } from '../testUtils.js'
+import { createTestDb } from '../testDb.js'
 import { createSightingsStore, type Sighting } from './store.js'
 
-const AUTH = 'Basic ' + Buffer.from('natalie:sekrit').toString('base64')
+const AUTH = basic('natalie', 'sekrit')
 
 // The fetch types ship `Response.json(): Promise<unknown>`; narrow to the
 // shape this test asserts on so it avoids `any`.
 type SightingJson = Omit<Sighting, 'createdAt'> & { createdAt: string }
 
 describe('sightings API against real postgres', () => {
-  let container: StartedPostgreSqlContainer
   let handle: ReturnType<typeof createDb>
 
   beforeAll(async () => {
-    container = await new PostgreSqlContainer('postgres:18.4').start()
-    handle = createDb(container.getConnectionUri())
-    await migrate(handle.db, { migrationsFolder: 'drizzle' })
+    handle = await createTestDb()
   })
 
   afterAll(async () => {
     await handle?.pool.end()
-    await container?.stop()
   })
 
   function app() {

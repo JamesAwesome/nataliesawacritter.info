@@ -1,7 +1,8 @@
-import express, { type ErrorRequestHandler, type Express, type RequestHandler } from 'express'
+import express, { type Express, type RequestHandler } from 'express'
 import { describe, expect, it, vi } from 'vitest'
 import { requireWriteAuth } from '../auth.js'
-import { withServer } from '../testUtils.js'
+import { errorHandler } from '../errorHandler.js'
+import { basic, withServer } from '../testUtils.js'
 import { sightingsRouter } from './routes.js'
 import type { Sighting, SightingsStore } from './store.js'
 
@@ -31,10 +32,7 @@ function appWith(store: SightingsStore, gate: RequestHandler = passGate): Expres
   const app = express()
   app.use(express.json())
   app.use('/api/sightings', sightingsRouter(store, gate))
-  // mirror the app-level error middleware so rejected handlers 500 in tests too
-  app.use(((_err, _req, res, _next) => {
-    res.status(500).json({ error: 'internal' })
-  }) as ErrorRequestHandler)
+  app.use(errorHandler)
   return app
 }
 
@@ -216,7 +214,7 @@ describe('DELETE /api/sightings/:id', () => {
 
 describe('write gate', () => {
   const gated = () => appWith(fakeStore(), requireWriteAuth('natalie', 'sekrit'))
-  const auth = 'Basic ' + Buffer.from('natalie:sekrit').toString('base64')
+  const auth = basic('natalie', 'sekrit')
 
   it('GET is public even with a gate', async () => {
     await withServer(gated(), async (base) => {
