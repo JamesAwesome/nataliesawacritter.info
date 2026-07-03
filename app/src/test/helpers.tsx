@@ -33,7 +33,7 @@ export function stubMatchMedia(matches: boolean): { fireChange(matches: boolean)
   let current = matches
   const listeners = new Set<(e: { matches: boolean }) => void>()
   vi.stubGlobal('matchMedia', vi.fn((query: string) => ({
-    matches: current,
+    get matches() { return current },
     media: query,
     addEventListener: (_: string, fn: (e: { matches: boolean }) => void) => listeners.add(fn),
     removeEventListener: (_: string, fn: (e: { matches: boolean }) => void) => listeners.delete(fn),
