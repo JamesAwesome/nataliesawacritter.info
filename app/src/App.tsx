@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { flushSync } from 'react-dom'
 import { Header } from './components/Header'
 import { LogSightingFlow } from './components/LogSightingFlow'
 import { PlaceholderPane } from './components/PlaceholderPane'
@@ -28,11 +27,7 @@ export default function App() {
   function showToast(message: string) {
     setToast(message)
     clearTimeout(toastTimer.current)
-    // flushSync forces a synchronous commit — without it, React schedules this
-    // low-priority update via the scheduler's MessageChannel, which fake timers
-    // don't intercept, so the DOM never reflects the dismissal in tests that
-    // advance timers instead of waiting on the real event loop.
-    toastTimer.current = setTimeout(() => flushSync(() => setToast(null)), 1800)
+    toastTimer.current = setTimeout(() => setToast(null), 1800)
   }
 
   const logButton = (
@@ -49,6 +44,14 @@ export default function App() {
         <div className="columns">
           <main className="main-col">
             <div className="mobile-only">{logButton}</div>
+            {status === 'error' && (
+              <p className="flow-error">
+                Couldn't load sightings 😿{' '}
+                <button type="button" className="link-button" onClick={retry}>
+                  Retry
+                </button>
+              </p>
+            )}
             <PlaceholderPane label={PANE_LABELS[activeTab]} />
             {activeTab === 'calendar' && !isDesktop && (
               <div className="mobile-only">

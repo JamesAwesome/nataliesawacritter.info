@@ -31,4 +31,17 @@ describe('credential storage', () => {
       'Basic ' + btoa('natalie:sekrit'),
     )
   })
+
+  it('encodes non-Latin1 passwords as UTF-8 without throwing', () => {
+    const creds = { user: 'natalie', password: 'sꙮ🦊pass' }
+    let header = ''
+    expect(() => {
+      header = basicHeader(creds)
+    }).not.toThrow()
+    const b64 = header.replace('Basic ', '')
+    const decoded = new TextDecoder().decode(
+      Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)),
+    )
+    expect(decoded).toBe(`${creds.user}:${creds.password}`)
+  })
 })

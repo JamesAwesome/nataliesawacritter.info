@@ -29,6 +29,13 @@ export function clearCredentials(): void {
   localStorage.removeItem(STORAGE_KEY)
 }
 
+function toBase64Utf8(value: string): string {
+  const bytes = new TextEncoder().encode(value)
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return btoa(binary)
+}
+
 export function basicHeader(creds: Credentials): string {
-  return 'Basic ' + btoa(`${creds.user}:${creds.password}`)
+  return 'Basic ' + toBase64Utf8(`${creds.user}:${creds.password}`)
 }

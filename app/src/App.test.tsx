@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
@@ -79,7 +79,15 @@ describe('App shell', () => {
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
     expect(await screen.findByRole('status')).toBeInTheDocument()
     await vi.advanceTimersByTimeAsync(2000)
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument())
+  })
+
+  it('shows a fetch-error banner with retry on non-calendar tabs', async () => {
+    stubFetchQueue([{ status: 500, body: { error: 'internal' } }])
+    render(<App />)
+    await userEvent.click(screen.getByRole('tab', { name: 'History' }))
+    expect(await screen.findByText(/couldn't load sightings/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
   })
 
   it('renders only the sidebar RecentCritters on desktop viewports', async () => {

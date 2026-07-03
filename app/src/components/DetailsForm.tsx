@@ -63,7 +63,7 @@ export function DetailsForm({ emoji, initialName, onBack, onSave, saving }: Prop
         <button type="button" className="btn-secondary" onClick={onBack}>
           Back
         </button>
-        <button type="button" className="btn-primary" onClick={save} disabled={saving}>
+        <button type="button" className="btn-primary" onClick={save} disabled={saving || sightedOn === ''}>
           Save sighting
         </button>
       </div>

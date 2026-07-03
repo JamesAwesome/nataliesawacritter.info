@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { NewSightingInput } from '../api'
@@ -165,5 +165,66 @@ describe('LogSightingFlow', () => {
     // next save attempt uses stored creds — no prompt, no stale error
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
     expect(screen.queryByText(/wrong password/i)).not.toBeInTheDocument()
+  })
+
+  it('closing the sheet during an in-flight save (late success) does not fire onLogged', async () => {
+    setCredentials('sekrit')
+    let resolveSave: () => void = () => {}
+    const onSave = vi.fn(
+      () =>
+        new Promise<void>((res) => {
+          resolveSave = res
+        }),
+    )
+    const { onLogged } = renderFlow({ onSave })
+    await userEvent.click(screen.getByRole('button', { name: /fox/i }))
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    expect(onSave).toHaveBeenCalledTimes(1)
+
+    // abandon the in-flight save by closing the sheet
+    fireEvent.keyDown(window, { key: 'Escape' })
+
+    resolveSave()
+    await vi.waitFor(() => expect(onSave).toHaveBeenCalledTimes(1))
+
+    expect(onLogged).not.toHaveBeenCalled()
+    // back on the picker after the abandoned close
+    expect(screen.getByText('What did Natalie see?')).toBeInTheDocument()
+  })
+
+  it('closing the sheet during an in-flight save (late 401) leaves no stale prompt or error', async () => {
+    setCredentials('sekrit')
+    let rejectSave: (err: unknown) => void = () => {}
+    const onSave = vi.fn(
+      () =>
+        new Promise<void>((_res, rej) => {
+          rejectSave = rej
+        }),
+    )
+    renderFlow({ onSave })
+    await userEvent.click(screen.getByRole('button', { name: /fox/i }))
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    expect(onSave).toHaveBeenCalledTimes(1)
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+
+    rejectSave(new ApiError(401))
+    await Promise.resolve()
+    await Promise.resolve()
+
+    // re-pick after the abandoned close — no stale prompt/error should surface
+    await userEvent.click(screen.getByRole('button', { name: /fox/i }))
+    expect(screen.queryByText(/wrong password/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
+  })
+
+  it('disables Save and blocks submission when the date is cleared', async () => {
+    const { onSave } = renderFlow()
+    await userEvent.click(screen.getByRole('button', { name: /fox/i }))
+    const dateInput = screen.getByLabelText(/date/i)
+    fireEvent.change(dateInput, { target: { value: '' } })
+    expect(screen.getByRole('button', { name: /save sighting/i })).toBeDisabled()
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    expect(onSave).not.toHaveBeenCalled()
   })
 })

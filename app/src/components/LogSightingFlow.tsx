@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ApiError, type NewSightingInput } from '../api'
 import { basicHeader, clearCredentials, getCredentials, setCredentials } from '../auth'
 import { PasswordPrompt } from './PasswordPrompt'
@@ -21,6 +21,7 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged }: Props) {
   const [promptError, setPromptError] = useState<string | null>(null)
   const [flowError, setFlowError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const sessionRef = useRef(0)
 
   function reset() {
     setPicked(null)
@@ -31,11 +32,14 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged }: Props) {
   }
 
   function close() {
+    sessionRef.current += 1
     reset()
     onClose()
   }
 
   async function attemptSave(fields: NewSightingInput, password?: string) {
+    if (saving) return
+    const session = sessionRef.current
     const creds = password !== undefined ? { user: 'natalie', password } : getCredentials()
     if (creds === null) {
       setPendingFields(fields)
@@ -46,9 +50,11 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged }: Props) {
     if (password !== undefined) setCredentials(password)
     try {
       await onSave(fields, basicHeader(creds))
+      if (session !== sessionRef.current) return
       reset()
       onLogged()
     } catch (err) {
+      if (session !== sessionRef.current) return
       setSaving(false)
       if (err instanceof ApiError && err.status === 401) {
         clearCredentials()
