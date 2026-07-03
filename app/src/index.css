@@ -1,3 +1,52 @@
+:root {
+  /* Rainbow Sherbet tokens — docs/design/README.md "Design Tokens" */
+  --ink: #4a3b63;
+  --ink-secondary: #9aa8c7;
+  --border-hairline: #e3ecfa;
+  --rainbow: linear-gradient(
+    90deg,
+    #ffd1dc,
+    #ffe1b8,
+    #fff6b8,
+    #d7f5c8,
+    #c8f0e4,
+    #c7e3fa,
+    #d9cff2
+  );
+}
+
 body {
   margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #eaf6ff, #fdf1ff);
+  color: var(--ink);
+  font-family: 'Quicksand', sans-serif;
+}
+
+.shell {
+  max-width: 420px;
+  margin: 48px auto;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(70, 90, 140, 0.22);
+  overflow: hidden;
+}
+
+.header {
+  background: var(--rainbow);
+  padding: 18px;
+  text-align: center;
+}
+
+.header h1 {
+  margin: 0;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.status {
+  padding: 24px;
+  text-align: center;
+  font-weight: 600;
 }
