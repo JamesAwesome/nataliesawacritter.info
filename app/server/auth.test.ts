@@ -1,7 +1,7 @@
 import express from 'express'
 import { describe, expect, it } from 'vitest'
 import { requireWriteAuth } from './auth.js'
-import { withServer } from './testUtils.js'
+import { basic, withServer } from './testUtils.js'
 
 function appWithAuth() {
   const app = express()
@@ -9,10 +9,6 @@ function appWithAuth() {
     res.json({ ok: true })
   })
   return app
-}
-
-function basic(user: string, pass: string) {
-  return 'Basic ' + Buffer.from(`${user}:${pass}`).toString('base64')
 }
 
 describe('requireWriteAuth', () => {

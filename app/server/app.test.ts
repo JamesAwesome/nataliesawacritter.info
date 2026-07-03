@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createApp, type AppDeps } from './app.js'
-import { withServer } from './testUtils.js'
+import { basic, withServer } from './testUtils.js'
 import type { SightingsStore } from './sightings/store.js'
 
 function fakeStore(): SightingsStore {
@@ -83,7 +83,7 @@ describe('sightings wiring', () => {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          authorization: 'Basic ' + Buffer.from('natalie:sekrit').toString('base64'),
+          authorization: basic('natalie', 'sekrit'),
         },
         body: JSON.stringify({ emoji: '🦊', sightedOn: '2026-07-03' }),
       })

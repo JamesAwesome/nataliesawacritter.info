@@ -11,9 +11,9 @@
     "build": "tsc -b && vite build && tsc -p tsconfig.server.build.json",
     "lint": "eslint .",
     "typecheck": "tsc -b && tsc -p tsconfig.server.json --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test": "NODE_OPTIONS=--no-experimental-webstorage vitest run",
+    "test:watch": "NODE_OPTIONS=--no-experimental-webstorage vitest",
+    "test:coverage": "NODE_OPTIONS=--no-experimental-webstorage vitest run --coverage",
     "db:generate": "drizzle-kit generate",
     "start": "node dist/server/index.js"
   },

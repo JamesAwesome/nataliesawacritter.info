@@ -1,22 +1,17 @@
-import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql'
-import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { createTestDb } from '../testDb.js'
 import { createDb } from './index.js'
 import { sightings } from './schema.js'
 
 describe('migrations + sightings table', () => {
-  let container: StartedPostgreSqlContainer
   let handle: ReturnType<typeof createDb>
 
   beforeAll(async () => {
-    container = await new PostgreSqlContainer('postgres:18.4').start()
-    handle = createDb(container.getConnectionUri())
-    await migrate(handle.db, { migrationsFolder: 'drizzle' })
+    handle = await createTestDb()
   })
 
   afterAll(async () => {
     await handle?.pool.end()
-    await container?.stop()
   })
 
   it('inserts a sighting and reads it back', async () => {

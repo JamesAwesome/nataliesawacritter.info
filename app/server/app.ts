@@ -1,6 +1,7 @@
 import path from 'node:path'
-import express, { type ErrorRequestHandler, type Express, type RequestHandler } from 'express'
+import express, { type Express, type RequestHandler } from 'express'
 import { requireWriteAuth } from './auth.js'
+import { errorHandler } from './errorHandler.js'
 import { sightingsRouter } from './sightings/routes.js'
 import type { SightingsStore } from './sightings/store.js'
 
@@ -54,21 +55,7 @@ export function createApp(deps: AppDeps): Express {
     })
   }
 
-  // Sanitized catch-all: store/db failures log server-side, clients get no details.
-  // Body-parser 4xx errors (malformed JSON → 400, oversized body → 413) pass their status through.
-  app.use(((err, _req, res, next) => {
-    if (res.headersSent) {
-      next(err)
-      return
-    }
-    const status =
-      typeof err === 'object' && err !== null && 'status' in err &&
-      typeof err.status === 'number' && err.status >= 400 && err.status < 500
-        ? err.status
-        : 500
-    if (status === 500) console.error('unhandled error:', err)
-    res.status(status).json(status === 500 ? { error: 'internal' } : { error: 'bad request' })
-  }) as ErrorRequestHandler)
+  app.use(errorHandler)
 
   return app
 }
