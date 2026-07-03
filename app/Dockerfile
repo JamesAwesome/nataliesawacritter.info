@@ -1,6 +1,7 @@
-FROM node:24.18.0-slim AS build
+FROM node:26.4.0-slim AS build
 
-RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
+# Node 25+ images no longer bundle corepack; install pnpm directly.
+RUN npm install -g pnpm@11.9.0
 
 WORKDIR /app
 
@@ -10,9 +11,9 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
-FROM node:24.18.0-slim
+FROM node:26.4.0-slim
 
-RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
+RUN npm install -g pnpm@11.9.0
 
 WORKDIR /app
 

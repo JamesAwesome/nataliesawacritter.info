@@ -17,7 +17,7 @@ the `pgdata` named volume; only `docker compose down -v` destroys it.
 ## Prerequisites
 
 - Docker (with compose)
-- Node 24 + pnpm 11 (`corepack enable`) — only needed for development
+- Node 26 + pnpm 11 (`npm install -g pnpm`) — only needed for development
 
 ## Running it
 
