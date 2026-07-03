@@ -90,4 +90,28 @@ describe('sightings wiring', () => {
       expect(res.status).toBe(201)
     })
   })
+
+  it('returns a sanitized 500 when the store rejects', async () => {
+    const store = fakeStore()
+    store.list = vi.fn(async () => {
+      throw new Error('db exploded')
+    })
+    await withServer(createApp(deps({ sightingsStore: store })), async (base) => {
+      const res = await fetch(`${base}/api/sightings`)
+      expect(res.status).toBe(500)
+      expect(await res.json()).toEqual({ error: 'internal' })
+    })
+  })
+
+  it('returns 400 for malformed JSON bodies', async () => {
+    await withServer(createApp(deps()), async (base) => {
+      const res = await fetch(`${base}/api/sightings`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: '{not json',
+      })
+      expect(res.status).toBe(400)
+      expect(await res.json()).toEqual({ error: 'bad request' })
+    })
+  })
 })

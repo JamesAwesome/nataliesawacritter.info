@@ -159,6 +159,21 @@ describe('POST /api/sightings', () => {
     })
   })
 
+  it('400s a body with a __proto__ field', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      const res = await fetch(`${base}/api/sightings`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: '{"emoji":"🦊","sightedOn":"2026-07-03","__proto__":{"x":1}}',
+      })
+      expect(res.status).toBe(400)
+      const parsed = (await res.json()) as ValidationEnvelope
+      expect(parsed.details.__proto__).toBe('unknown field')
+      expect(store.create).not.toHaveBeenCalled()
+    })
+  })
+
   it('500s with a sanitized envelope when the store rejects', async () => {
     const store = fakeStore({ create: vi.fn(async () => { throw new Error('db down') }) })
     await withServer(appWith(store), async (base) => {

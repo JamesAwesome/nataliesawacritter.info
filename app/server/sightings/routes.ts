@@ -21,7 +21,7 @@ const KNOWN_FIELDS = new Set(['emoji', 'sightedOn', ...Object.keys(OPTIONAL_LIMI
 function parseNewSighting(body: unknown):
   | { ok: true; fields: NewSighting }
   | { ok: false; details: Record<string, string> } {
-  const details: Record<string, string> = {}
+  const details = Object.create(null) as Record<string, string>
   if (typeof body !== 'object' || body === null || Array.isArray(body)) {
     return { ok: false, details: { body: 'must be a JSON object' } }
   }
@@ -64,7 +64,7 @@ export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler
   const router = Router()
 
   router.get('/', async (req, res) => {
-    const details: Record<string, string> = {}
+    const details = Object.create(null) as Record<string, string>
     const parseBound = (value: unknown, key: 'from' | 'to'): string | undefined => {
       if (value === undefined) return undefined
       if (typeof value !== 'string' || !isValidDate(value)) {

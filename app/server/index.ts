@@ -20,7 +20,10 @@ const writePassword = process.env.WRITE_PASSWORD ?? ''
 const writeCredentials =
   writeUser !== '' && writePassword !== '' ? { user: writeUser, password: writePassword } : null
 if (!writeCredentials) {
-  console.warn('WRITE_USER/WRITE_PASSWORD not set — write endpoints disabled (503)')
+  const missing = [writeUser === '' ? 'WRITE_USER' : null, writePassword === '' ? 'WRITE_PASSWORD' : null]
+    .filter(Boolean)
+    .join(' and ')
+  console.warn(`${missing} not set — write endpoints disabled (503)`)
 }
 
 const app = createApp({
