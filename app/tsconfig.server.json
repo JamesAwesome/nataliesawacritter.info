@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "dist/server",
+    "rootDir": "server",
+    "declaration": false,
+    "sourceMap": false,
+    "verbatimModuleSyntax": true,
+    "types": ["node"]
+  },
+  "include": ["server"]
+}

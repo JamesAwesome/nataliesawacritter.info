@@ -1,0 +1,8 @@
+allowBuilds:
+  cpu-features: true
+  esbuild: true
+  protobufjs: true
+  ssh2: true
+minimumReleaseAgeExclude:
+  - tsx@4.22.5
+  - vite@8.1.3
