@@ -8,7 +8,7 @@
     "preinstall": "npx only-allow pnpm",
     "dev": "vite",
     "dev:server": "tsx watch server/index.ts",
-    "build": "tsc -b && vite build && tsc -p tsconfig.server.json",
+    "build": "tsc -b && vite build && tsc -p tsconfig.server.build.json",
     "lint": "eslint .",
     "typecheck": "tsc -b && tsc -p tsconfig.server.json --noEmit",
     "test": "vitest run",
