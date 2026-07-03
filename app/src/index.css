@@ -66,3 +66,116 @@ body {
   text-align: center;
   font-weight: 600;
 }
+
+/* Sheet / modal — mobile bottom sheet, desktop centered (design §Sheet) */
+.sheet-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 20;
+}
+
+.sheet {
+  background: #fff;
+  width: 100%;
+  border-radius: 26px 26px 0 0;
+  padding: 10px 18px 22px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.sheet-handle {
+  width: 36px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--border-hairline);
+  margin: 0 auto 10px;
+}
+
+@media (min-width: 880px) {
+  .sheet-scrim {
+    align-items: center;
+  }
+  .sheet {
+    max-width: 460px;
+    border-radius: 24px;
+  }
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--toast-bg);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+  z-index: 30;
+}
+
+.password-prompt h3 {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  margin: 4px 0 10px;
+}
+
+.password-prompt label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+}
+
+.password-prompt input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+  padding: 10px;
+  border: 1px solid var(--border-hairline);
+  border-radius: 14px;
+  background: var(--surface-input);
+  font: inherit;
+}
+
+.password-error {
+  color: var(--danger-text);
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.password-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--save-gradient);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: var(--surface-input);
+  color: var(--ink);
+  border: 1px solid var(--border-hairline);
+}
