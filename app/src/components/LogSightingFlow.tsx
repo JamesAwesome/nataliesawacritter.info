@@ -43,9 +43,9 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged }: Props) {
     }
     setSaving(true)
     setFlowError(null)
+    if (password !== undefined) setCredentials(password)
     try {
       await onSave(fields, basicHeader(creds))
-      if (password !== undefined) setCredentials(password)
       reset()
       onLogged()
     } catch (err) {
@@ -94,6 +94,7 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged }: Props) {
                 onSubmit={(password) => {
                   const fields = pendingFields
                   setPendingFields(null)
+                  setPromptError(null)
                   void attemptSave(fields, password)
                 }}
               />

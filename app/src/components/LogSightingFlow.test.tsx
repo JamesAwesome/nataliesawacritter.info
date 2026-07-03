@@ -148,4 +148,22 @@ describe('LogSightingFlow', () => {
       expect.any(String),
     )
   })
+
+  it('stores a prompted password before the POST so a 503 does not discard it', async () => {
+    const { onLogged } = renderFlow({
+      onSave: vi.fn(async () => {
+        throw new ApiError(503)
+      }),
+    })
+    await userEvent.click(screen.getByRole('button', { name: /fox/i }))
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    await userEvent.type(screen.getByLabelText(/password/i), 'sekrit')
+    await userEvent.click(screen.getByRole('button', { name: /^save$/i }))
+    expect(await screen.findByText(/saving is disabled right now/i)).toBeInTheDocument()
+    expect(localStorage.getItem('critter-write-auth')).not.toBeNull()
+    expect(onLogged).not.toHaveBeenCalled()
+    // next save attempt uses stored creds — no prompt, no stale error
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    expect(screen.queryByText(/wrong password/i)).not.toBeInTheDocument()
+  })
 })
