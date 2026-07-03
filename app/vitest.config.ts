@@ -31,6 +31,12 @@ export default defineConfig({
         test: {
           name: 'client',
           environment: 'jsdom',
+          environmentOptions: {
+            jsdom: {
+              url: 'http://localhost',
+              pretendToBeVisual: true,
+            },
+          },
           globals: true,
           setupFiles: './src/test/setup.ts',
           include: ['src/**/*.test.{ts,tsx}'],
