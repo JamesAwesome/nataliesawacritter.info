@@ -1,10 +1,30 @@
-import { describe, expect, it } from 'vitest'
-import { createApp } from './app.js'
+import { describe, expect, it, vi } from 'vitest'
+import { createApp, type AppDeps } from './app.js'
 import { withServer } from './testUtils.js'
+import type { SightingsStore } from './sightings/store.js'
+
+function fakeStore(): SightingsStore {
+  return {
+    list: vi.fn(async () => []),
+    create: vi.fn(async () => {
+      throw new Error('unused')
+    }),
+    remove: vi.fn(async () => true),
+  }
+}
+
+function deps(overrides: Partial<AppDeps> = {}): AppDeps {
+  return {
+    checkDb: async () => {},
+    sightingsStore: fakeStore(),
+    writeCredentials: null,
+    ...overrides,
+  }
+}
 
 describe('GET /api/health', () => {
   it('returns 200 {ok, db: true} when the db responds', async () => {
-    const app = createApp({ checkDb: async () => {} })
+    const app = createApp(deps())
     await withServer(app, async (base) => {
       const res = await fetch(`${base}/api/health`)
       expect(res.status).toBe(200)
@@ -13,11 +33,7 @@ describe('GET /api/health', () => {
   })
 
   it('returns 503 {ok: false, db: false} when the db check throws', async () => {
-    const app = createApp({
-      checkDb: async () => {
-        throw new Error('connection refused')
-      },
-    })
+    const app = createApp(deps({ checkDb: async () => { throw new Error('connection refused') } }))
     await withServer(app, async (base) => {
       const res = await fetch(`${base}/api/health`)
       expect(res.status).toBe(503)
@@ -26,11 +42,52 @@ describe('GET /api/health', () => {
   })
 
   it('returns JSON 404 for unknown /api routes', async () => {
-    const app = createApp({ checkDb: async () => {} })
+    const app = createApp(deps())
     await withServer(app, async (base) => {
       const res = await fetch(`${base}/api/nope`)
       expect(res.status).toBe(404)
       expect(await res.json()).toEqual({ error: 'not found' })
+    })
+  })
+})
+
+describe('sightings wiring', () => {
+  it('serves GET /api/sightings through the app', async () => {
+    await withServer(createApp(deps()), async (base) => {
+      const res = await fetch(`${base}/api/sightings`)
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual([])
+    })
+  })
+
+  it('returns 503 writes-disabled when credentials are absent', async () => {
+    await withServer(createApp(deps()), async (base) => {
+      const res = await fetch(`${base}/api/sightings`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ emoji: '🦊', sightedOn: '2026-07-03' }),
+      })
+      expect(res.status).toBe(503)
+      expect(await res.json()).toEqual({ error: 'writes disabled' })
+    })
+  })
+
+  it('accepts authenticated writes when credentials are configured', async () => {
+    const store = fakeStore()
+    store.create = vi.fn(async (fields) => ({
+      ...fields, id: '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa', photoPath: null, createdAt: new Date(),
+    }))
+    const app = createApp(deps({ sightingsStore: store, writeCredentials: { user: 'natalie', password: 'sekrit' } }))
+    await withServer(app, async (base) => {
+      const res = await fetch(`${base}/api/sightings`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: 'Basic ' + Buffer.from('natalie:sekrit').toString('base64'),
+        },
+        body: JSON.stringify({ emoji: '🦊', sightedOn: '2026-07-03' }),
+      })
+      expect(res.status).toBe(201)
     })
   })
 })
