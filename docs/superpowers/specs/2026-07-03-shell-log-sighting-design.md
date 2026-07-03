@@ -140,3 +140,10 @@ swipe-to-dismiss on the sheet.
 - All tests green (`pnpm test`), lint/typecheck/build green, CI green on the PR.
 - Visual check against `docs/design/screenshots/log-sighting.png` and the prototype's
   shell at both breakpoints.
+
+## Post-implementation notes (2026-07-03)
+
+Accepted deviations from this spec, adjudicated in review:
+- Write-path errors (503/network/400) surface as an inline message inside the sheet, not an error toast — keeps the error adjacent to the preserved draft (the spec's toast wording is superseded).
+- Desktop/mobile branching uses a `matchMedia` hook (`useIsDesktop`, 880px, sync-guarded against the CSS breakpoint by test) rather than CSS-only visibility — matches the design handoff's own JS width-check prescription.
+- `listSightings()` ships without the `range` param until the History cycle needs it.
