@@ -179,3 +179,120 @@ body {
   color: var(--ink);
   border: 1px solid var(--border-hairline);
 }
+
+.sheet-heading {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  margin: 4px 0 12px;
+}
+
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.picker-grid-extended {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.picker-tile {
+  aspect-ratio: 1;
+  border-radius: 14px;
+  border: 1px solid var(--border-hairline);
+  background: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.picker-other {
+  border: 1px dashed var(--other-border);
+  background: var(--surface-input);
+  color: var(--other-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.picker-divider {
+  border: none;
+  border-top: 1px solid var(--border-hairline);
+  margin: 14px 0;
+}
+
+.flow-cancel {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.flow-error {
+  color: var(--danger-text);
+  background: var(--danger-bg);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.flow-details {
+  position: relative;
+}
+
+.prompt-overlay {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  border-radius: 14px;
+}
+
+.details-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.details-emoji {
+  font-size: 34px;
+}
+
+.details-row {
+  display: flex;
+  gap: 10px;
+}
+
+.details-row .field {
+  flex: 1;
+}
+
+.field {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+}
+
+.field.grow {
+  flex: 1;
+  margin-top: 0;
+}
+
+.field input,
+.field textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+  padding: 10px;
+  border: 1px solid var(--border-hairline);
+  border-radius: 14px;
+  background: var(--surface-input);
+  font: inherit;
+  color: var(--ink);
+}
+
+.details-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
