@@ -2,17 +2,33 @@
   /* Rainbow Sherbet tokens — docs/design/README.md "Design Tokens" */
   --ink: #4a3b63;
   --ink-secondary: #9aa8c7;
+  --ink-tertiary: #afc0de;
   --border-hairline: #e3ecfa;
+  --surface-input: #f0f7ff;
+  --tab-calendar: #8fb8ff;
+  --tab-history: #5fbfa6;
+  --tab-leaderboard: #b79bf2;
+  --danger-text: #d2555c;
+  --danger-bg: #ffe3e3;
+  --toast-bg: #4a5f8e;
+  --other-border: #9db6e8;
+  --other-text: #5f80c7;
+  --scrim: rgba(70, 90, 140, 0.28);
+  --shadow-shell: 0 20px 50px rgba(70, 90, 140, 0.22);
+  --shadow-card: 0 4px 14px rgba(90, 100, 150, 0.08);
+  --tint-pink: #ffd1dc;
+  --tint-peach: #ffe1b8;
+  --tint-yellow: #fff6b8;
+  --tint-mint: #d7f5c8;
+  --tint-aqua: #c8f0e4;
+  --tint-sky: #c7e3fa;
+  --tint-lavender: #d9cff2;
+  --tint-orchid: #f3cdee;
   --rainbow: linear-gradient(
     90deg,
-    #ffd1dc,
-    #ffe1b8,
-    #fff6b8,
-    #d7f5c8,
-    #c8f0e4,
-    #c7e3fa,
-    #d9cff2
+    #ffd1dc, #ffe1b8, #fff6b8, #d7f5c8, #c8f0e4, #c7e3fa, #d9cff2
   );
+  --save-gradient: linear-gradient(135deg, #8fd8c4, #8fb8ff);
 }
 
 body {
