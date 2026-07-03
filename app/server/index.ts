@@ -1,6 +1,7 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { createApp } from './app.js'
 import { createDb } from './db/index.js'
+import { createSightingsStore } from './sightings/store.js'
 
 const connectionString = process.env.DATABASE_URL
 if (!connectionString) {
@@ -14,10 +15,23 @@ const { pool, db } = createDb(connectionString)
 await migrate(db, { migrationsFolder: 'drizzle' })
 console.log('migrations up to date')
 
+const writeUser = process.env.WRITE_USER ?? ''
+const writePassword = process.env.WRITE_PASSWORD ?? ''
+const writeCredentials =
+  writeUser !== '' && writePassword !== '' ? { user: writeUser, password: writePassword } : null
+if (!writeCredentials) {
+  const missing = [writeUser === '' ? 'WRITE_USER' : null, writePassword === '' ? 'WRITE_PASSWORD' : null]
+    .filter(Boolean)
+    .join(' and ')
+  console.warn(`${missing} not set — write endpoints disabled (503)`)
+}
+
 const app = createApp({
   checkDb: async () => {
     await pool.query('SELECT 1')
   },
+  sightingsStore: createSightingsStore(db),
+  writeCredentials,
 })
 
 const port = Number(process.env.PORT ?? 8080)

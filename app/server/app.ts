@@ -1,9 +1,19 @@
 import path from 'node:path'
-import express, { type Express } from 'express'
+import express, { type ErrorRequestHandler, type Express, type RequestHandler } from 'express'
+import { requireWriteAuth } from './auth.js'
+import { sightingsRouter } from './sightings/routes.js'
+import type { SightingsStore } from './sightings/store.js'
 
 export interface AppDeps {
   /** Resolves if the database is reachable, throws otherwise. */
   checkDb: () => Promise<void>
+  sightingsStore: SightingsStore
+  /** null → write endpoints respond 503 "writes disabled" (deny by default). */
+  writeCredentials: { user: string; password: string } | null
+}
+
+const writesDisabled: RequestHandler = (_req, res) => {
+  res.status(503).json({ error: 'writes disabled' })
 }
 
 export function createApp(deps: AppDeps): Express {
@@ -19,6 +29,11 @@ export function createApp(deps: AppDeps): Express {
       res.status(503).json({ ok: false, db: false })
     }
   })
+
+  const writeGate = deps.writeCredentials
+    ? requireWriteAuth(deps.writeCredentials.user, deps.writeCredentials.password)
+    : writesDisabled
+  app.use('/api/sightings', sightingsRouter(deps.sightingsStore, writeGate))
 
   const clientDir = path.resolve(import.meta.dirname, '../client')
   app.use((req, res, next) => {
@@ -38,6 +53,22 @@ export function createApp(deps: AppDeps): Express {
       res.sendFile('index.html', { root: clientDir })
     })
   }
+
+  // Sanitized catch-all: store/db failures log server-side, clients get no details.
+  // Body-parser 4xx errors (malformed JSON → 400, oversized body → 413) pass their status through.
+  app.use(((err, _req, res, next) => {
+    if (res.headersSent) {
+      next(err)
+      return
+    }
+    const status =
+      typeof err === 'object' && err !== null && 'status' in err &&
+      typeof err.status === 'number' && err.status >= 400 && err.status < 500
+        ? err.status
+        : 500
+    if (status === 500) console.error('unhandled error:', err)
+    res.status(status).json(status === 500 ? { error: 'internal' } : { error: 'bad request' })
+  }) as ErrorRequestHandler)
 
   return app
 }

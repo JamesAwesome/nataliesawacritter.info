@@ -16,6 +16,9 @@ function reject(res: Response) {
 }
 
 export function requireWriteAuth(user: string, password: string): RequestHandler {
+  if (!user || !password) {
+    throw new Error('requireWriteAuth requires non-empty user and password')
+  }
   return (req: Request, res: Response, next: NextFunction) => {
     const header = req.headers.authorization ?? ''
     if (!header.startsWith('Basic ')) {

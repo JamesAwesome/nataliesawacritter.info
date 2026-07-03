@@ -64,4 +64,22 @@ describe('requireWriteAuth', () => {
       expect(await res.json()).toEqual({ ok: true })
     })
   })
+
+  it('rejects a Basic header whose payload has no colon', async () => {
+    await withServer(appWithAuth(), async (base) => {
+      const res = await fetch(`${base}/api/protected`, {
+        method: 'POST',
+        headers: { authorization: 'Basic ' + Buffer.from('nataliesekrit').toString('base64') },
+      })
+      expect(res.status).toBe(401)
+    })
+  })
+
+  it('throws when constructed with an empty user', () => {
+    expect(() => requireWriteAuth('', 'sekrit')).toThrow(/non-empty/)
+  })
+
+  it('throws when constructed with an empty password', () => {
+    expect(() => requireWriteAuth('natalie', '')).toThrow(/non-empty/)
+  })
 })
