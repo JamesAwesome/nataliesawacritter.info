@@ -29,6 +29,8 @@
     #ffd1dc, #ffe1b8, #fff6b8, #d7f5c8, #c8f0e4, #c7e3fa, #d9cff2
   );
   --save-gradient: linear-gradient(135deg, #8fd8c4, #8fb8ff);
+  --calendar-strip: linear-gradient(90deg, #ffd6e8, #ffe9c7, #e8ffdb, #d3f0ff, #e6dbff);
+  --out-of-month: #f5f8fc;
 }
 
 body {
@@ -424,4 +426,96 @@ body {
   .sheet {
     animation: none;
   }
+}
+
+.calendar-card {
+  overflow: hidden;
+}
+
+.calendar-strip {
+  height: 5px;
+  background: var(--calendar-strip);
+}
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 8px;
+}
+
+.calendar-head h2 {
+  margin: 0;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.month-nav {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--border-hairline);
+  background: var(--surface-input);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  padding: 0 14px 14px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-tertiary);
+  padding: 4px 0;
+}
+
+.day-cell {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 1px solid var(--border-hairline);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 3px 0 0;
+  font: inherit;
+  overflow: hidden;
+}
+
+button.day-cell {
+  cursor: pointer;
+}
+
+.day-cell.has-sightings {
+  background: var(--surface-input);
+}
+
+.day-cell.today {
+  border-color: var(--tab-calendar);
+}
+
+.day-cell.out-month {
+  background: var(--out-of-month);
+  opacity: 0.35;
+}
+
+.day-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+}
+
+.day-emoji {
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
 }
