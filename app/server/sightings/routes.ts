@@ -10,6 +10,14 @@ function isValidDate(value: string): boolean {
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
 }
 
+/** Latest permitted sightedOn: UTC today + 1 day (grace for clients ahead of UTC). */
+function maxAllowedDate(): string {
+  const now = new Date()
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1))
+    .toISOString()
+    .slice(0, 10)
+}
+
 function sendValidation(res: Response, details: Record<string, string>) {
   res.status(400).json({ error: 'validation', details })
 }
@@ -39,6 +47,8 @@ function parseNewSighting(body: unknown):
   const sightedOn = record.sightedOn
   if (typeof sightedOn !== 'string' || !isValidDate(sightedOn)) {
     details.sightedOn = 'required, must be YYYY-MM-DD'
+  } else if (sightedOn > maxAllowedDate()) {
+    details.sightedOn = 'must not be in the future'
   }
 
   const optionals = {} as Record<OptionalField, string | null>
