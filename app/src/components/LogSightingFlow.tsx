@@ -11,11 +11,12 @@ type Props = {
   onClose: () => void
   onSave: (fields: NewSightingInput, authHeader: string) => Promise<void>
   onLogged: () => void
+  recent?: string[]
 }
 
 type Picked = { emoji: string; name: string | null }
 
-export function LogSightingFlow({ open, onClose, onSave, onLogged }: Props) {
+export function LogSightingFlow({ open, onClose, onSave, onLogged, recent = [] }: Props) {
   const [picked, setPicked] = useState<Picked | null>(null)
   const write = useWriteAction({
     disabled: 'Saving is disabled right now',
@@ -46,7 +47,7 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged }: Props) {
   return (
     <Sheet open={open} onClose={close}>
       {picked === null ? (
-        <EmojiPicker onPick={(emoji, name) => setPicked({ emoji, name })} onCancel={close} />
+        <EmojiPicker recent={recent} onPick={(emoji, name) => setPicked({ emoji, name })} onCancel={close} />
       ) : (
         <div className="flow-details">
           {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
