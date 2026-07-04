@@ -35,6 +35,7 @@ export function leaderboard(sightings: Sighting[]): LeaderRow[] {
 
 /** Distinct emoji ordered by most-recent createdAt, first `limit` kept. */
 export function recentEmoji(sightings: Sighting[], limit: number): string[] {
+  if (limit <= 0) return []
   const byRecency = [...sightings].sort((a, b) =>
     a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0,
   )

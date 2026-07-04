@@ -79,4 +79,8 @@ describe('recentEmoji', () => {
     expect(recentEmoji(rows, 2)).toEqual(['🦌', '🦉'])
     expect(recentEmoji([], 6)).toEqual([])
   })
+
+  it('returns empty for a non-positive limit', () => {
+    expect(recentEmoji([makeSighting({ emoji: '🦊' })], 0)).toEqual([])
+  })
 })
