@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, createSighting, deleteSighting, listSightings } from './api'
+import { ApiError, createProfile, createSighting, deleteProfile, deleteSighting, listProfiles, listSightings } from './api'
 import { makeSighting, stubFetchQueue } from './test/helpers'
 
 afterEach(() => {
@@ -67,5 +67,41 @@ describe('deleteSighting', () => {
   it('throws ApiError with status on failure', async () => {
     stubFetchQueue([{ status: 401, body: { error: 'unauthorized' } }])
     await expect(deleteSighting('abc-id', 'Basic bad')).rejects.toMatchObject({ status: 401 })
+  })
+})
+
+const PROFILE = {
+  id: '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa',
+  emoji: '🦊',
+  name: 'Mr Fox',
+  place: 'train station',
+  createdAt: '2026-07-04T12:00:00.000Z',
+}
+
+describe('profiles api', () => {
+  it('lists, creates with auth, and deletes', async () => {
+    let mock = stubFetchQueue([{ status: 200, body: [PROFILE] }])
+    await expect(listProfiles()).resolves.toEqual([PROFILE])
+    expect(mock).toHaveBeenCalledWith('/api/profiles')
+
+    mock = stubFetchQueue([{ status: 201, body: PROFILE }])
+    await expect(createProfile({ emoji: '🦊', name: 'Mr Fox', place: 'train station' }, 'Basic x')).resolves.toEqual(PROFILE)
+    expect(mock).toHaveBeenCalledWith('/api/profiles', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Basic x' },
+      body: JSON.stringify({ emoji: '🦊', name: 'Mr Fox', place: 'train station' }),
+    })
+
+    mock = stubFetchQueue([{ status: 204, body: null }])
+    await expect(deleteProfile(PROFILE.id, 'Basic x')).resolves.toBeUndefined()
+    expect(mock).toHaveBeenCalledWith(`/api/profiles/${PROFILE.id}`, {
+      method: 'DELETE',
+      headers: { authorization: 'Basic x' },
+    })
+  })
+
+  it('throws ApiError with status on conflict', async () => {
+    stubFetchQueue([{ status: 409, body: { error: 'conflict' } }])
+    await expect(createProfile({ emoji: '🦊', name: 'Mr Fox' }, 'Basic x')).rejects.toMatchObject({ status: 409 })
   })
 })
