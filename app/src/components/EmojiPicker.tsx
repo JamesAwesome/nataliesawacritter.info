@@ -1,16 +1,35 @@
 import { useState } from 'react'
-import { CURATED, EXTENDED } from '../lib/critters'
+import { CURATED, EXTENDED, nameFor } from '../lib/critters'
 
 type Props = {
+  recent: string[]
   onPick: (emoji: string, name: string | null) => void
   onCancel: () => void
 }
 
-export function EmojiPicker({ onPick, onCancel }: Props) {
+export function EmojiPicker({ recent, onPick, onCancel }: Props) {
   const [showExtended, setShowExtended] = useState(false)
   return (
     <div className="emoji-picker">
       <h2 className="sheet-heading">What did Natalie see?</h2>
+      {recent.length > 0 && (
+        <>
+          <h3 className="picker-recent-heading">Recently seen</h3>
+          <div className="picker-grid picker-grid-recent">
+            {recent.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                className="picker-tile"
+                aria-label={`Recently seen ${nameFor(emoji) ?? emoji}`}
+                onClick={() => onPick(emoji, nameFor(emoji))}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       <div className="picker-grid">
         {CURATED.map((c) => (
           <button

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Sighting } from '../api'
 import { addMonths, currentYearMonth, monthGrid, monthLabel, todayString } from '../lib/calendar'
 import { formatDay } from '../lib/format'
@@ -12,7 +12,12 @@ type Props = {
 
 export function CalendarPane({ sightings, onDayOpen }: Props) {
   const [visible, setVisible] = useState(currentYearMonth)
-  const cells = monthGrid(visible.year, visible.month, sightings, todayString())
+  // Memoized: the pane stays mounted (hidden) on other tabs; recompute the grid
+  // only when the visible month or the sightings actually change.
+  const cells = useMemo(
+    () => monthGrid(visible.year, visible.month, sightings, todayString()),
+    [visible.year, visible.month, sightings],
+  )
 
   return (
     <section className="card calendar-card">

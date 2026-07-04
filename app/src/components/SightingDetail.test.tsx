@@ -88,4 +88,17 @@ describe('SightingDetail', () => {
     await userEvent.click(screen.getByRole('button', { name: /back/i }))
     expect(onBack).toHaveBeenCalledTimes(1)
   })
+
+  it('re-prompts for the password when delete returns 401', async () => {
+    setCredentials('wrong')
+    renderDetail({
+      removeSighting: vi.fn(async () => {
+        throw new ApiError(401)
+      }),
+    })
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Really delete?' }))
+    expect(await screen.findByLabelText(/password/i)).toBeInTheDocument()
+    expect(localStorage.getItem('critter-write-auth')).toBeNull()
+  })
 })
