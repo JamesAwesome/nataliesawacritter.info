@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CalendarPane } from './components/CalendarPane'
 import { DayDetail } from './components/DayDetail'
 import { Header } from './components/Header'
@@ -25,6 +25,10 @@ export default function App() {
   const { sightings, status, addSighting, removeSighting, retry } = useSightings()
   const isDesktop = useIsDesktop()
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
+  // Derivations reused in JSX below; memoized so unrelated re-renders (toast,
+  // sheet open/close) don't recompute them.
+  const topTen = useMemo(() => leaderboard(sightings).slice(0, 10), [sightings])
+  const recent = useMemo(() => recentEmoji(sightings, 6), [sightings])
   const [sheet, setSheet] = useState<SheetState>(null)
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -92,7 +96,7 @@ export default function App() {
             {isDesktop && sightings.length > 0 && (
               <>
                 <h2 className="sidebar-heading">Top Critters</h2>
-                <LeaderboardList rows={leaderboard(sightings).slice(0, 10)} />
+                <LeaderboardList rows={topTen} />
               </>
             )}
           </aside>
@@ -106,7 +110,7 @@ export default function App() {
           setSheet(null)
           showToast('🎉 Logged!')
         }}
-        recent={recentEmoji(sightings, 6)}
+        recent={recent}
       />
       {sheet?.kind === 'day' && (
         <Sheet open onClose={() => setSheet(null)}>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Sighting } from '../api'
 import { filterByRange } from '../lib/insights'
 import { SightingRow } from './SightingRow'
@@ -8,7 +8,9 @@ type Props = { sightings: Sighting[]; onSelect: (id: string) => void }
 export function HistoryPane({ sightings, onSelect }: Props) {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
-  const filtered = filterByRange(sightings, from, to)
+  // Memoized: the pane stays mounted (hidden) on other tabs; only re-filter when
+  // the sightings or a bound changes, not on every unrelated App re-render.
+  const filtered = useMemo(() => filterByRange(sightings, from, to), [sightings, from, to])
   const hasFilter = from !== '' || to !== ''
 
   return (
@@ -18,6 +20,7 @@ export function HistoryPane({ sightings, onSelect }: Props) {
           type="date"
           aria-label="From"
           value={from}
+          max={to || undefined}
           onChange={(e) => setFrom(e.target.value)}
         />
         <span className="filter-to">to</span>
@@ -25,6 +28,7 @@ export function HistoryPane({ sightings, onSelect }: Props) {
           type="date"
           aria-label="To"
           value={to}
+          min={from || undefined}
           onChange={(e) => setTo(e.target.value)}
         />
         {hasFilter && (
