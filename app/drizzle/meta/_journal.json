@@ -8,6 +8,13 @@
       "when": 1783048910526,
       "tag": "0000_sightings",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783176496932,
+      "tag": "0001_critter-profiles",
+      "breakpoints": true
     }
   ]
 }
