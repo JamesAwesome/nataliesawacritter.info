@@ -584,3 +584,29 @@ button.day-cell {
   background: #fff;
   cursor: pointer;
 }
+
+.history-pane {
+  padding-top: 4px;
+}
+
+.history-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 0;
+}
+
+.history-filter input[type='date'] {
+  padding: 8px 10px;
+  border: 1px solid var(--border-hairline);
+  border-radius: 12px;
+  background: var(--surface-input);
+  font: inherit;
+  color: var(--ink);
+}
+
+.filter-to {
+  font-size: 12px;
+  color: var(--ink-secondary);
+}
