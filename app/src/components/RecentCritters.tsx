@@ -1,13 +1,14 @@
 import type { Sighting } from '../api'
-import { formatWhen } from '../lib/format'
+import { SightingRow } from './SightingRow'
 
 type Props = {
   sightings: Sighting[]
   status: 'loading' | 'ready' | 'error'
   onRetry: () => void
+  onSelect?: (id: string) => void
 }
 
-export function RecentCritters({ sightings, status, onRetry }: Props) {
+export function RecentCritters({ sightings, status, onRetry, onSelect }: Props) {
   return (
     <section className="recent-critters" data-testid="recent-critters">
       <h2>Recent Critters</h2>
@@ -26,14 +27,7 @@ export function RecentCritters({ sightings, status, onRetry }: Props) {
       {status === 'ready' && sightings.length > 0 && (
         <ul className="recent-list">
           {sightings.slice(0, 4).map((s) => (
-            <li key={s.id} className="recent-row">
-              <span className="recent-emoji" aria-hidden="true">{s.emoji}</span>
-              <span className="recent-main">
-                <span className="recent-name">{s.name ?? s.emoji}</span>
-                <span className="recent-meta">{formatWhen(s.sightedOn, s.sightedTime)}</span>
-              </span>
-              <span className="recent-chevron" aria-hidden="true">›</span>
-            </li>
+            <SightingRow key={s.id} sighting={s} onSelect={onSelect} />
           ))}
         </ul>
       )}

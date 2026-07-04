@@ -1,35 +1,20 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { setCredentials } from './auth'
+import { makeSighting, stubFetchQueue, stubMatchMedia, useFakeClock } from './test/helpers'
 
-const ROW = {
-  id: '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa', emoji: '🦊', name: 'Fox',
-  sightedOn: '2026-07-02', sightedTime: null, place: null, comment: null,
-  photoPath: null, createdAt: '2026-07-02T12:00:00.000Z',
-}
-
-beforeEach(() => {
-  vi.useFakeTimers({ shouldAdvanceTime: true })
-  vi.setSystemTime(new Date('2026-07-03T15:00:00'))
-})
+const ROW = makeSighting()
 
 afterEach(() => {
-  vi.useRealTimers()
   vi.unstubAllGlobals()
   localStorage.clear()
 })
 
-function stubFetchQueue(responses: Array<{ status: number; body: unknown }>) {
-  const queue = [...responses]
-  vi.stubGlobal('fetch', vi.fn(async () => {
-    const next = queue.shift() ?? { status: 500, body: { error: 'internal' } }
-    return new Response(JSON.stringify(next.body), { status: next.status })
-  }))
-}
-
 describe('App shell', () => {
+  useFakeClock()
+
   it('renders header, three tabs, log button, and the calendar placeholder by default', async () => {
     stubFetchQueue([{ status: 200, body: [ROW] }])
     render(<App />)
@@ -91,17 +76,56 @@ describe('App shell', () => {
   })
 
   it('renders only the sidebar RecentCritters on desktop viewports', async () => {
-    vi.stubGlobal('matchMedia', vi.fn((query: string) => ({
-      matches: true,
-      media: query,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-    })))
+    stubMatchMedia(true)
     stubFetchQueue([{ status: 200, body: [ROW] }])
     render(<App />)
     expect(await screen.findByText('Fox')).toBeInTheDocument()
     const instances = screen.getAllByTestId('recent-critters')
     expect(instances).toHaveLength(1)
     expect(instances[0].closest('aside')).not.toBeNull()
+  })
+})
+
+describe('calendar navigation and delete', () => {
+  useFakeClock()
+
+  it('calendar cell → day detail → sighting detail → back → day detail', async () => {
+    const s = makeSighting({ sightedOn: '2026-07-02', name: 'Fox', sightedTime: 'dusk' })
+    stubFetchQueue([{ status: 200, body: [s] }])
+    render(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: /jul 2,/i }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('Jul 2')
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /fox/i }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('Jul 2 · dusk')
+    await userEvent.click(screen.getByRole('button', { name: /back/i }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('Jul 2')
+    await userEvent.click(screen.getByRole('button', { name: /close/i }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('recent critters row opens sighting detail; back closes (no fromDay)', async () => {
+    const s = makeSighting({ name: 'Owl', emoji: '🦉', sightedOn: '2026-07-01' })
+    stubFetchQueue([{ status: 200, body: [s] }])
+    render(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: /owl/i }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /back/i }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('two-tap delete removes the sighting everywhere and closes the sheet', async () => {
+    setCredentials('sekrit')
+    const s = makeSighting({ sightedOn: '2026-07-02', name: 'Fox' })
+    stubFetchQueue([
+      { status: 200, body: [s] },
+      { status: 204, body: null },
+    ])
+    render(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: /jul 2,/i }))
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /fox/i }))
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Really delete?' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(screen.queryByText('Fox')).not.toBeInTheDocument()
   })
 })

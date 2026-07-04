@@ -17,6 +17,7 @@ export function Tabs({ active, onChange }: Props) {
           type="button"
           role="tab"
           aria-selected={active === t.id}
+          aria-controls={'pane-' + t.id}
           className={`tab tab-${t.id}${active === t.id ? ' tab-active' : ''}`}
           onClick={() => onChange(t.id)}
         >

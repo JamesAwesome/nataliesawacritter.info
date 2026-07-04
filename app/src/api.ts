@@ -46,3 +46,11 @@ export async function createSighting(
   if (!res.ok) throw new ApiError(res.status)
   return (await res.json()) as Sighting
 }
+
+export async function deleteSighting(id: string, authHeader: string): Promise<void> {
+  const res = await fetch(`/api/sightings/${id}`, {
+    method: 'DELETE',
+    headers: { authorization: authHeader },
+  })
+  if (!res.ok) throw new ApiError(res.status)
+}

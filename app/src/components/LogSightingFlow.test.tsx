@@ -1,18 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { NewSightingInput } from '../api'
 import { ApiError } from '../api'
 import { setCredentials } from '../auth'
+import { useFakeClock } from '../test/helpers'
 import { LogSightingFlow } from './LogSightingFlow'
 
-beforeEach(() => {
-  vi.useFakeTimers({ shouldAdvanceTime: true })
-  vi.setSystemTime(new Date('2026-07-03T15:00:00'))
-})
-
 afterEach(() => {
-  vi.useRealTimers()
   localStorage.clear()
 })
 
@@ -27,6 +22,8 @@ function renderFlow(overrides: Partial<Parameters<typeof LogSightingFlow>[0]> = 
 }
 
 describe('LogSightingFlow', () => {
+  useFakeClock()
+
   it('starts on the picker with the heading and 12 curated tiles + Other', () => {
     renderFlow()
     expect(screen.getByText('What did Natalie see?')).toBeInTheDocument()

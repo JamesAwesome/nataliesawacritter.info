@@ -2,14 +2,19 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { stubMatchMedia } from '../test/helpers'
 import { DESKTOP_QUERY, useIsDesktop } from './useIsDesktop'
 
 type Listener = (event: MediaQueryListEvent) => void
 
-function stubMatchMedia(matches: boolean) {
+// The shared `stubMatchMedia` now uses a live getter for `matches`, so the
+// change-event test can use it. Keep this stub only for the unmount test to
+// verify the listener spy, since the shared helper doesn't expose addEventListener/
+// removeEventListener spies.
+function stubMatchMediaWithListenerSpies(matches: boolean) {
   const listeners = new Set<Listener>()
   const mql = {
-    matches,
+    get matches() { return matches },
     media: DESKTOP_QUERY,
     addEventListener: vi.fn((event: string, listener: Listener) => {
       if (event === 'change') listeners.add(listener)
@@ -18,18 +23,8 @@ function stubMatchMedia(matches: boolean) {
       if (event === 'change') listeners.delete(listener)
     }),
   }
-  const matchMedia = vi.fn(() => mql)
-  vi.stubGlobal('matchMedia', matchMedia)
-  return {
-    mql,
-    matchMedia,
-    fireChange(nextMatches: boolean) {
-      mql.matches = nextMatches
-      for (const listener of listeners) {
-        listener({ matches: nextMatches } as MediaQueryListEvent)
-      }
-    },
-  }
+  vi.stubGlobal('matchMedia', vi.fn(() => mql))
+  return mql
 }
 
 afterEach(() => {
@@ -59,7 +54,7 @@ describe('useIsDesktop', () => {
   })
 
   it('removes its listener on unmount', () => {
-    const { mql } = stubMatchMedia(false)
+    const mql = stubMatchMediaWithListenerSpies(false)
     const { unmount } = renderHook(() => useIsDesktop())
     expect(mql.addEventListener).toHaveBeenCalledWith('change', expect.any(Function))
     unmount()
