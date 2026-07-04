@@ -26,3 +26,7 @@ export const EXTENDED: string[] = [
   '🐟', '🐠', '🐡', '🦈', '🐙', '🦀', '🦞', '🦐', '🦑', '🦪', '🐌', '🐛', '🐜', '🐝', '🪲', '🐞',
   '🦗', '🪳', '🕷️', '🦂', '🦟', '🪰', '🪱',
 ]
+
+export function nameFor(emoji: string): string | null {
+  return CURATED.find((c) => c.emoji === emoji)?.name ?? null
+}

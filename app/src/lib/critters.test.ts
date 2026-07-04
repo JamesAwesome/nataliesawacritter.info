@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CURATED, EXTENDED } from './critters'
+import { CURATED, EXTENDED, nameFor } from './critters'
 
 describe('critter sets', () => {
   it('has the 12 curated critters in design order', () => {
@@ -26,5 +26,12 @@ describe('critter sets', () => {
     for (const emoji of EXTENDED) {
       expect(emoji.length).toBeLessThanOrEqual(16)
     }
+  })
+})
+
+describe('nameFor', () => {
+  it('returns the curated name for a curated emoji, null otherwise', () => {
+    expect(nameFor('🦊')).toBe('Fox')
+    expect(nameFor('🐙')).toBeNull()
   })
 })
