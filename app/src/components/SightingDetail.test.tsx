@@ -149,4 +149,16 @@ describe('friend toggle', () => {
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '⭐ Save as friend' })).toBeDisabled()
   })
+
+  it('prompts for the password on save-as-friend when no credentials, then saves', async () => {
+    const addProfile = vi.fn(async () => {})
+    renderDetail({ addProfile })
+    await userEvent.click(screen.getByRole('button', { name: '⭐ Save as friend' }))
+    expect(addProfile).not.toHaveBeenCalled()
+    await userEvent.type(screen.getByLabelText(/password/i), 'sekrit')
+    await userEvent.click(screen.getByRole('button', { name: /^save$/i }))
+    await vi.waitFor(() =>
+      expect(addProfile).toHaveBeenCalledWith(expect.anything(), 'Basic ' + btoa('natalie:sekrit')),
+    )
+  })
 })

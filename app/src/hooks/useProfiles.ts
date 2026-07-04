@@ -8,7 +8,15 @@ import {
   type Profile,
 } from '../api'
 
-export function useProfiles() {
+export type ProfilesState = {
+  profiles: Profile[]
+  status: 'loading' | 'ready' | 'error'
+  addProfile(fields: NewProfileInput, authHeader: string): Promise<void>
+  removeProfile(id: string, authHeader: string): Promise<void>
+  retry(): void
+}
+
+export function useProfiles(): ProfilesState {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [loadCount, setLoadCount] = useState(0)
@@ -52,6 +60,7 @@ export function useProfiles() {
     try {
       await deleteProfile(id, authHeader)
     } catch (err) {
+      // 404 = already gone server-side; fall through to local removal
       if (!(err instanceof ApiError && err.status === 404)) throw err
     }
     setProfiles((current) => current.filter((p) => p.id !== id))

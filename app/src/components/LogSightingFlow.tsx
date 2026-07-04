@@ -59,7 +59,7 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged, recent = [], 
         <div className="flow-details">
           {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
           <DetailsForm
-            key={picked.emoji + (picked.name ?? '') + (picked.place ?? '')}
+            key={[picked.emoji, picked.name ?? '', picked.place ?? ''].join(' ')}
             emoji={picked.emoji}
             initialName={picked.name}
             initialPlace={picked.place}
