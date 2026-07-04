@@ -23,7 +23,7 @@ export function stubFetchQueue(responses: Array<{ status: number; body: unknown 
   const queue = [...responses]
   const mock = vi.fn(async () => {
     const next = queue.shift() ?? { status: 500, body: { error: 'internal' } }
-    return new Response(JSON.stringify(next.body), { status: next.status })
+    return new Response(next.body === null ? null : JSON.stringify(next.body), { status: next.status })
   })
   vi.stubGlobal('fetch', mock)
   return mock

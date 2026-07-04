@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, createSighting, listSightings } from './api'
+import { ApiError, createSighting, deleteSighting, listSightings } from './api'
 import { makeSighting, stubFetchQueue } from './test/helpers'
 
 afterEach(() => {
@@ -51,5 +51,21 @@ describe('createSighting', () => {
     await expect(
       createSighting({ emoji: '🦊', sightedOn: '2026-07-03' }, 'Basic abc'),
     ).rejects.toMatchObject({ status: 503 })
+  })
+})
+
+describe('deleteSighting', () => {
+  it('DELETEs with the auth header and resolves on 204', async () => {
+    const mock = stubFetchQueue([{ status: 204, body: null }])
+    await expect(deleteSighting('abc-id', 'Basic xyz')).resolves.toBeUndefined()
+    expect(mock).toHaveBeenCalledWith('/api/sightings/abc-id', {
+      method: 'DELETE',
+      headers: { authorization: 'Basic xyz' },
+    })
+  })
+
+  it('throws ApiError with status on failure', async () => {
+    stubFetchQueue([{ status: 401, body: { error: 'unauthorized' } }])
+    await expect(deleteSighting('abc-id', 'Basic bad')).rejects.toMatchObject({ status: 401 })
   })
 })

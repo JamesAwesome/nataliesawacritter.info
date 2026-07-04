@@ -59,4 +59,42 @@ describe('useSightings', () => {
     ).rejects.toMatchObject({ status: 401 })
     expect(result.current.sightings).toEqual([ROW])
   })
+
+  it('removeSighting deletes the row from state on 204', async () => {
+    const row = makeSighting()
+    stubFetchQueue([
+      { status: 200, body: [row] },
+      { status: 204, body: null },
+    ])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    await act(() => result.current.removeSighting(row.id, 'Basic x'))
+    expect(result.current.sightings).toEqual([])
+  })
+
+  it('removeSighting treats 404 as success', async () => {
+    const row = makeSighting()
+    stubFetchQueue([
+      { status: 200, body: [row] },
+      { status: 404, body: { error: 'not found' } },
+    ])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    await act(() => result.current.removeSighting(row.id, 'Basic x'))
+    expect(result.current.sightings).toEqual([])
+  })
+
+  it('removeSighting rethrows other errors without touching state', async () => {
+    const row = makeSighting()
+    stubFetchQueue([
+      { status: 200, body: [row] },
+      { status: 503, body: { error: 'writes disabled' } },
+    ])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    await expect(
+      act(() => result.current.removeSighting(row.id, 'Basic x')),
+    ).rejects.toMatchObject({ status: 503 })
+    expect(result.current.sightings).toEqual([row])
+  })
 })

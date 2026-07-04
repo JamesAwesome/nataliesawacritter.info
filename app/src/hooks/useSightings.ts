@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { createSighting, listSightings, type NewSightingInput, type Sighting } from '../api'
+import { ApiError, createSighting, deleteSighting, listSightings, type NewSightingInput, type Sighting } from '../api'
 
 export type SightingsState = {
   sightings: Sighting[]
   status: 'loading' | 'ready' | 'error'
   addSighting(fields: NewSightingInput, authHeader: string): Promise<void>
+  removeSighting(id: string, authHeader: string): Promise<void>
   retry(): void
 }
 
@@ -39,5 +40,15 @@ export function useSightings(): SightingsState {
     setSightings((current) => [created, ...current])
   }, [])
 
-  return { sightings, status, addSighting, retry }
+  const removeSighting = useCallback(async (id: string, authHeader: string) => {
+    try {
+      await deleteSighting(id, authHeader)
+    } catch (err) {
+      // 404 = already gone server-side; fall through to local removal
+      if (!(err instanceof ApiError && err.status === 404)) throw err
+    }
+    setSightings((current) => current.filter((s) => s.id !== id))
+  }, [])
+
+  return { sightings, status, addSighting, removeSighting, retry }
 }
