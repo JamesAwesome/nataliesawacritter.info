@@ -85,3 +85,47 @@ describe('App shell', () => {
     expect(instances[0].closest('aside')).not.toBeNull()
   })
 })
+
+describe('calendar navigation and delete', () => {
+  useFakeClock()
+
+  it('calendar cell → day detail → sighting detail → back → day detail', async () => {
+    const s = makeSighting({ sightedOn: '2026-07-02', name: 'Fox', sightedTime: 'dusk' })
+    stubFetchQueue([{ status: 200, body: [s] }])
+    render(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: /jul 2,/i }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('Jul 2')
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /fox/i }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('Jul 2 · dusk')
+    await userEvent.click(screen.getByRole('button', { name: /back/i }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('Jul 2')
+    await userEvent.click(screen.getByRole('button', { name: /close/i }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('recent critters row opens sighting detail; back closes (no fromDay)', async () => {
+    const s = makeSighting({ name: 'Owl', emoji: '🦉', sightedOn: '2026-07-01' })
+    stubFetchQueue([{ status: 200, body: [s] }])
+    render(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: /owl/i }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /back/i }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('two-tap delete removes the sighting everywhere and closes the sheet', async () => {
+    setCredentials('sekrit')
+    const s = makeSighting({ sightedOn: '2026-07-02', name: 'Fox' })
+    stubFetchQueue([
+      { status: 200, body: [s] },
+      { status: 204, body: null },
+    ])
+    render(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: /jul 2,/i }))
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /fox/i }))
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Really delete?' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(screen.queryByText('Fox')).not.toBeInTheDocument()
+  })
+})

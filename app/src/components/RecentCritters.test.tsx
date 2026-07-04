@@ -48,4 +48,12 @@ describe('RecentCritters', () => {
     await userEvent.click(screen.getByRole('button', { name: /retry/i }))
     expect(onRetry).toHaveBeenCalledTimes(1)
   })
+
+  it('invokes onSelect with the sighting id when a row is tapped', async () => {
+    const onSelect = vi.fn()
+    const s = makeSighting()
+    render(<RecentCritters sightings={[s]} status="ready" onRetry={() => {}} onSelect={onSelect} />)
+    await userEvent.click(screen.getByRole('button', { name: /fox/i }))
+    expect(onSelect).toHaveBeenCalledWith(s.id)
+  })
 })
