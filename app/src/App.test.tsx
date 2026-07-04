@@ -23,15 +23,16 @@ describe('App shell', () => {
     expect(screen.getByRole('tab', { name: 'History' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Top Critters' })).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /log a sighting/i }).length).toBeGreaterThan(0)
-    expect(await screen.findByText('Fox')).toBeInTheDocument()
+    const recent = await screen.findByTestId('recent-critters')
+    expect(within(recent).getByText('Fox')).toBeInTheDocument()
   })
 
-  it('switches tabs to placeholder panes', async () => {
+  it('switches to the History tab and shows the date filter + empty state', async () => {
     stubFetchQueue([{ status: 200, body: [] }])
     render(<App />)
     await userEvent.click(screen.getByRole('tab', { name: 'History' }))
-    expect(screen.getByRole('tab', { name: 'History' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByText(/coming soon/i)).toBeInTheDocument()
+    expect(screen.getByLabelText('From')).toBeInTheDocument()
+    expect(within(screen.getByRole('tabpanel')).getByText(/no critters logged yet/i)).toBeInTheDocument()
   })
 
   it('full happy path: log a fox, toast appears, fox lands in Recent Critters', async () => {
@@ -71,7 +72,12 @@ describe('App shell', () => {
     stubFetchQueue([{ status: 500, body: { error: 'internal' } }])
     render(<App />)
     await userEvent.click(screen.getByRole('tab', { name: 'History' }))
-    expect(await screen.findByText(/couldn't load sightings/i)).toBeInTheDocument()
+    const banner = await waitFor(() => {
+      const el = document.querySelector('.flow-error')
+      if (el === null) throw new Error('banner not rendered yet')
+      return el
+    })
+    expect(banner).toHaveTextContent(/couldn't load sightings/i)
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
   })
 
@@ -79,10 +85,29 @@ describe('App shell', () => {
     stubMatchMedia(true)
     stubFetchQueue([{ status: 200, body: [ROW] }])
     render(<App />)
-    expect(await screen.findByText('Fox')).toBeInTheDocument()
+    const recent = await screen.findByTestId('recent-critters')
+    expect(within(recent).getByText('Fox')).toBeInTheDocument()
     const instances = screen.getAllByTestId('recent-critters')
     expect(instances).toHaveLength(1)
     expect(instances[0].closest('aside')).not.toBeNull()
+  })
+
+  it('ranks sightings on the Top Critters tab', async () => {
+    stubFetchQueue([
+      { status: 200, body: [makeSighting({ emoji: '🦊' }), makeSighting({ emoji: '🦊' }), makeSighting({ emoji: '🦉' })] },
+    ])
+    render(<App />)
+    await userEvent.click(screen.getByRole('tab', { name: 'Top Critters' }))
+    const items = await screen.findAllByRole('listitem')
+    expect(items[0]).toHaveTextContent('🦊')
+    expect(items[0]).toHaveTextContent('2')
+  })
+
+  it('surfaces recently seen critters in the picker after sightings load', async () => {
+    stubFetchQueue([{ status: 200, body: [makeSighting({ emoji: '🦉', name: 'Owl' })] }])
+    render(<App />)
+    await userEvent.click(screen.getAllByRole('button', { name: /log a sighting/i })[0])
+    expect(await screen.findByRole('button', { name: 'Recently seen Owl' })).toBeInTheDocument()
   })
 })
 

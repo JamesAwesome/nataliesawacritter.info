@@ -2,21 +2,18 @@ import { useEffect, useRef, useState } from 'react'
 import { CalendarPane } from './components/CalendarPane'
 import { DayDetail } from './components/DayDetail'
 import { Header } from './components/Header'
+import { HistoryPane } from './components/HistoryPane'
+import { LeaderboardList } from './components/LeaderboardList'
 import { LogSightingFlow } from './components/LogSightingFlow'
-import { PlaceholderPane } from './components/PlaceholderPane'
 import { RecentCritters } from './components/RecentCritters'
 import { Sheet } from './components/Sheet'
 import { SightingDetail } from './components/SightingDetail'
 import { Tabs, type Tab } from './components/Tabs'
+import { TopCrittersPane } from './components/TopCrittersPane'
 import { Toast } from './components/Toast'
 import { useIsDesktop } from './hooks/useIsDesktop'
 import { useSightings } from './hooks/useSightings'
-
-const PANE_LABELS: Record<Tab, string> = {
-  calendar: 'Calendar',
-  history: 'History',
-  leaderboard: 'Top Critters',
-}
+import { leaderboard, recentEmoji } from './lib/insights'
 
 type SheetState =
   | null
@@ -64,13 +61,9 @@ export default function App() {
                 </button>
               </p>
             )}
-            <div role="tabpanel" id={'pane-' + activeTab}>
-              {activeTab === 'calendar' ? (
-                <CalendarPane sightings={sightings} onDayOpen={(date) => setSheet({ kind: 'day', date })} />
-              ) : (
-                <PlaceholderPane label={PANE_LABELS[activeTab]} />
-              )}
-              {activeTab === 'calendar' && !isDesktop && (
+            <div role="tabpanel" id="pane-calendar" hidden={activeTab !== 'calendar'}>
+              <CalendarPane sightings={sightings} onDayOpen={(date) => setSheet({ kind: 'day', date })} />
+              {!isDesktop && (
                 <RecentCritters
                   sightings={sightings}
                   status={status}
@@ -78,6 +71,12 @@ export default function App() {
                   onSelect={(id) => openSighting(id)}
                 />
               )}
+            </div>
+            <div role="tabpanel" id="pane-history" hidden={activeTab !== 'history'}>
+              <HistoryPane sightings={sightings} onSelect={(id) => openSighting(id)} />
+            </div>
+            <div role="tabpanel" id="pane-leaderboard" hidden={activeTab !== 'leaderboard'}>
+              <TopCrittersPane sightings={sightings} />
             </div>
           </main>
           <aside className="sidebar desktop-only">
@@ -90,6 +89,12 @@ export default function App() {
                 onSelect={(id) => openSighting(id)}
               />
             )}
+            {isDesktop && sightings.length > 0 && (
+              <>
+                <h2 className="sidebar-heading">Top Critters</h2>
+                <LeaderboardList rows={leaderboard(sightings).slice(0, 10)} />
+              </>
+            )}
           </aside>
         </div>
       </div>
@@ -101,6 +106,7 @@ export default function App() {
           setSheet(null)
           showToast('🎉 Logged!')
         }}
+        recent={recentEmoji(sightings, 6)}
       />
       {sheet?.kind === 'day' && (
         <Sheet open onClose={() => setSheet(null)}>
