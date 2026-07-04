@@ -37,11 +37,12 @@ export function monthGrid(
   return Array.from({ length: 42 }, (_, i) => {
     const d = new Date(year, month - 1, 1 - startOffset + i)
     const date = toDateString(d)
+    const inMonth = d.getMonth() === month - 1
     return {
       date,
       dayOfMonth: d.getDate(),
-      inMonth: d.getMonth() === month - 1,
-      isToday: date === today,
+      inMonth,
+      isToday: inMonth && date === today,
       sightings: byDay.get(date) ?? [],
     }
   })

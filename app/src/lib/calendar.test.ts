@@ -42,6 +42,16 @@ describe('monthGrid', () => {
     expect(cells.find((x) => x.date === '2026-07-04')!.sightings).toHaveLength(1)
     expect(cells.find((x) => x.date === '2026-07-05')!.sightings).toHaveLength(0)
   })
+
+  it('only marks today when the cell is in-month (not a bleed day)', () => {
+    // today = 2026-08-01; viewing July 2026, whose trailing cells include Aug 1
+    const cells = monthGrid(2026, 7, [], '2026-08-01')
+    const bleed = cells.find((c) => c.date === '2026-08-01')!
+    expect(bleed.inMonth).toBe(false)
+    expect(bleed.isToday).toBe(false)
+    // and an in-month today is still flagged
+    expect(monthGrid(2026, 8, [], '2026-08-01').find((c) => c.date === '2026-08-01')!.isToday).toBe(true)
+  })
 })
 
 describe('monthLabel / addMonths', () => {
