@@ -1,6 +1,7 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { createApp } from './app.js'
 import { createDb } from './db/index.js'
+import { createProfilesStore } from './profiles/store.js'
 import { createSightingsStore } from './sightings/store.js'
 
 const connectionString = process.env.DATABASE_URL
@@ -31,6 +32,7 @@ const app = createApp({
     await pool.query('SELECT 1')
   },
   sightingsStore: createSightingsStore(db),
+  profilesStore: createProfilesStore(db),
   writeCredentials,
 })
 
