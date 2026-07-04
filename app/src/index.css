@@ -118,13 +118,6 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-.placeholder-pane {
-  padding: 36px 16px;
-  text-align: center;
-  color: var(--ink-secondary);
-  font-weight: 700;
-}
-
 .recent-critters h2 {
   font-family: 'Fredoka', sans-serif;
   font-weight: 600;

@@ -5,9 +5,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { makeSighting, useFakeClock } from '../test/helpers'
 import { HistoryPane } from './HistoryPane'
 
-// eslint-disable-next-line react-hooks/rules-of-hooks
-useFakeClock()
-
 const ROWS = [
   makeSighting({ id: 'a', name: 'Fox', emoji: '🦊', sightedOn: '2026-07-20' }),
   makeSighting({ id: 'b', name: 'Owl', emoji: '🦉', sightedOn: '2026-07-10' }),
@@ -15,6 +12,7 @@ const ROWS = [
 ]
 
 describe('HistoryPane', () => {
+  useFakeClock()
   it('lists all sightings and hides Clear until a bound is set', () => {
     render(<HistoryPane sightings={ROWS} onSelect={() => {}} />)
     expect(screen.getAllByRole('listitem')).toHaveLength(3)
