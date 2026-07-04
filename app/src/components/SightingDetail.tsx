@@ -68,7 +68,7 @@ export function SightingDetail({
         <button
           type="button"
           className="btn-secondary friend-toggle"
-          disabled={friendWrite.busy}
+          disabled={friendWrite.busy || write.busy || write.prompt.open}
           onClick={() => {
             if (matching === undefined) {
               friendWrite.run(
@@ -96,7 +96,7 @@ export function SightingDetail({
         <button
           type="button"
           className={confirming ? 'btn-danger confirming' : 'btn-danger'}
-          disabled={write.busy}
+          disabled={write.busy || friendWrite.busy || friendWrite.prompt.open}
           onClick={onDeleteClick}
         >
           {confirming ? 'Really delete?' : 'Delete'}

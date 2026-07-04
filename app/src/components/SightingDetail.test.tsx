@@ -141,4 +141,12 @@ describe('friend toggle', () => {
     renderDetail({ sighting: makeSighting({ name: null }) })
     expect(screen.queryByRole('button', { name: /friend/i })).not.toBeInTheDocument()
   })
+
+  it('cannot open both password prompts at once', async () => {
+    renderDetail()
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Really delete?' }))
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '⭐ Save as friend' })).toBeDisabled()
+  })
 })
