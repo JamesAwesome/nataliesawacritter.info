@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { setCredentials } from './auth'
-import { makeSighting, stubFetchQueue, stubMatchMedia, useFakeClock } from './test/helpers'
+import { makeSighting, stubFetchByUrl, stubFetchQueue, stubMatchMedia, useFakeClock } from './test/helpers'
 
 const ROW = makeSighting()
 
@@ -38,10 +38,13 @@ describe('App shell', () => {
   it('full happy path: log a fox, toast appears, fox lands in Recent Critters', async () => {
     setCredentials('sekrit')
     const created = { ...ROW, id: '00000000-0000-4000-8000-000000000002', sightedOn: '2026-07-03' }
-    stubFetchQueue([
-      { status: 200, body: [] },
-      { status: 201, body: created },
-    ])
+    stubFetchByUrl({
+      '/api/sightings': [
+        { status: 200, body: [] },
+        { status: 201, body: created },
+      ],
+      '/api/profiles': [{ status: 200, body: [] }],
+    })
     render(<App />)
     await userEvent.click(screen.getAllByRole('button', { name: /log a sighting/i })[0])
     await userEvent.click(screen.getByRole('button', { name: /fox/i }))
@@ -55,10 +58,13 @@ describe('App shell', () => {
 
   it('toast auto-dismisses after ~1.8s', async () => {
     setCredentials('sekrit')
-    stubFetchQueue([
-      { status: 200, body: [] },
-      { status: 201, body: { ...ROW, sightedOn: '2026-07-03' } },
-    ])
+    stubFetchByUrl({
+      '/api/sightings': [
+        { status: 200, body: [] },
+        { status: 201, body: { ...ROW, sightedOn: '2026-07-03' } },
+      ],
+      '/api/profiles': [{ status: 200, body: [] }],
+    })
     render(<App />)
     await userEvent.click(screen.getAllByRole('button', { name: /log a sighting/i })[0])
     await userEvent.click(screen.getByRole('button', { name: /fox/i }))
@@ -109,6 +115,29 @@ describe('App shell', () => {
     await userEvent.click(screen.getAllByRole('button', { name: /log a sighting/i })[0])
     expect(await screen.findByRole('button', { name: 'Recently seen Owl' })).toBeInTheDocument()
   })
+
+  it('threads friends into the picker', async () => {
+    stubFetchByUrl({
+      '/api/sightings': [{ status: 200, body: [] }],
+      '/api/profiles': [
+        {
+          status: 200,
+          body: [
+            {
+              id: '00000000-0000-4000-8000-000000000009',
+              emoji: '🦊',
+              name: 'Mr Fox',
+              place: 'train station',
+              createdAt: '2026-07-04T12:00:00.000Z',
+            },
+          ],
+        },
+      ],
+    })
+    render(<App />)
+    await userEvent.click(screen.getAllByRole('button', { name: /log a sighting/i })[0])
+    expect(await screen.findByRole('button', { name: 'Friend Mr Fox' })).toBeInTheDocument()
+  })
 })
 
 describe('calendar navigation and delete', () => {
@@ -141,10 +170,13 @@ describe('calendar navigation and delete', () => {
   it('two-tap delete removes the sighting everywhere and closes the sheet', async () => {
     setCredentials('sekrit')
     const s = makeSighting({ sightedOn: '2026-07-02', name: 'Fox' })
-    stubFetchQueue([
-      { status: 200, body: [s] },
-      { status: 204, body: null },
-    ])
+    stubFetchByUrl({
+      '/api/sightings': [
+        { status: 200, body: [s] },
+        { status: 204, body: null },
+      ],
+      '/api/profiles': [{ status: 200, body: [] }],
+    })
     render(<App />)
     await userEvent.click(await screen.findByRole('button', { name: /jul 2,/i }))
     await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /fox/i }))

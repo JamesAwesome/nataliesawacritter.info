@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { NewSightingInput } from '../api'
+import type { NewSightingInput, Profile } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
 import { PasswordPrompt } from './PasswordPrompt'
 import { Sheet } from './Sheet'
@@ -12,11 +12,12 @@ type Props = {
   onSave: (fields: NewSightingInput, authHeader: string) => Promise<void>
   onLogged: () => void
   recent?: string[]
+  friends?: Profile[]
 }
 
-type Picked = { emoji: string; name: string | null }
+type Picked = { emoji: string; name: string | null; place: string | null }
 
-export function LogSightingFlow({ open, onClose, onSave, onLogged, recent = [] }: Props) {
+export function LogSightingFlow({ open, onClose, onSave, onLogged, recent = [], friends = [] }: Props) {
   const [picked, setPicked] = useState<Picked | null>(null)
   const write = useWriteAction({
     disabled: 'Saving is disabled right now',
@@ -47,14 +48,21 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged, recent = [] }
   return (
     <Sheet open={open} onClose={close}>
       {picked === null ? (
-        <EmojiPicker recent={recent} onPick={(emoji, name) => setPicked({ emoji, name })} onCancel={close} />
+        <EmojiPicker
+          recent={recent}
+          friends={friends}
+          onPick={(emoji, name) => setPicked({ emoji, name, place: null })}
+          onPickFriend={(p) => setPicked({ emoji: p.emoji, name: p.name, place: p.place })}
+          onCancel={close}
+        />
       ) : (
         <div className="flow-details">
           {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
           <DetailsForm
-            key={picked.emoji + (picked.name ?? '')}
+            key={picked.emoji + (picked.name ?? '') + (picked.place ?? '')}
             emoji={picked.emoji}
             initialName={picked.name}
+            initialPlace={picked.place}
             saving={write.busy}
             onBack={() => setPicked(null)}
             onSave={save}

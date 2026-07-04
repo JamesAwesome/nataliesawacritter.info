@@ -12,6 +12,7 @@ import { Tabs, type Tab } from './components/Tabs'
 import { TopCrittersPane } from './components/TopCrittersPane'
 import { Toast } from './components/Toast'
 import { useIsDesktop } from './hooks/useIsDesktop'
+import { useProfiles } from './hooks/useProfiles'
 import { useSightings } from './hooks/useSightings'
 import { leaderboard, recentEmoji } from './lib/insights'
 
@@ -23,6 +24,7 @@ type SheetState =
 
 export default function App() {
   const { sightings, status, addSighting, removeSighting, retry } = useSightings()
+  const { profiles, addProfile, removeProfile } = useProfiles()
   const isDesktop = useIsDesktop()
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
   // Derivations reused in JSX below; memoized so unrelated re-renders (toast,
@@ -111,6 +113,7 @@ export default function App() {
           showToast('🎉 Logged!')
         }}
         recent={recent}
+        friends={profiles}
       />
       {sheet?.kind === 'day' && (
         <Sheet open onClose={() => setSheet(null)}>
@@ -135,6 +138,9 @@ export default function App() {
                 }
                 onDeleted={() => setSheet(null)}
                 removeSighting={removeSighting}
+                profiles={profiles}
+                addProfile={addProfile}
+                removeProfile={removeProfile}
               />
             </Sheet>
           )

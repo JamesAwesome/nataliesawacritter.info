@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Sighting } from '../api'
+import type { NewProfileInput, Profile, Sighting } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
 import { formatWhen } from '../lib/format'
 import { PasswordPrompt } from './PasswordPrompt'
@@ -9,15 +9,31 @@ type Props = {
   onBack: () => void
   onDeleted: () => void
   removeSighting: (id: string, authHeader: string) => Promise<void>
+  profiles: Profile[]
+  addProfile(fields: NewProfileInput, authHeader: string): Promise<void>
+  removeProfile(id: string, authHeader: string): Promise<void>
 }
 
 const CONFIRM_WINDOW_MS = 4000
 
-export function SightingDetail({ sighting, onBack, onDeleted, removeSighting }: Props) {
+export function SightingDetail({
+  sighting,
+  onBack,
+  onDeleted,
+  removeSighting,
+  profiles,
+  addProfile,
+  removeProfile,
+}: Props) {
   const write = useWriteAction({
     disabled: 'Deleting is disabled right now',
     failed: "Couldn't delete — try again",
   })
+  const friendWrite = useWriteAction({
+    disabled: 'Saving is disabled right now',
+    failed: "Couldn't save — try again",
+  })
+  const matching = sighting.name === null ? undefined : profiles.find((p) => p.emoji === sighting.emoji && p.name === sighting.name)
   const [confirming, setConfirming] = useState(false)
   const confirmTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -48,6 +64,30 @@ export function SightingDetail({ sighting, onBack, onDeleted, removeSighting }: 
         </p>
       )}
       {sighting.comment !== null && <p className="detail-comment">{sighting.comment}</p>}
+      {sighting.name !== null && (
+        <button
+          type="button"
+          className="btn-secondary friend-toggle"
+          disabled={friendWrite.busy}
+          onClick={() => {
+            if (matching === undefined) {
+              friendWrite.run(
+                (authHeader) =>
+                  addProfile(
+                    { emoji: sighting.emoji, name: sighting.name as string, place: sighting.place ?? undefined },
+                    authHeader,
+                  ),
+                () => {},
+              )
+            } else {
+              friendWrite.run((authHeader) => removeProfile(matching.id, authHeader), () => {})
+            }
+          }}
+        >
+          {matching === undefined ? '⭐ Save as friend' : 'Remove friend'}
+        </button>
+      )}
+      {friendWrite.actionError !== null && <p className="flow-error">{friendWrite.actionError}</p>}
       {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
       <div className="details-actions">
         <button type="button" className="btn-secondary" onClick={onBack}>
@@ -69,6 +109,16 @@ export function SightingDetail({ sighting, onBack, onDeleted, removeSighting }: 
             error={write.prompt.error}
             onCancel={write.prompt.onCancel}
             onSubmit={write.prompt.onSubmit}
+          />
+        </div>
+      )}
+      {friendWrite.prompt.open && (
+        <div className="prompt-overlay">
+          <PasswordPrompt
+            open
+            error={friendWrite.prompt.error}
+            onCancel={friendWrite.prompt.onCancel}
+            onSubmit={friendWrite.prompt.onSubmit}
           />
         </div>
       )}

@@ -8,6 +8,7 @@ type Props = {
   onBack: () => void
   onSave: (fields: NewSightingInput) => void
   saving: boolean
+  initialPlace?: string | null
 }
 
 function today(): string {
@@ -17,11 +18,11 @@ function today(): string {
   return `${now.getFullYear()}-${month}-${day}`
 }
 
-export function DetailsForm({ emoji, initialName, onBack, onSave, saving }: Props) {
+export function DetailsForm({ emoji, initialName, onBack, onSave, saving, initialPlace }: Props) {
   const [name, setName] = useState(initialName ?? '')
   const [sightedOn, setSightedOn] = useState(today)
   const [sightedTime, setSightedTime] = useState('')
-  const [place, setPlace] = useState('')
+  const [place, setPlace] = useState(initialPlace ?? '')
   const [comment, setComment] = useState('')
 
   function save() {
