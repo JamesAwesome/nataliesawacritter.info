@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react'
-import { ApiError, type NewSightingInput } from '../api'
-import { basicHeader, clearCredentials, getCredentials, setCredentials } from '../auth'
+import { useState } from 'react'
+import type { NewSightingInput } from '../api'
+import { useWriteAction } from '../hooks/useWriteAction'
 import { PasswordPrompt } from './PasswordPrompt'
 import { Sheet } from './Sheet'
 import { DetailsForm } from './DetailsForm'
@@ -17,55 +17,25 @@ type Picked = { emoji: string; name: string | null }
 
 export function LogSightingFlow({ open, onClose, onSave, onLogged }: Props) {
   const [picked, setPicked] = useState<Picked | null>(null)
-  const [pendingFields, setPendingFields] = useState<NewSightingInput | null>(null)
-  const [promptError, setPromptError] = useState<string | null>(null)
-  const [flowError, setFlowError] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
-  const sessionRef = useRef(0)
-
-  function reset() {
-    setPicked(null)
-    setPendingFields(null)
-    setPromptError(null)
-    setFlowError(null)
-    setSaving(false)
-  }
+  const write = useWriteAction({
+    disabled: 'Saving is disabled right now',
+    failed: "Couldn't save — try again",
+  })
 
   function close() {
-    sessionRef.current += 1
-    reset()
+    write.abandon()
+    setPicked(null)
     onClose()
   }
 
-  async function attemptSave(fields: NewSightingInput, password?: string) {
-    if (saving) return
-    const session = sessionRef.current
-    const creds = password !== undefined ? { user: 'natalie', password } : getCredentials()
-    if (creds === null) {
-      setPendingFields(fields)
-      return
-    }
-    setSaving(true)
-    setFlowError(null)
-    if (password !== undefined) setCredentials(password)
-    try {
-      await onSave(fields, basicHeader(creds))
-      if (session !== sessionRef.current) return
-      reset()
-      onLogged()
-    } catch (err) {
-      if (session !== sessionRef.current) return
-      setSaving(false)
-      if (err instanceof ApiError && err.status === 401) {
-        clearCredentials()
-        setPendingFields(fields)
-        setPromptError('Wrong password — try again')
-      } else if (err instanceof ApiError && err.status === 503) {
-        setFlowError('Saving is disabled right now')
-      } else {
-        setFlowError("Couldn't save — try again")
-      }
-    }
+  function save(fields: NewSightingInput) {
+    write.run(
+      (authHeader) => onSave(fields, authHeader),
+      () => {
+        setPicked(null)
+        onLogged()
+      },
+    )
   }
 
   // The draft lives in DetailsForm's state, so the form must stay MOUNTED while
@@ -79,30 +49,22 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged }: Props) {
         <EmojiPicker onPick={(emoji, name) => setPicked({ emoji, name })} onCancel={close} />
       ) : (
         <div className="flow-details">
-          {flowError !== null && <p className="flow-error">{flowError}</p>}
+          {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
           <DetailsForm
             key={picked.emoji + (picked.name ?? '')}
             emoji={picked.emoji}
             initialName={picked.name}
-            saving={saving}
+            saving={write.busy}
             onBack={() => setPicked(null)}
-            onSave={(fields) => void attemptSave(fields)}
+            onSave={save}
           />
-          {pendingFields !== null && (
+          {write.prompt.open && (
             <div className="prompt-overlay">
               <PasswordPrompt
                 open
-                error={promptError}
-                onCancel={() => {
-                  setPendingFields(null)
-                  setPromptError(null)
-                }}
-                onSubmit={(password) => {
-                  const fields = pendingFields
-                  setPendingFields(null)
-                  setPromptError(null)
-                  void attemptSave(fields, password)
-                }}
+                error={write.prompt.error}
+                onCancel={write.prompt.onCancel}
+                onSubmit={write.prompt.onSubmit}
               />
             </div>
           )}
