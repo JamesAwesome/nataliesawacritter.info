@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { useFakeClock } from '../test/helpers'
 import { DetailsForm } from './DetailsForm'
@@ -17,6 +18,30 @@ describe('DetailsForm', () => {
 
   it('disables Save while saving', () => {
     render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={vi.fn()} saving={true} />)
+    expect(screen.getByRole('button', { name: /save sighting/i })).toBeDisabled()
+  })
+
+  it('Now fills the time input and the payload carries the friendly string', async () => {
+    const onSave = vi.fn()
+    render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} />)
+    await userEvent.click(screen.getByRole('button', { name: /now/i }))
+    expect(screen.getByLabelText('Time')).toHaveValue('15:00')
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ sightedTime: '3:00 PM' }))
+  })
+
+  it('omits sightedTime when the time input is blank', async () => {
+    const onSave = vi.fn()
+    render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} />)
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    expect(onSave).toHaveBeenCalledWith({ emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox' })
+  })
+
+  it('disables Save for a future date and sets max on the date input', () => {
+    const onSave = vi.fn()
+    render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} />)
+    expect(screen.getByLabelText('Date')).toHaveAttribute('max', '2026-07-03')
+    fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-08-01' } })
     expect(screen.getByRole('button', { name: /save sighting/i })).toBeDisabled()
   })
 })

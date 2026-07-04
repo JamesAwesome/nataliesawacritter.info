@@ -674,3 +674,19 @@ button.day-cell {
 .picker-grid-recent {
   margin-bottom: 12px;
 }
+
+.time-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.time-row input {
+  flex: 1;
+  margin-top: 0;
+}
+
+.btn-now {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { NewSightingInput } from '../api'
+import { formatClockTime, nowClockTime } from '../lib/format'
 
 type Props = {
   emoji: string
@@ -26,7 +27,7 @@ export function DetailsForm({ emoji, initialName, onBack, onSave, saving }: Prop
   function save() {
     const fields: NewSightingInput = { emoji, sightedOn }
     if (name !== '') fields.name = name
-    if (sightedTime !== '') fields.sightedTime = sightedTime
+    if (sightedTime !== '') fields.sightedTime = formatClockTime(sightedTime)
     if (place !== '') fields.place = place
     if (comment !== '') fields.comment = comment
     onSave(fields)
@@ -44,11 +45,25 @@ export function DetailsForm({ emoji, initialName, onBack, onSave, saving }: Prop
       <div className="details-row">
         <label className="field">
           Date
-          <input type="date" value={sightedOn} onChange={(e) => setSightedOn(e.target.value)} />
+          <input
+            type="date"
+            value={sightedOn}
+            max={today()}
+            onChange={(e) => setSightedOn(e.target.value)}
+          />
         </label>
         <label className="field">
           Time
-          <input value={sightedTime} onChange={(e) => setSightedTime(e.target.value)} placeholder="Time" />
+          <div className="time-row">
+            <input
+              type="time"
+              value={sightedTime}
+              onChange={(e) => setSightedTime(e.target.value)}
+            />
+            <button type="button" className="btn-secondary btn-now" onClick={() => setSightedTime(nowClockTime())}>
+              Now
+            </button>
+          </div>
         </label>
       </div>
       <label className="field">
@@ -63,7 +78,7 @@ export function DetailsForm({ emoji, initialName, onBack, onSave, saving }: Prop
         <button type="button" className="btn-secondary" onClick={onBack}>
           Back
         </button>
-        <button type="button" className="btn-primary" onClick={save} disabled={saving || sightedOn === ''}>
+        <button type="button" className="btn-primary" onClick={save} disabled={saving || sightedOn === '' || sightedOn > today()}>
           Save sighting
         </button>
       </div>
