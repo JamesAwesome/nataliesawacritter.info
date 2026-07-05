@@ -1,6 +1,5 @@
-import { rm } from 'node:fs/promises'
-import path from 'node:path'
 import { Router, type RequestHandler } from 'express'
+import { removePhotoFile } from './photoRoutes.js'
 import type { NewSighting, SightingsStore } from './store.js'
 import { UUID_RE, sendValidation, rejectUnknownFields } from '../httpValidation.js'
 
@@ -112,8 +111,8 @@ export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler
       res.status(404).json({ error: 'not found' })
       return
     }
-    if (existing !== null && existing.photoPath !== null) {
-      await rm(path.join(photosDir, path.basename(existing.photoPath)), { force: true }).catch(() => {})
+    if (existing !== null) {
+      await removePhotoFile(photosDir, existing.photoPath)
     }
     res.status(204).end()
   })

@@ -66,7 +66,8 @@ export function SightingDetail({
 
   const PHOTO_MESSAGES = { disabled: 'Photos are disabled right now', failed: "Couldn't update the photo — try again" }
 
-  async function onPickPhoto(file: File | undefined) {
+  async function onPickPhoto(input: HTMLInputElement) {
+    const file = input.files?.[0]
     if (file === undefined) return
     setPhotoError(null)
     try {
@@ -74,11 +75,14 @@ export function SightingDetail({
       write.run((authHeader) => uploadPhoto(sighting.id, blob, authHeader), () => {}, PHOTO_MESSAGES)
     } catch {
       setPhotoError("Couldn't read that photo")
+    } finally {
+      input.value = ''
     }
   }
 
   function onDetailPhoto(blob: Blob | null) {
     if (blob === null) return
+    setPhotoError(null)
     write.run((authHeader) => uploadPhoto(sighting.id, blob, authHeader), () => {}, PHOTO_MESSAGES)
   }
 
@@ -91,6 +95,7 @@ export function SightingDetail({
     }
     clearTimeout(photoConfirmTimer.current)
     setConfirmingPhoto(false)
+    setPhotoError(null)
     write.run((authHeader) => removePhoto(sighting.id, authHeader), () => {}, PHOTO_MESSAGES)
   }
 
@@ -122,7 +127,7 @@ export function SightingDetail({
                 accept="image/*"
                 aria-label="Replace photo"
                 disabled={write.busy}
-                onChange={(e) => void onPickPhoto(e.target.files?.[0])}
+                onChange={(e) => void onPickPhoto(e.currentTarget)}
               />
             </label>
             <button

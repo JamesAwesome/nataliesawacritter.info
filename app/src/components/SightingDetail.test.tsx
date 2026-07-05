@@ -182,9 +182,6 @@ describe('friend toggle', () => {
 })
 
 describe('photo block', () => {
-  const PHOTO_MESSAGES = { disabled: 'Photos are disabled right now', failed: "Couldn't update the photo — try again" }
-  void PHOTO_MESSAGES
-
   it('renders the img when the sighting has a photo', () => {
     renderDetail({ sighting: makeSighting({ photoPath: '/api/photos/a-1.jpg' }) })
     expect(screen.getByRole('img')).toHaveAttribute('src', '/api/photos/a-1.jpg')
@@ -222,5 +219,21 @@ describe('photo block', () => {
     renderDetail({ sighting, uploadPhoto })
     await userEvent.upload(screen.getByLabelText('Replace photo'), new File(['q'], 'q.jpg', { type: 'image/jpeg' }))
     await vi.waitFor(() => expect(uploadPhoto).toHaveBeenCalledWith(sighting.id, expect.any(Blob), expect.any(String)))
+  })
+
+  it('resets the replace-photo input so re-picking the same file after a failure retries', async () => {
+    setCredentials('sekrit')
+    downscalePhoto.mockRejectedValueOnce(new Error('bad photo')).mockResolvedValueOnce(new Blob(['z'], { type: 'image/jpeg' }))
+    const uploadPhoto = vi.fn(async () => {})
+    const sighting = makeSighting({ photoPath: '/api/photos/a-1.jpg' })
+    renderDetail({ sighting, uploadPhoto })
+    const file = new File(['q'], 'q.jpg', { type: 'image/jpeg' })
+    await userEvent.upload(screen.getByLabelText('Replace photo'), file)
+    expect(await screen.findByText("Couldn't read that photo")).toBeInTheDocument()
+    expect(uploadPhoto).not.toHaveBeenCalled()
+    await userEvent.upload(screen.getByLabelText('Replace photo'), file)
+    await vi.waitFor(() =>
+      expect(uploadPhoto).toHaveBeenCalledWith(sighting.id, expect.any(Blob), expect.any(String)),
+    )
   })
 })

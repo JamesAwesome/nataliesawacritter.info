@@ -9,7 +9,7 @@ export const PHOTO_FILENAME_RE =
 
 const rawJpeg = express.raw({ type: 'image/jpeg', limit: '6mb' })
 
-async function removePhotoFile(photosDir: string, photoPath: string | null): Promise<void> {
+export async function removePhotoFile(photosDir: string, photoPath: string | null): Promise<void> {
   if (photoPath === null) return
   // photoPath is the API path (/api/photos/<file>); basename is the disk name.
   await rm(path.join(photosDir, path.basename(photoPath)), { force: true }).catch(() => {
