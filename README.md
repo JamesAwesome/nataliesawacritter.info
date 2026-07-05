@@ -24,10 +24,31 @@ the `pgdata` named volume; only `docker compose down -v` destroys it.
     cp .env.example .env    # then set POSTGRES_PASSWORD (see comments inside)
     docker compose up -d --build
 
-App: http://localhost:8080 — `GET /api/health` reports DB connectivity.
+App: http://localhost:8080 — `GET /api/health` reports DB connectivity. If 8080 is
+already taken, set `APP_PORT` in `.env` (the container still listens on 8080 internally).
 
-For public hosting via Cloudflare tunnel, set `CLOUDFLARE_TUNNEL_TOKEN` in
-`.env` and run `docker compose --profile tunnel up -d`.
+The port is bound to `127.0.0.1` by default, so the app is reachable on this machine
+but **not** the LAN. To expose it to other machines on your network, set
+`APP_BIND=0.0.0.0` in `.env`. (Publishing to the host is not needed for the Cloudflare
+tunnel — see below.)
+
+### Cloudflare tunnel
+
+For public hosting, set `CLOUDFLARE_TUNNEL_TOKEN` in `.env` and run:
+
+    docker compose --profile tunnel up -d
+
+Then, in the Cloudflare Zero Trust dashboard (**Networks → Tunnels → your tunnel →
+Public Hostname**), point the origin **Service** at:
+
+    http://app:8080
+
+`app` is the compose service name (cloudflared resolves it over the docker network) and
+`8080` is the container's **internal** port — **not** `APP_PORT`. `APP_PORT`/`APP_BIND`
+only affect host publishing, which the tunnel bypasses entirely: cloudflared talks to the
+app container directly, so the tunnel works even when the host port is bound to localhost
+or not published at all. Using `localhost`, `127.0.0.1`, the LAN IP, or `APP_PORT` here is
+the usual cause of `dial tcp ...: connection refused` in the cloudflared logs.
 
 ## API
 
