@@ -88,3 +88,21 @@ export async function deleteProfile(id: string, authHeader: string): Promise<voi
   })
   if (!res.ok) throw new ApiError(res.status)
 }
+
+export async function uploadPhoto(id: string, photo: Blob, authHeader: string): Promise<Sighting> {
+  const res = await fetch(`/api/sightings/${id}/photo`, {
+    method: 'PUT',
+    headers: { 'content-type': 'image/jpeg', authorization: authHeader },
+    body: photo,
+  })
+  if (!res.ok) throw new ApiError(res.status)
+  return (await res.json()) as Sighting
+}
+
+export async function deletePhoto(id: string, authHeader: string): Promise<void> {
+  const res = await fetch(`/api/sightings/${id}/photo`, {
+    method: 'DELETE',
+    headers: { authorization: authHeader },
+  })
+  if (!res.ok) throw new ApiError(res.status)
+}

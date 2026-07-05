@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { NewProfileInput, NewSightingInput, Profile } from '../api'
+import type { NewProfileInput, NewSightingInput, Profile, Sighting } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
 import { PasswordPrompt } from './PasswordPrompt'
 import { Sheet } from './Sheet'
@@ -9,7 +9,7 @@ import { EmojiPicker } from './EmojiPicker'
 type Props = {
   open: boolean
   onClose: () => void
-  onSave: (fields: NewSightingInput, authHeader: string) => Promise<void>
+  onSave: (fields: NewSightingInput, authHeader: string) => Promise<Sighting>
   onLogged: () => void
   recent?: string[]
   friends?: Profile[]

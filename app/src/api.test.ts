@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, createProfile, createSighting, deleteProfile, deleteSighting, listProfiles, listSightings } from './api'
+import { ApiError, createProfile, createSighting, deletePhoto, deleteProfile, deleteSighting, listProfiles, listSightings, uploadPhoto } from './api'
 import { makeSighting, stubFetchQueue } from './test/helpers'
 
 afterEach(() => {
@@ -103,5 +103,25 @@ describe('profiles api', () => {
   it('throws ApiError with status on conflict', async () => {
     stubFetchQueue([{ status: 409, body: { error: 'conflict' } }])
     await expect(createProfile({ emoji: '🦊', name: 'Mr Fox' }, 'Basic x')).rejects.toMatchObject({ status: 409 })
+  })
+})
+
+describe('photo api', () => {
+  it('uploads via PUT with the blob body and auth', async () => {
+    const updated = makeSighting({ photoPath: '/api/photos/x-1.jpg' })
+    const mock = stubFetchQueue([{ status: 200, body: updated }])
+    const blob = new Blob(['jpg'], { type: 'image/jpeg' })
+    await expect(uploadPhoto(updated.id, blob, 'Basic x')).resolves.toEqual(updated)
+    expect(mock).toHaveBeenCalledWith(`/api/sightings/${updated.id}/photo`, {
+      method: 'PUT',
+      headers: { 'content-type': 'image/jpeg', authorization: 'Basic x' },
+      body: blob,
+    })
+  })
+
+  it('deletes via DELETE and throws ApiError on failure', async () => {
+    stubFetchQueue([{ status: 204, body: null }, { status: 503, body: { error: 'writes disabled' } }])
+    await expect(deletePhoto('id-1', 'Basic x')).resolves.toBeUndefined()
+    await expect(deletePhoto('id-1', 'Basic x')).rejects.toMatchObject({ status: 503 })
   })
 })
