@@ -116,7 +116,7 @@ export function NotifyBell() {
       <Sheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
         <h2 className="notify-sheet-title">Get critter alerts 🔔</h2>
         <ol className="notify-steps">
-          <li>Tap the Share button in Safari</li>
+          <li>Tap the Share button in your browser</li>
           <li>Choose “Add to Home Screen”</li>
           <li>Open the app from your home screen and tap the bell</li>
         </ol>
