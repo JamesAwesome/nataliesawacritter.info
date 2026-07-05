@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { Profile } from '../api'
 import { CURATED, EXTENDED, nameFor } from '../lib/critters'
 
@@ -8,6 +8,28 @@ type Props = {
   onCancel: () => void
   friends?: Profile[]
   onPickFriend?: (profile: Profile) => void
+}
+
+type TileProps = {
+  className?: string
+  ariaLabel?: string
+  tint?: string
+  onClick: () => void
+  children: ReactNode
+}
+
+function PickerTile({ className, ariaLabel, tint, onClick, children }: TileProps) {
+  return (
+    <button
+      type="button"
+      className={className === undefined ? 'picker-tile' : `picker-tile ${className}`}
+      style={tint === undefined ? undefined : { background: tint }}
+      aria-label={ariaLabel}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  )
 }
 
 export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFriend }: Props) {
@@ -20,16 +42,15 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
           <h3 className="picker-recent-heading">Friends</h3>
           <div className="picker-grid picker-grid-recent">
             {friends.map((profile) => (
-              <button
+              <PickerTile
                 key={profile.id}
-                type="button"
-                className="picker-tile friend-tile"
-                aria-label={`Friend ${profile.name}`}
+                className="friend-tile"
+                ariaLabel={`Friend ${profile.name}`}
                 onClick={() => onPickFriend?.(profile)}
               >
                 <span aria-hidden="true">{profile.emoji}</span>
                 <span className="friend-name">{profile.name}</span>
-              </button>
+              </PickerTile>
             ))}
           </div>
         </>
@@ -39,31 +60,22 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
           <h3 className="picker-recent-heading">Recently seen</h3>
           <div className="picker-grid picker-grid-recent">
             {recent.map((emoji) => (
-              <button
+              <PickerTile
                 key={emoji}
-                type="button"
-                className="picker-tile"
-                aria-label={`Recently seen ${nameFor(emoji) ?? emoji}`}
+                ariaLabel={`Recently seen ${nameFor(emoji) ?? emoji}`}
                 onClick={() => onPick(emoji, nameFor(emoji))}
               >
                 {emoji}
-              </button>
+              </PickerTile>
             ))}
           </div>
         </>
       )}
       <div className="picker-grid">
         {CURATED.map((c) => (
-          <button
-            key={c.emoji}
-            type="button"
-            className="picker-tile"
-            style={{ background: c.tint }}
-            aria-label={c.name}
-            onClick={() => onPick(c.emoji, c.name)}
-          >
+          <PickerTile key={c.emoji} tint={c.tint} ariaLabel={c.name} onClick={() => onPick(c.emoji, c.name)}>
             {c.emoji}
-          </button>
+          </PickerTile>
         ))}
         <button
           type="button"
@@ -78,15 +90,9 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
           <hr className="picker-divider" />
           <div className="picker-grid picker-grid-extended">
             {EXTENDED.map((emoji) => (
-              <button
-                key={emoji}
-                type="button"
-                className="picker-tile"
-                aria-label={emoji}
-                onClick={() => onPick(emoji, null)}
-              >
+              <PickerTile key={emoji} ariaLabel={emoji} onClick={() => onPick(emoji, null)}>
                 {emoji}
-              </button>
+              </PickerTile>
             ))}
           </div>
         </>
