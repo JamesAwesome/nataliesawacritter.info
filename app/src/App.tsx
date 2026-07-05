@@ -60,7 +60,7 @@ export default function App() {
           <main className="main-col">
             <div className="mobile-only">{logButton}</div>
             {status === 'error' && (
-              <p className="flow-error">
+              <p className="flow-error" data-testid="app-error">
                 Couldn't load sightings 😿{' '}
                 <button type="button" className="link-button" onClick={retry}>
                   Retry

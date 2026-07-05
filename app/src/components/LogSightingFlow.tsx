@@ -100,7 +100,7 @@ export function LogSightingFlow({
         />
       ) : (
         <div className="flow-details">
-          {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
+          {write.actionError !== null && <p className="flow-error" data-testid="flow-error">{write.actionError}</p>}
           <DetailsForm
             key={[picked.emoji, picked.name ?? '', picked.place ?? ''].join(' ')}
             emoji={picked.emoji}

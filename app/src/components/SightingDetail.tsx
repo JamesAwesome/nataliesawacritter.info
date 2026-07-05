@@ -93,7 +93,7 @@ export function SightingDetail({
           {matching === undefined ? '⭐ Save as friend' : 'Remove friend'}
         </button>
       )}
-      {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
+      {write.actionError !== null && <p className="flow-error" data-testid="detail-error">{write.actionError}</p>}
       <div className="details-actions">
         <button type="button" className="btn-secondary" onClick={onBack}>
           Back

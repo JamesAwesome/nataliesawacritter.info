@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { setCredentials } from './auth'
-import { makeSighting, stubFetchByUrl, stubFetchQueue, stubMatchMedia, useFakeClock } from './test/helpers'
+import { makeSighting, makeProfile, stubFetchByUrl, stubFetchQueue, stubMatchMedia, useFakeClock } from './test/helpers'
 
 const ROW = makeSighting()
 
@@ -122,15 +122,7 @@ describe('App shell', () => {
       '/api/profiles': [
         {
           status: 200,
-          body: [
-            {
-              id: '00000000-0000-4000-8000-000000000009',
-              emoji: '🦊',
-              name: 'Mr Fox',
-              place: 'train station',
-              createdAt: '2026-07-04T12:00:00.000Z',
-            },
-          ],
+          body: [makeProfile()],
         },
       ],
     })

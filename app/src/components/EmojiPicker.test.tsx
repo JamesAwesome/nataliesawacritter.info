@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { EmojiPicker } from './EmojiPicker'
+import { makeProfile } from '../test/helpers'
 
 describe('EmojiPicker recently-seen row', () => {
   it('hides the recent row when there are no recent emoji', () => {
@@ -33,13 +34,7 @@ describe('EmojiPicker recently-seen row', () => {
   })
 })
 
-const MR_FOX = {
-  id: '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa',
-  emoji: '🦊',
-  name: 'Mr Fox',
-  place: 'train station',
-  createdAt: '2026-07-04T12:00:00.000Z',
-}
+const MR_FOX = makeProfile()
 
 describe('EmojiPicker friends row', () => {
   it('hides the row when there are no friends', () => {
