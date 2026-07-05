@@ -5,6 +5,9 @@ import App from './App'
 import { setCredentials } from './auth'
 import { makeSighting, makeProfile, stubFetchByUrl, stubFetchQueue, stubMatchMedia, useFakeClock } from './test/helpers'
 
+const downscalePhoto = vi.hoisted(() => vi.fn())
+vi.mock('./lib/photo', () => ({ downscalePhoto }))
+
 const ROW = makeSighting()
 
 afterEach(() => {
@@ -129,6 +132,32 @@ describe('App shell', () => {
     render(<App />)
     await userEvent.click(screen.getAllByRole('button', { name: /log a sighting/i })[0])
     expect(await screen.findByRole('button', { name: 'Friend Mr Fox' })).toBeInTheDocument()
+  })
+
+  it('logging with a photo PUTs it and applies the returned row', async () => {
+    setCredentials('sekrit')
+    const created = makeSighting({ emoji: '🦊', name: 'Fox' })
+    const withPhoto = { ...created, photoPath: `/api/photos/${created.id}-1.jpg` }
+    downscalePhoto.mockResolvedValueOnce(new Blob(['x'], { type: 'image/jpeg' }))
+    stubFetchByUrl({
+      '/api/sightings': [
+        { status: 200, body: [] },
+        { status: 201, body: created },
+        { status: 200, body: withPhoto }, // the PUT response
+      ],
+      '/api/profiles': [{ status: 200, body: [] }],
+    })
+    render(<App />)
+    await userEvent.click(screen.getAllByRole('button', { name: /log a sighting/i })[0])
+    await userEvent.click(screen.getByRole('button', { name: 'Fox' }))
+    await userEvent.upload(screen.getByLabelText(/add a photo/i), new File(['p'], 'p.jpg', { type: 'image/jpeg' }))
+    await screen.findByText('✓ Photo added')
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    await screen.findByText('🎉 Logged!')
+    // applySighting ran: opening the detail shows the served photo
+    const recent = screen.getAllByTestId('recent-critters')[0]
+    await userEvent.click(within(recent).getByText('Fox'))
+    expect(await screen.findByRole('img')).toHaveAttribute('src', withPhoto.photoPath)
   })
 })
 
