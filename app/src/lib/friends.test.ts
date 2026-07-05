@@ -24,8 +24,9 @@ describe('friendKeys / isFriendSighting', () => {
   })
 
   it('the NUL separator prevents cross-field collisions', () => {
-    // profile (emoji '🦊 x', name 'y') must NOT match sighting (emoji '🦊', name 'x y')
-    const keys = friendKeys([makeProfile({ emoji: '🦊 x', name: 'y' })])
-    expect(isFriendSighting(makeSighting({ emoji: '🦊', name: 'x y' }), keys)).toBe(false)
+    // Without the separator, profile ('🦊a','b') and sighting ('🦊','ab')
+    // both concatenate to '🦊ab' — the NUL keeps the fields apart.
+    const keys = friendKeys([makeProfile({ emoji: '🦊a', name: 'b' })])
+    expect(isFriendSighting(makeSighting({ emoji: '🦊', name: 'ab' }), keys)).toBe(false)
   })
 })
