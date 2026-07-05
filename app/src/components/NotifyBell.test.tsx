@@ -104,6 +104,18 @@ describe('NotifyBell', () => {
     expect(mock).toHaveBeenCalledWith('/api/push/subscriptions', expect.objectContaining({ method: 'DELETE' }))
   })
 
+  it('shows a note and stays on when the browser unsubscribe fails', async () => {
+    const existing = fakeSubscription()
+    existing.unsubscribe = vi.fn(async () => {
+      throw new Error('boom')
+    })
+    mockPushEnv({ existing })
+    render(<NotifyBell />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Alerts on' }))
+    await screen.findByText("Couldn't turn off notifications — try again")
+    expect(screen.getByRole('button', { name: 'Alerts on' })).toBeInTheDocument()
+  })
+
   it('shows the blocked note when permission is denied', async () => {
     mockPushEnv({ permission: 'denied' })
     render(<NotifyBell />)

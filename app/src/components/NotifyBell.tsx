@@ -83,6 +83,9 @@ export function NotifyBell() {
         deletePushSubscription(subscription.endpoint).catch(() => {}) // server prunes on 410 anyway
       }
       setState('off')
+    } catch {
+      // Local subscription still exists, so 'on' remains truthful — just tell the user.
+      setNote("Couldn't turn off notifications — try again")
     } finally {
       setBusy(false)
     }
