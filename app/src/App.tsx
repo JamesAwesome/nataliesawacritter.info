@@ -36,9 +36,9 @@ export default function App() {
   // Adjusted during render (React's "you might not need an effect" pattern)
   // rather than in a useEffect, so the fix lands before paint instead of
   // causing an extra commit.
-  const [healedSightings, setHealedSightings] = useState(sightings)
-  if (sightings !== healedSightings) {
-    setHealedSightings(sightings)
+  const [prevSightings, setPrevSightings] = useState(sightings)
+  if (sightings !== prevSightings) {
+    setPrevSightings(sightings)
     if (!sheetIsValid(sheet, sightings)) setSheet(null)
   }
 
