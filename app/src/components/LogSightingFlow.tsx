@@ -19,6 +19,9 @@ type Props = {
   /** When provided, arriving via a friend tile shows a status line with a
    *  two-tap Remove in place of the save-as-friend checkbox. */
   onRemoveFriend?: (id: string, authHeader: string) => Promise<void>
+  /** When provided, DetailsForm shows a photo picker; the picked photo uploads
+   *  best-effort after the sighting saves (failures never block logging). */
+  onUploadPhoto?: (id: string, photo: Blob, authHeader: string) => Promise<void>
 }
 
 type Picked = { emoji: string; name: string | null; place: string | null; friendId: string | null }
@@ -32,6 +35,7 @@ export function LogSightingFlow({
   friends = [],
   onSaveFriend,
   onRemoveFriend,
+  onUploadPhoto,
 }: Props) {
   const [picked, setPicked] = useState<Picked | null>(null)
   const write = useWriteAction({
@@ -52,16 +56,25 @@ export function LogSightingFlow({
     onClose()
   }
 
-  function save(fields: NewSightingInput, opts?: { saveAsFriend: boolean }) {
+  function save(fields: NewSightingInput, opts?: { saveAsFriend: boolean; photo: Blob | null }) {
     write.run(
       async (authHeader) => {
-        await onSave(fields, authHeader)
+        const created = await onSave(fields, authHeader)
         if (opts?.saveAsFriend && fields.name !== undefined && onSaveFriend !== undefined) {
           // Best-effort: the sighting is already logged; a failed friend save
           // must not surface as a logging error (Sighting Detail's toggle is
           // the recovery path). 409 already-a-friend resolves inside addProfile.
           try {
             await onSaveFriend({ emoji: fields.emoji, name: fields.name, place: fields.place }, authHeader)
+          } catch {
+            // silent by design
+          }
+        }
+        if (opts?.photo != null && onUploadPhoto !== undefined && created != null) {
+          // Best-effort like the friend save: the sighting is logged; Detail's
+          // add-photo is the recovery path.
+          try {
+            await onUploadPhoto(created.id, opts.photo, authHeader)
           } catch {
             // silent by design
           }
@@ -113,6 +126,7 @@ export function LogSightingFlow({
             sourceFriend={pickedFriend}
             onRemoveFriend={removeFriend}
             removing={write.busy}
+            photoControl={onUploadPhoto !== undefined}
           />
           {write.prompt.open && (
             <div className="prompt-overlay">

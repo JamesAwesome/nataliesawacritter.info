@@ -13,6 +13,11 @@
   --toast-bg: #4a5f8e;
   --other-border: #9db6e8;
   --other-text: #5f80c7;
+  --photo-border: #9db6e8;
+  --photo-text: #5f80c7;
+  --photo-ok-border: #5fbfa6;
+  --photo-ok-text: #3e9c81;
+  --photo-ok-bg: #effaf3;
   --scrim: rgba(70, 90, 140, 0.28);
   --shadow-shell: 0 20px 50px rgba(70, 90, 140, 0.22);
   --shadow-card: 0 4px 14px rgba(90, 100, 150, 0.08);
@@ -756,4 +761,50 @@ button.day-cell {
 .friend-remove:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.photo-control {
+  margin-top: 12px;
+}
+
+.photo-add {
+  display: block;
+  border: 2px dashed var(--photo-border);
+  color: var(--photo-text);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.photo-add input {
+  display: none;
+}
+
+.photo-add.preparing {
+  opacity: 0.6;
+}
+
+.photo-control.added {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid var(--photo-ok-border);
+  color: var(--photo-ok-text);
+  background: var(--photo-ok-bg);
+  border-radius: 12px;
+  padding: 12px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.photo-clear {
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
 }

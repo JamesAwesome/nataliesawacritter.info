@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import type { NewSightingInput, Profile } from '../api'
 import { normalizedName } from '../lib/critters'
 import { formatClockTime, nowClockTime } from '../lib/format'
+import { PhotoControl } from './PhotoControl'
 
 type Props = {
   emoji: string
   initialName: string | null
   onBack: () => void
-  onSave: (fields: NewSightingInput, opts?: { saveAsFriend: boolean }) => void
+  onSave: (fields: NewSightingInput, opts?: { saveAsFriend: boolean; photo: Blob | null }) => void
   saving: boolean
   initialPlace?: string | null
   /** When true, renders the "⭐ Save as a friend" checkbox and passes its state via onSave's opts. */
@@ -18,6 +19,8 @@ type Props = {
   sourceFriend?: Profile | null
   onRemoveFriend?: () => void
   removing?: boolean
+  /** When true, renders the photo picker and passes its held blob via onSave's opts. */
+  photoControl?: boolean
 }
 
 const CONFIRM_WINDOW_MS = 4000
@@ -40,6 +43,7 @@ export function DetailsForm({
   sourceFriend,
   onRemoveFriend,
   removing,
+  photoControl,
 }: Props) {
   const [name, setName] = useState(initialName ?? '')
   const [sightedOn, setSightedOn] = useState(today)
@@ -47,6 +51,7 @@ export function DetailsForm({
   const [place, setPlace] = useState(initialPlace ?? '')
   const [comment, setComment] = useState('')
   const [saveAsFriend, setSaveAsFriend] = useState(false)
+  const [photo, setPhoto] = useState<Blob | null>(null)
   const [confirmingRemove, setConfirmingRemove] = useState(false)
   const confirmTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -67,9 +72,11 @@ export function DetailsForm({
     if (sightedTime !== '') fields.sightedTime = formatClockTime(sightedTime)
     if (trimmedPlace !== '') fields.place = trimmedPlace
     if (comment !== '') fields.comment = comment
-    if (friendToggle) {
-      // A friend needs a name — an empty name silently drops the request.
-      onSave(fields, { saveAsFriend: saveAsFriend && trimmedName !== '' && liveFriend === null })
+    if (friendToggle || photoControl) {
+      onSave(fields, {
+        saveAsFriend: friendToggle === true && saveAsFriend && trimmedName !== '' && liveFriend === null,
+        photo,
+      })
     } else {
       onSave(fields)
     }
@@ -128,6 +135,7 @@ export function DetailsForm({
         Comment
         <textarea rows={2} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Comment (optional)" />
       </label>
+      {photoControl && <PhotoControl photo={photo} onPhoto={setPhoto} />}
       {liveFriend !== null ? (
         <p className="friend-status">
           ⭐ {liveFriend.name} is one of Natalie's friends ·{' '}

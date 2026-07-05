@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { uploadPhoto } from './api'
 import { CalendarPane } from './components/CalendarPane'
 import { DayDetail } from './components/DayDetail'
 import { Header } from './components/Header'
@@ -23,7 +24,7 @@ type SheetState =
   | { kind: 'sighting'; id: string; fromDay?: string }
 
 export default function App() {
-  const { sightings, status, addSighting, removeSighting, retry } = useSightings()
+  const { sightings, status, addSighting, removeSighting, applySighting, retry } = useSightings()
   const { profiles, addProfile, removeProfile } = useProfiles()
   const isDesktop = useIsDesktop()
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
@@ -116,6 +117,9 @@ export default function App() {
         friends={profiles}
         onSaveFriend={addProfile}
         onRemoveFriend={removeProfile}
+        onUploadPhoto={async (id, photo, authHeader) => {
+          applySighting(await uploadPhoto(id, photo, authHeader))
+        }}
       />
       {sheet?.kind === 'day' && (
         <Sheet open onClose={() => setSheet(null)}>

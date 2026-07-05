@@ -3,8 +3,11 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { NewSightingInput } from '../api'
 import { setCredentials } from '../auth'
-import { useFakeClock, makeProfile } from '../test/helpers'
+import { useFakeClock, makeProfile, makeSighting } from '../test/helpers'
 import { LogSightingFlow } from './LogSightingFlow'
+
+const downscalePhoto = vi.hoisted(() => vi.fn())
+vi.mock('../lib/photo', () => ({ downscalePhoto }))
 
 const MR_FOX = makeProfile()
 
@@ -165,5 +168,45 @@ describe('LogSightingFlow friends', () => {
     rerender(<LogSightingFlow {...props} friends={[]} />)
     expect(screen.queryByText(/is one of Natalie's friends/)).not.toBeInTheDocument()
     expect(screen.getByRole('checkbox', { name: /save as a friend/i })).toBeInTheDocument()
+  })
+
+  it('uploads the picked photo best-effort after the sighting saves', async () => {
+    setCredentials('sekrit')
+    downscalePhoto.mockResolvedValueOnce(new Blob(['x'], { type: 'image/jpeg' }))
+    const created = makeSighting()
+    const onSave = vi.fn(async () => created)
+    const onUploadPhoto = vi.fn(async () => {})
+    render(
+      <LogSightingFlow open onClose={() => {}} onSave={onSave} onLogged={vi.fn()} onSaveFriend={vi.fn(async () => {})} onUploadPhoto={onUploadPhoto} />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Fox' }))
+    await userEvent.upload(screen.getByLabelText(/add a photo/i), new File(['p'], 'p.jpg', { type: 'image/jpeg' }))
+    await screen.findByText('✓ Photo added')
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    await vi.waitFor(() =>
+      expect(onUploadPhoto).toHaveBeenCalledWith(created.id, expect.any(Blob), 'Basic ' + btoa('natalie:sekrit')),
+    )
+  })
+
+  it('a failed photo upload never blocks the logged toast', async () => {
+    setCredentials('sekrit')
+    downscalePhoto.mockResolvedValueOnce(new Blob(['x'], { type: 'image/jpeg' }))
+    const onLogged = vi.fn()
+    render(
+      <LogSightingFlow
+        open
+        onClose={() => {}}
+        onSave={vi.fn(async () => makeSighting())}
+        onLogged={onLogged}
+        onUploadPhoto={vi.fn(async () => {
+          throw new Error('network down')
+        })}
+      />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Fox' }))
+    await userEvent.upload(screen.getByLabelText(/add a photo/i), new File(['p'], 'p.jpg', { type: 'image/jpeg' }))
+    await screen.findByText('✓ Photo added')
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    await vi.waitFor(() => expect(onLogged).toHaveBeenCalledTimes(1))
   })
 })
