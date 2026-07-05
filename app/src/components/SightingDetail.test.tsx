@@ -6,6 +6,9 @@ import { setCredentials } from '../auth'
 import { makeSighting, useFakeClock } from '../test/helpers'
 import { SightingDetail } from './SightingDetail'
 
+const downscalePhoto = vi.hoisted(() => vi.fn())
+vi.mock('../lib/photo', () => ({ downscalePhoto }))
+
 afterEach(() => {
   localStorage.clear()
 })
@@ -24,6 +27,8 @@ function renderDetail(overrides: Partial<Parameters<typeof SightingDetail>[0]> =
       profiles={[]}
       addProfile={vi.fn(async () => {})}
       removeProfile={vi.fn(async () => {})}
+      uploadPhoto={vi.fn(async () => {})}
+      removePhoto={vi.fn(async () => {})}
       {...overrides}
     />,
   )
@@ -173,5 +178,49 @@ describe('friend toggle', () => {
     await vi.waitFor(() =>
       expect(addProfile).toHaveBeenCalledWith(expect.anything(), 'Basic ' + btoa('natalie:sekrit')),
     )
+  })
+})
+
+describe('photo block', () => {
+  const PHOTO_MESSAGES = { disabled: 'Photos are disabled right now', failed: "Couldn't update the photo — try again" }
+  void PHOTO_MESSAGES
+
+  it('renders the img when the sighting has a photo', () => {
+    renderDetail({ sighting: makeSighting({ photoPath: '/api/photos/a-1.jpg' }) })
+    expect(screen.getByRole('img')).toHaveAttribute('src', '/api/photos/a-1.jpg')
+    expect(screen.getByRole('button', { name: 'Replace photo' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Remove photo' })).toBeInTheDocument()
+  })
+
+  it('adds a photo immediately from the picker when there is none', async () => {
+    setCredentials('sekrit')
+    downscalePhoto.mockResolvedValueOnce(new Blob(['x'], { type: 'image/jpeg' }))
+    const uploadPhoto = vi.fn(async () => {})
+    const { sighting } = renderDetail({ uploadPhoto })
+    await userEvent.upload(screen.getByLabelText(/add a photo/i), new File(['p'], 'p.jpg', { type: 'image/jpeg' }))
+    await vi.waitFor(() =>
+      expect(uploadPhoto).toHaveBeenCalledWith(sighting.id, expect.any(Blob), 'Basic ' + btoa('natalie:sekrit')),
+    )
+  })
+
+  it('removes with the two-tap confirm', async () => {
+    setCredentials('sekrit')
+    const removePhoto = vi.fn(async () => {})
+    const sighting = makeSighting({ photoPath: '/api/photos/a-1.jpg' })
+    renderDetail({ sighting, removePhoto })
+    await userEvent.click(screen.getByRole('button', { name: 'Remove photo' }))
+    expect(removePhoto).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: 'Really remove?' }))
+    await vi.waitFor(() => expect(removePhoto).toHaveBeenCalledWith(sighting.id, expect.any(String)))
+  })
+
+  it('replaces via the picker', async () => {
+    setCredentials('sekrit')
+    downscalePhoto.mockResolvedValueOnce(new Blob(['y'], { type: 'image/jpeg' }))
+    const uploadPhoto = vi.fn(async () => {})
+    const sighting = makeSighting({ photoPath: '/api/photos/a-1.jpg' })
+    renderDetail({ sighting, uploadPhoto })
+    await userEvent.upload(screen.getByLabelText('Replace photo'), new File(['q'], 'q.jpg', { type: 'image/jpeg' }))
+    await vi.waitFor(() => expect(uploadPhoto).toHaveBeenCalledWith(sighting.id, expect.any(Blob), expect.any(String)))
   })
 })

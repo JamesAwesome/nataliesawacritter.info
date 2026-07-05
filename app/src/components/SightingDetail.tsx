@@ -3,7 +3,9 @@ import type { NewProfileInput, Profile, Sighting } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
 import { normalizedName } from '../lib/critters'
 import { formatWhen } from '../lib/format'
+import { downscalePhoto } from '../lib/photo'
 import { PasswordPrompt } from './PasswordPrompt'
+import { PhotoControl } from './PhotoControl'
 
 type Props = {
   sighting: Sighting
@@ -13,6 +15,8 @@ type Props = {
   profiles: Profile[]
   addProfile(fields: NewProfileInput, authHeader: string): Promise<void>
   removeProfile(id: string, authHeader: string): Promise<void>
+  uploadPhoto(id: string, photo: Blob, authHeader: string): Promise<void>
+  removePhoto(id: string, authHeader: string): Promise<void>
 }
 
 const CONFIRM_WINDOW_MS = 4000
@@ -25,6 +29,8 @@ export function SightingDetail({
   profiles,
   addProfile,
   removeProfile,
+  uploadPhoto,
+  removePhoto,
 }: Props) {
   const write = useWriteAction({
     disabled: 'Deleting is disabled right now',
@@ -53,6 +59,41 @@ export function SightingDetail({
     write.run((authHeader) => removeSighting(sighting.id, authHeader), onDeleted)
   }
 
+  const [confirmingPhoto, setConfirmingPhoto] = useState(false)
+  const photoConfirmTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(photoConfirmTimer.current), [])
+  const [photoError, setPhotoError] = useState<string | null>(null)
+
+  const PHOTO_MESSAGES = { disabled: 'Photos are disabled right now', failed: "Couldn't update the photo — try again" }
+
+  async function onPickPhoto(file: File | undefined) {
+    if (file === undefined) return
+    setPhotoError(null)
+    try {
+      const blob = await downscalePhoto(file)
+      write.run((authHeader) => uploadPhoto(sighting.id, blob, authHeader), () => {}, PHOTO_MESSAGES)
+    } catch {
+      setPhotoError("Couldn't read that photo")
+    }
+  }
+
+  function onDetailPhoto(blob: Blob | null) {
+    if (blob === null) return
+    write.run((authHeader) => uploadPhoto(sighting.id, blob, authHeader), () => {}, PHOTO_MESSAGES)
+  }
+
+  function onRemovePhotoClick() {
+    if (!confirmingPhoto) {
+      setConfirmingPhoto(true)
+      clearTimeout(photoConfirmTimer.current)
+      photoConfirmTimer.current = setTimeout(() => setConfirmingPhoto(false), CONFIRM_WINDOW_MS)
+      return
+    }
+    clearTimeout(photoConfirmTimer.current)
+    setConfirmingPhoto(false)
+    write.run((authHeader) => removePhoto(sighting.id, authHeader), () => {}, PHOTO_MESSAGES)
+  }
+
   return (
     <div className="sighting-detail">
       <div className="detail-head">
@@ -65,6 +106,38 @@ export function SightingDetail({
           📍 <strong>{sighting.place}</strong>
         </p>
       )}
+      {sighting.photoPath !== null ? (
+        <div className="detail-photo-block">
+          <img
+            className="detail-photo"
+            src={sighting.photoPath}
+            alt={sighting.name ?? `${sighting.emoji} sighting`}
+            loading="lazy"
+          />
+          <div className="photo-actions">
+            <label className="photo-action" role="button">
+              Replace photo
+              <input
+                type="file"
+                accept="image/*"
+                disabled={write.busy}
+                onChange={(e) => void onPickPhoto(e.target.files?.[0])}
+              />
+            </label>
+            <button
+              type="button"
+              className={confirmingPhoto ? 'photo-action danger confirming' : 'photo-action danger'}
+              disabled={write.busy}
+              onClick={onRemovePhotoClick}
+            >
+              {confirmingPhoto ? 'Really remove?' : 'Remove photo'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <PhotoControl photo={null} onPhoto={(blob) => void onDetailPhoto(blob)} />
+      )}
+      {photoError !== null && <p className="flow-error">{photoError}</p>}
       {sighting.comment !== null && <p className="detail-comment">{sighting.comment}</p>}
       {sighting.name !== null && (
         <button

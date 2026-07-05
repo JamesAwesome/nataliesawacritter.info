@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { uploadPhoto } from './api'
+import { deletePhoto, uploadPhoto } from './api'
 import { CalendarPane } from './components/CalendarPane'
 import { DayDetail } from './components/DayDetail'
 import { Header } from './components/Header'
@@ -147,6 +147,13 @@ export default function App() {
                 profiles={profiles}
                 addProfile={addProfile}
                 removeProfile={removeProfile}
+                uploadPhoto={async (id, photo, authHeader) => {
+                  applySighting(await uploadPhoto(id, photo, authHeader))
+                }}
+                removePhoto={async (id, authHeader) => {
+                  await deletePhoto(id, authHeader)
+                  applySighting({ ...selected, photoPath: null })
+                }}
               />
             </Sheet>
           )
