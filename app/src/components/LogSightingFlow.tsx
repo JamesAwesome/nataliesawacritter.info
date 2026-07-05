@@ -9,7 +9,7 @@ import { EmojiPicker } from './EmojiPicker'
 type Props = {
   open: boolean
   onClose: () => void
-  onSave: (fields: NewSightingInput, authHeader: string) => Promise<Sighting>
+  onSave: (fields: NewSightingInput, authHeader: string) => Promise<Sighting | void>
   onLogged: () => void
   recent?: string[]
   friends?: Profile[]

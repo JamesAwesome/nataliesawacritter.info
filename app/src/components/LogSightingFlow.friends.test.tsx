@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { NewSightingInput } from '../api'
 import { setCredentials } from '../auth'
-import { useFakeClock, makeProfile, makeSighting } from '../test/helpers'
+import { useFakeClock, makeProfile } from '../test/helpers'
 import { LogSightingFlow } from './LogSightingFlow'
 
 const MR_FOX = makeProfile()
@@ -17,7 +17,7 @@ describe('LogSightingFlow friends', () => {
 
   it('tapping a friend prefills Step B (name + place) and one Save logs it', async () => {
     setCredentials('sekrit')
-    const onSave = vi.fn(async (_f: NewSightingInput, _h: string) => makeSighting())
+    const onSave = vi.fn(async (_f: NewSightingInput, _h: string) => {})
     const onLogged = vi.fn()
     render(
       <LogSightingFlow open onClose={() => {}} onSave={onSave} onLogged={onLogged} friends={[MR_FOX]} />,
@@ -35,7 +35,7 @@ describe('LogSightingFlow friends', () => {
 
   it('the save-as-friend toggle logs AND saves the friend in one flow', async () => {
     setCredentials('sekrit')
-    const onSave = vi.fn(async (_f: NewSightingInput, _h: string) => makeSighting())
+    const onSave = vi.fn(async (_f: NewSightingInput, _h: string) => {})
     const onSaveFriend = vi.fn(async () => {})
     const onLogged = vi.fn()
     render(
@@ -62,7 +62,7 @@ describe('LogSightingFlow friends', () => {
     setCredentials('sekrit')
     const onSaveFriend = vi.fn(async () => {})
     render(
-      <LogSightingFlow open onClose={() => {}} onSave={vi.fn(async () => makeSighting())} onLogged={vi.fn()} onSaveFriend={onSaveFriend} />,
+      <LogSightingFlow open onClose={() => {}} onSave={vi.fn(async () => {})} onLogged={vi.fn()} onSaveFriend={onSaveFriend} />,
     )
     await userEvent.click(screen.getByRole('button', { name: 'Fox' }))
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
@@ -76,7 +76,7 @@ describe('LogSightingFlow friends', () => {
       <LogSightingFlow
         open
         onClose={() => {}}
-        onSave={vi.fn(async () => makeSighting())}
+        onSave={vi.fn(async () => {})}
         onLogged={onLogged}
         onSaveFriend={vi.fn(async () => {
           throw new TypeError('network down')
@@ -92,7 +92,7 @@ describe('LogSightingFlow friends', () => {
 
   it('the toggle is disabled until a name is entered', async () => {
     render(
-      <LogSightingFlow open onClose={() => {}} onSave={vi.fn(async () => makeSighting())} onLogged={vi.fn()} onSaveFriend={vi.fn(async () => {})} />,
+      <LogSightingFlow open onClose={() => {}} onSave={vi.fn(async () => {})} onLogged={vi.fn()} onSaveFriend={vi.fn(async () => {})} />,
     )
     await userEvent.click(screen.getByRole('button', { name: /other/i }))
     await userEvent.click(screen.getByRole('button', { name: '🐝' }))
@@ -106,7 +106,7 @@ describe('LogSightingFlow friends', () => {
       <LogSightingFlow
         open
         onClose={() => {}}
-        onSave={vi.fn(async () => makeSighting())}
+        onSave={vi.fn(async () => {})}
         onLogged={vi.fn()}
         friends={[MR_FOX]}
         onSaveFriend={vi.fn(async () => {})}
@@ -123,7 +123,7 @@ describe('LogSightingFlow friends', () => {
       <LogSightingFlow
         open
         onClose={() => {}}
-        onSave={vi.fn(async () => makeSighting())}
+        onSave={vi.fn(async () => {})}
         onLogged={vi.fn()}
         friends={[MR_FOX]}
         onSaveFriend={vi.fn(async () => {})}
@@ -148,7 +148,7 @@ describe('LogSightingFlow friends', () => {
     const props = {
       open: true,
       onClose: () => {},
-      onSave: vi.fn(async () => makeSighting()),
+      onSave: vi.fn(async () => {}),
       onLogged: vi.fn(),
       onSaveFriend: vi.fn(async () => {}),
       onRemoveFriend,

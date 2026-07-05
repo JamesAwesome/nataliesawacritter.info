@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { NewSightingInput } from '../api'
 import { ApiError } from '../api'
 import { setCredentials } from '../auth'
-import { makeSighting, useFakeClock } from '../test/helpers'
+import { useFakeClock } from '../test/helpers'
 import { LogSightingFlow } from './LogSightingFlow'
 
 afterEach(() => {
@@ -12,7 +12,7 @@ afterEach(() => {
 })
 
 function renderFlow(overrides: Partial<Parameters<typeof LogSightingFlow>[0]> = {}) {
-  const onSave = overrides.onSave ?? vi.fn(async (_f: NewSightingInput, _h: string) => makeSighting())
+  const onSave = overrides.onSave ?? vi.fn(async (_f: NewSightingInput, _h: string) => {})
   const onLogged = overrides.onLogged ?? vi.fn()
   const onClose = overrides.onClose ?? vi.fn()
   render(
@@ -166,10 +166,10 @@ describe('LogSightingFlow', () => {
 
   it('closing the sheet during an in-flight save (late success) does not fire onLogged', async () => {
     setCredentials('sekrit')
-    let resolveSave: (value: ReturnType<typeof makeSighting>) => void = () => {}
+    let resolveSave: () => void = () => {}
     const onSave = vi.fn(
       () =>
-        new Promise<ReturnType<typeof makeSighting>>((res) => {
+        new Promise<void>((res) => {
           resolveSave = res
         }),
     )
@@ -181,7 +181,7 @@ describe('LogSightingFlow', () => {
     // abandon the in-flight save by closing the sheet
     fireEvent.keyDown(window, { key: 'Escape' })
 
-    resolveSave(makeSighting())
+    resolveSave()
     await vi.waitFor(() => expect(onSave).toHaveBeenCalledTimes(1))
 
     expect(onLogged).not.toHaveBeenCalled()
@@ -194,7 +194,7 @@ describe('LogSightingFlow', () => {
     let rejectSave: (err: unknown) => void = () => {}
     const onSave = vi.fn(
       () =>
-        new Promise<ReturnType<typeof makeSighting>>((_res, rej) => {
+        new Promise<void>((_res, rej) => {
           rejectSave = rej
         }),
     )
