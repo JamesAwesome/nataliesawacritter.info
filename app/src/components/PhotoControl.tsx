@@ -45,6 +45,7 @@ export function PhotoControl({ photo, onPhoto }: Props) {
           type="file"
           accept="image/*"
           disabled={preparing}
+          className="visually-hidden-input"
           onChange={(e) => void onPick(e.target.files?.[0])}
         />
       </label>

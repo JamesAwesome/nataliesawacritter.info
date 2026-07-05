@@ -236,4 +236,9 @@ describe('photo block', () => {
       expect(uploadPhoto).toHaveBeenCalledWith(sighting.id, expect.any(Blob), expect.any(String)),
     )
   })
+
+  it('the replace input is visually hidden, not display:none', () => {
+    renderDetail({ sighting: makeSighting({ photoPath: '/api/photos/a-1.jpg' }) })
+    expect(screen.getByLabelText('Replace photo')).toHaveClass('visually-hidden-input')
+  })
 })

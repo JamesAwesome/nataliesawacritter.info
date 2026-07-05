@@ -127,6 +127,7 @@ export function SightingDetail({
                 accept="image/*"
                 aria-label="Replace photo"
                 disabled={write.busy}
+                className="visually-hidden-input"
                 onChange={(e) => void onPickPhoto(e.currentTarget)}
               />
             </label>
