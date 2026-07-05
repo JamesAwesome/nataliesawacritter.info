@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { NewSightingInput, Profile } from '../api'
+import type { NewProfileInput, NewSightingInput, Profile } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
 import { PasswordPrompt } from './PasswordPrompt'
 import { Sheet } from './Sheet'
@@ -13,11 +13,14 @@ type Props = {
   onLogged: () => void
   recent?: string[]
   friends?: Profile[]
+  /** When provided, DetailsForm shows a "save as friend" toggle; the friend
+   *  saves best-effort after the sighting (failures never block logging). */
+  onSaveFriend?: (fields: NewProfileInput, authHeader: string) => Promise<void>
 }
 
 type Picked = { emoji: string; name: string | null; place: string | null }
 
-export function LogSightingFlow({ open, onClose, onSave, onLogged, recent = [], friends = [] }: Props) {
+export function LogSightingFlow({ open, onClose, onSave, onLogged, recent = [], friends = [], onSaveFriend }: Props) {
   const [picked, setPicked] = useState<Picked | null>(null)
   const write = useWriteAction({
     disabled: 'Saving is disabled right now',
@@ -30,9 +33,21 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged, recent = [], 
     onClose()
   }
 
-  function save(fields: NewSightingInput) {
+  function save(fields: NewSightingInput, opts?: { saveAsFriend: boolean }) {
     write.run(
-      (authHeader) => onSave(fields, authHeader),
+      async (authHeader) => {
+        await onSave(fields, authHeader)
+        if (opts?.saveAsFriend && fields.name !== undefined && onSaveFriend !== undefined) {
+          // Best-effort: the sighting is already logged; a failed friend save
+          // must not surface as a logging error (Sighting Detail's toggle is
+          // the recovery path). 409 already-a-friend resolves inside addProfile.
+          try {
+            await onSaveFriend({ emoji: fields.emoji, name: fields.name, place: fields.place }, authHeader)
+          } catch {
+            // silent by design
+          }
+        }
+      },
       () => {
         setPicked(null)
         onLogged()
@@ -66,6 +81,7 @@ export function LogSightingFlow({ open, onClose, onSave, onLogged, recent = [], 
             saving={write.busy}
             onBack={() => setPicked(null)}
             onSave={save}
+            friendToggle={onSaveFriend !== undefined}
           />
           {write.prompt.open && (
             <div className="prompt-overlay">

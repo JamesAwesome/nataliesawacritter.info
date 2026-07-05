@@ -6,9 +6,11 @@ type Props = {
   emoji: string
   initialName: string | null
   onBack: () => void
-  onSave: (fields: NewSightingInput) => void
+  onSave: (fields: NewSightingInput, opts?: { saveAsFriend: boolean }) => void
   saving: boolean
   initialPlace?: string | null
+  /** When true, renders the "⭐ Save as a friend" checkbox and passes its state via onSave's opts. */
+  friendToggle?: boolean
 }
 
 function today(): string {
@@ -18,12 +20,13 @@ function today(): string {
   return `${now.getFullYear()}-${month}-${day}`
 }
 
-export function DetailsForm({ emoji, initialName, onBack, onSave, saving, initialPlace }: Props) {
+export function DetailsForm({ emoji, initialName, onBack, onSave, saving, initialPlace, friendToggle }: Props) {
   const [name, setName] = useState(initialName ?? '')
   const [sightedOn, setSightedOn] = useState(today)
   const [sightedTime, setSightedTime] = useState('')
   const [place, setPlace] = useState(initialPlace ?? '')
   const [comment, setComment] = useState('')
+  const [saveAsFriend, setSaveAsFriend] = useState(false)
 
   function save() {
     const fields: NewSightingInput = { emoji, sightedOn }
@@ -34,7 +37,12 @@ export function DetailsForm({ emoji, initialName, onBack, onSave, saving, initia
     if (sightedTime !== '') fields.sightedTime = formatClockTime(sightedTime)
     if (trimmedPlace !== '') fields.place = trimmedPlace
     if (comment !== '') fields.comment = comment
-    onSave(fields)
+    if (friendToggle) {
+      // A friend needs a name — an empty name silently drops the request.
+      onSave(fields, { saveAsFriend: saveAsFriend && trimmedName !== '' })
+    } else {
+      onSave(fields)
+    }
   }
 
   return (
@@ -78,6 +86,17 @@ export function DetailsForm({ emoji, initialName, onBack, onSave, saving, initia
         Comment
         <textarea rows={2} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Comment (optional)" />
       </label>
+      {friendToggle && (
+        <label className="friend-checkbox">
+          <input
+            type="checkbox"
+            checked={saveAsFriend}
+            disabled={name.trim() === ''}
+            onChange={(e) => setSaveAsFriend(e.target.checked)}
+          />
+          ⭐ Save as a friend
+        </label>
+      )}
       <div className="details-actions">
         <button type="button" className="btn-secondary" onClick={onBack}>
           Back

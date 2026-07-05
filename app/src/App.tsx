@@ -30,7 +30,7 @@ export default function App() {
   // Derivations reused in JSX below; memoized so unrelated re-renders (toast,
   // sheet open/close) don't recompute them.
   const topTen = useMemo(() => leaderboard(sightings).slice(0, 10), [sightings])
-  const recent = useMemo(() => recentEmoji(sightings, 6), [sightings])
+  const recent = useMemo(() => recentEmoji(sightings, 4), [sightings])
   const [sheet, setSheet] = useState<SheetState>(null)
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -114,6 +114,7 @@ export default function App() {
         }}
         recent={recent}
         friends={profiles}
+        onSaveFriend={addProfile}
       />
       {sheet?.kind === 'day' && (
         <Sheet open onClose={() => setSheet(null)}>

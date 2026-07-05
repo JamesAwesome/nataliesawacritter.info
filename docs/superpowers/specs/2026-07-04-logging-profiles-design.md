@@ -138,3 +138,17 @@ stats/filtering · time-zone storage (times remain display strings).
   appears in the picker → tap → Step B prefilled incl. place → Save = logged.
   Remove friend works; re-saving an existing friend is a no-op (409 path).
 - Full suite, lint, typecheck, build green; CI green on the PR.
+
+## Post-implementation amendments (2026-07-04, user feedback on the PR)
+
+- **Log-form friend toggle**: Step B gains a "⭐ Save as a friend" checkbox
+  (disabled until a name is entered). On Save the sighting logs first, then the
+  friend saves best-effort in the same authenticated action — failures never
+  block logging or the toast; Sighting Detail's toggle is the recovery path;
+  already-a-friend resolves silently via the 409 path. This supersedes the
+  original decision to create friends only from Sighting Detail (both paths
+  now exist; the two-step-only flow felt disjointed in practice).
+- **Recently seen limit**: 4 (was 6).
+- **Friend identity hardening** (antagonistic review): names trimmed at the form
+  and route; the Sighting Detail match is case/whitespace-insensitive. A DB-level
+  unique index on (emoji, lower(trim(name))) is deferred to the photo cycle.
