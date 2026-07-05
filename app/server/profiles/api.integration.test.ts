@@ -3,7 +3,7 @@ import { createApp } from '../app.js'
 import type { createDb } from '../db/index.js'
 import { createSightingsStore } from '../sightings/store.js'
 import { createTestDb } from '../testDb.js'
-import { basic, withServer } from '../testUtils.js'
+import { basic, fakePushStore, nullNotifier, withServer } from '../testUtils.js'
 import { createProfilesStore } from './store.js'
 
 const AUTH = basic('natalie', 'sekrit')
@@ -28,6 +28,8 @@ describe('profiles API against real postgres', () => {
       profilesStore: createProfilesStore(handle.db),
       writeCredentials: { user: 'natalie', password: 'sekrit' },
       photosDir: '/tmp/unused-photos',
+      pushStore: fakePushStore(),
+      notifier: nullNotifier(),
     })
   }
 

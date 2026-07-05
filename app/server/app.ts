@@ -4,6 +4,9 @@ import { requireWriteAuth } from './auth.js'
 import { errorHandler } from './errorHandler.js'
 import { profilesRouter } from './profiles/routes.js'
 import type { ProfilesStore } from './profiles/store.js'
+import type { Notifier } from './push/notifier.js'
+import { pushRouter } from './push/routes.js'
+import type { PushStore } from './push/store.js'
 import { photoFileRouter, sightingPhotoRouter } from './sightings/photoRoutes.js'
 import { sightingsRouter } from './sightings/routes.js'
 import type { SightingsStore } from './sightings/store.js'
@@ -16,6 +19,9 @@ export interface AppDeps {
   /** null → write endpoints respond 503 "writes disabled" (deny by default). */
   writeCredentials: { user: string; password: string } | null
   photosDir: string
+  pushStore: PushStore
+  /** publicKey null → push endpoints 503 and notifySighting no-ops. */
+  notifier: Notifier
 }
 
 const writesDisabled: RequestHandler = (_req, res) => {
@@ -39,10 +45,16 @@ export function createApp(deps: AppDeps): Express {
   const writeGate = deps.writeCredentials
     ? requireWriteAuth(deps.writeCredentials.user, deps.writeCredentials.password)
     : writesDisabled
-  app.use('/api/sightings', sightingsRouter(deps.sightingsStore, writeGate, deps.photosDir))
+  app.use(
+    '/api/sightings',
+    sightingsRouter(deps.sightingsStore, writeGate, deps.photosDir, (sighting) => {
+      void deps.notifier.notifySighting(sighting) // fire-and-forget; notifier never rejects
+    }),
+  )
   app.use('/api/sightings', sightingPhotoRouter(deps.sightingsStore, writeGate, deps.photosDir))
   app.use('/api/photos', photoFileRouter(deps.photosDir))
   app.use('/api/profiles', profilesRouter(deps.profilesStore, writeGate))
+  app.use('/api/push', pushRouter(deps.pushStore, deps.notifier.publicKey))
 
   const clientDir = path.resolve(import.meta.dirname, '../client')
   app.use((req, res, next) => {

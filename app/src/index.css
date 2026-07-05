@@ -65,6 +65,7 @@ body {
   background: var(--rainbow);
   padding: 18px;
   text-align: center;
+  position: relative;
 }
 
 .app-header h1 {
@@ -73,6 +74,58 @@ body {
   font-weight: 600;
   font-size: 18px;
   color: var(--ink);
+}
+
+.notify-bell-wrap {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  text-align: right;
+}
+
+.notify-bell {
+  border: 1px solid var(--border-hairline);
+  background: #fff;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+}
+
+.notify-bell-on {
+  background: var(--tint-mint);
+}
+
+.notify-bell:disabled {
+  opacity: 0.6;
+}
+
+.notify-note {
+  margin: 6px 0 0;
+  padding: 6px 8px;
+  max-width: 210px;
+  font-size: 11px;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--border-hairline);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+}
+
+.notify-sheet-title {
+  margin: 4px 0 10px;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.notify-steps {
+  margin: 0 0 8px;
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.9;
 }
 
 .tab-bar {

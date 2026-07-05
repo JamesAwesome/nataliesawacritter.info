@@ -1,0 +1,13 @@
+{
+  "name": "Natalie Saw a Critter!",
+  "short_name": "Critters",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eaf6ff",
+  "theme_color": "#c7e3fa",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

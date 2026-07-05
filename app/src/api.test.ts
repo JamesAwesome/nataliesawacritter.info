@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, createProfile, createSighting, deletePhoto, deleteProfile, deleteSighting, listProfiles, listSightings, uploadPhoto } from './api'
+import { ApiError, createProfile, createSighting, deletePhoto, deleteProfile, deleteSighting, deletePushSubscription, fetchVapidKey, listProfiles, listSightings, savePushSubscription, uploadPhoto } from './api'
 import { makeSighting, stubFetchQueue } from './test/helpers'
 
 afterEach(() => {
@@ -123,5 +123,38 @@ describe('photo api', () => {
     stubFetchQueue([{ status: 204, body: null }, { status: 503, body: { error: 'writes disabled' } }])
     await expect(deletePhoto('id-1', 'Basic x')).resolves.toBeUndefined()
     await expect(deletePhoto('id-1', 'Basic x')).rejects.toMatchObject({ status: 503 })
+  })
+})
+
+describe('push api', () => {
+  it('fetchVapidKey returns the key, and null on 503 (push disabled)', async () => {
+    const mock = stubFetchQueue([{ status: 200, body: { key: 'pub-key' } }])
+    await expect(fetchVapidKey()).resolves.toBe('pub-key')
+    expect(mock).toHaveBeenCalledWith('/api/push/vapid-public-key')
+    stubFetchQueue([{ status: 503, body: { error: 'push disabled' } }])
+    await expect(fetchVapidKey()).resolves.toBeNull()
+  })
+
+  it('savePushSubscription POSTs the subscription JSON', async () => {
+    const sub = { endpoint: 'https://push.example.com/x', keys: { p256dh: 'pk', auth: 'ak' } }
+    const mock = stubFetchQueue([{ status: 201, body: { ok: true } }])
+    await expect(savePushSubscription(sub)).resolves.toBeUndefined()
+    expect(mock).toHaveBeenCalledWith('/api/push/subscriptions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(sub),
+    })
+    stubFetchQueue([{ status: 400, body: { error: 'validation' } }])
+    await expect(savePushSubscription(sub)).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('deletePushSubscription DELETEs by endpoint', async () => {
+    const mock = stubFetchQueue([{ status: 204, body: null }])
+    await expect(deletePushSubscription('https://push.example.com/x')).resolves.toBeUndefined()
+    expect(mock).toHaveBeenCalledWith('/api/push/subscriptions', {
+      method: 'DELETE',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ endpoint: 'https://push.example.com/x' }),
+    })
   })
 })

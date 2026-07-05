@@ -7,6 +7,7 @@ import {
   type NewProfileInput,
   type Profile,
 } from '../api'
+import { useVisibilityRefresh } from './useVisibilityRefresh'
 
 export type ProfilesState = {
   profiles: Profile[]
@@ -41,6 +42,19 @@ export function useProfiles(): ProfilesState {
     setStatus('loading')
     setLoadCount((n) => n + 1)
   }, [])
+
+  // Silent: on failure keep whatever is on screen; on success also clear a
+  // stale error state (a resumed PWA may have errored days ago).
+  useVisibilityRefresh(
+    useCallback(() => {
+      listProfiles()
+        .then((rows) => {
+          setProfiles(rows)
+          setStatus('ready')
+        })
+        .catch(() => {})
+    }, []),
+  )
 
   const addProfile = useCallback(async (fields: NewProfileInput, authHeader: string) => {
     try {

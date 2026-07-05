@@ -12,6 +12,7 @@ const ROW = makeSighting({
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
 })
 
 describe('useSightings', () => {
@@ -122,5 +123,61 @@ describe('useSightings', () => {
     const updated = { ...original, photoPath: '/api/photos/x-1.jpg' }
     act(() => result.current.applySighting(updated))
     expect(result.current.sightings).toEqual([updated])
+  })
+
+  it('refetches silently when the page becomes visible again', async () => {
+    const fresh = makeSighting({ id: '00000000-0000-4000-8000-000000000002', emoji: '🦝' })
+    stubFetchQueue([
+      { status: 200, body: [ROW] },
+      { status: 200, body: [fresh, ROW] },
+    ])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+    await waitFor(() => expect(result.current.sightings).toHaveLength(2))
+    expect(result.current.status).toBe('ready')
+  })
+
+  it('keeps the stale list when the visibility refetch fails', async () => {
+    stubFetchQueue([
+      { status: 200, body: [ROW] },
+      { status: 500, body: { error: 'internal' } },
+    ])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+    await act(async () => {})
+    expect(result.current.sightings).toEqual([ROW])
+    expect(result.current.status).toBe('ready')
+  })
+
+  it('does not refetch while the page is hidden', async () => {
+    const mock = stubFetchQueue([{ status: 200, body: [ROW] }])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden')
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+    await act(async () => {})
+    expect(mock).toHaveBeenCalledTimes(1)
+  })
+
+  it('recovers from an initial load error via a visibility refetch', async () => {
+    stubFetchQueue([
+      { status: 500, body: { error: 'internal' } },
+      { status: 200, body: [ROW] },
+    ])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('error'))
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    expect(result.current.sightings).toEqual([ROW])
   })
 })

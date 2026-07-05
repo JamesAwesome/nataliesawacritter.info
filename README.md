@@ -50,6 +50,19 @@ app container directly, so the tunnel works even when the host port is bound to 
 or not published at all. Using `localhost`, `127.0.0.1`, the LAN IP, or `APP_PORT` here is
 the usual cause of `dial tcp ...: connection refused` in the cloudflared logs.
 
+## Push notifications
+
+Friends can tap the 🔔 in the header to get a push notification whenever Natalie
+logs a sighting dated today (backdated entries stay silent). To enable: run
+`npx web-push generate-vapid-keys` once and set `VAPID_PUBLIC_KEY`,
+`VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` in `.env` (rotating the keys
+invalidates all subscriptions). With them unset the bell hides and the push
+endpoints return 503.
+
+On iPhone, web push requires the app to be installed first: Share →
+Add to Home Screen, then tap the bell inside the installed app. The bell walks
+friends through this.
+
 ## API
 
     GET    /api/sightings?from=YYYY-MM-DD&to=YYYY-MM-DD   # public; filters optional/inclusive
@@ -61,6 +74,9 @@ the usual cause of `dial tcp ...: connection refused` in the cloudflared logs.
     GET    /api/profiles                                  # public; saved critter friends
     POST   /api/profiles                                  # basic auth; emoji + name required
     DELETE /api/profiles/:id                              # basic auth
+    GET    /api/push/vapid-public-key                     # public; 503 when push disabled
+    POST   /api/push/subscriptions                        # public; browser push subscription JSON
+    DELETE /api/push/subscriptions                        # public; body {endpoint}
 
 POST body: `emoji` and `sightedOn` (YYYY-MM-DD) required; `name`, `sightedTime`,
 `place`, `comment` optional. With blank write credentials the write endpoints

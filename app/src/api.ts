@@ -106,3 +106,31 @@ export async function deletePhoto(id: string, authHeader: string): Promise<void>
   })
   if (!res.ok) throw new ApiError(res.status)
 }
+
+export type PushSubscriptionInput = { endpoint: string; keys: { p256dh: string; auth: string } }
+
+/** Returns null when push is disabled server-side (503). */
+export async function fetchVapidKey(): Promise<string | null> {
+  const res = await fetch('/api/push/vapid-public-key')
+  if (res.status === 503) return null
+  if (!res.ok) throw new ApiError(res.status)
+  return ((await res.json()) as { key: string }).key
+}
+
+export async function savePushSubscription(subscription: PushSubscriptionInput): Promise<void> {
+  const res = await fetch('/api/push/subscriptions', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(subscription),
+  })
+  if (!res.ok) throw new ApiError(res.status)
+}
+
+export async function deletePushSubscription(endpoint: string): Promise<void> {
+  const res = await fetch('/api/push/subscriptions', {
+    method: 'DELETE',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ endpoint }),
+  })
+  if (!res.ok) throw new ApiError(res.status)
+}

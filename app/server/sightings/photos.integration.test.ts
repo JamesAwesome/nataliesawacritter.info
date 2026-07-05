@@ -6,7 +6,7 @@ import { createApp } from '../app.js'
 import type { createDb } from '../db/index.js'
 import { createProfilesStore } from '../profiles/store.js'
 import { createTestDb } from '../testDb.js'
-import { basic, withServer } from '../testUtils.js'
+import { basic, fakePushStore, nullNotifier, withServer } from '../testUtils.js'
 import { createSightingsStore } from './store.js'
 
 const AUTH = basic('natalie', 'sekrit')
@@ -34,6 +34,8 @@ describe('photo lifecycle against real postgres + disk', () => {
       profilesStore: createProfilesStore(handle.db),
       writeCredentials: { user: 'natalie', password: 'sekrit' },
       photosDir,
+      pushStore: fakePushStore(),
+      notifier: nullNotifier(),
     })
   }
 

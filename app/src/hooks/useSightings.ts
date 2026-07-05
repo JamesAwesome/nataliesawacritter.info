@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, createSighting, deleteSighting, listSightings, type NewSightingInput, type Sighting } from '../api'
+import { useVisibilityRefresh } from './useVisibilityRefresh'
 
 export type SightingsState = {
   sightings: Sighting[]
@@ -35,6 +36,19 @@ export function useSightings(): SightingsState {
     setStatus('loading')
     setLoadCount((n) => n + 1)
   }, [])
+
+  // Silent: on failure keep whatever is on screen; on success also clear a
+  // stale error state (a resumed PWA may have errored days ago).
+  useVisibilityRefresh(
+    useCallback(() => {
+      listSightings()
+        .then((rows) => {
+          setSightings(rows)
+          setStatus('ready')
+        })
+        .catch(() => {})
+    }, []),
+  )
 
   const addSighting = useCallback(async (fields: NewSightingInput, authHeader: string) => {
     const created = await createSighting(fields, authHeader)
