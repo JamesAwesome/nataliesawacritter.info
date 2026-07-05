@@ -16,12 +16,7 @@ import { useIsDesktop } from './hooks/useIsDesktop'
 import { useProfiles } from './hooks/useProfiles'
 import { useSightings } from './hooks/useSightings'
 import { leaderboard, recentEmoji } from './lib/insights'
-
-type SheetState =
-  | null
-  | { kind: 'log' }
-  | { kind: 'day'; date: string }
-  | { kind: 'sighting'; id: string; fromDay?: string }
+import { sheetIsValid, type SheetState } from './lib/sheet'
 
 export default function App() {
   const { sightings, status, addSighting, removeSighting, applySighting, retry } = useSightings()
@@ -35,6 +30,17 @@ export default function App() {
   const [sheet, setSheet] = useState<SheetState>(null)
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  // Self-heal: a detail sheet pointing at a vanished sighting closes instead
+  // of lingering as stale state (the render guard already draws nothing).
+  // Adjusted during render (React's "you might not need an effect" pattern)
+  // rather than in a useEffect, so the fix lands before paint instead of
+  // causing an extra commit.
+  const [prevSightings, setPrevSightings] = useState(sightings)
+  if (sightings !== prevSightings) {
+    setPrevSightings(sightings)
+    if (!sheetIsValid(sheet, sightings)) setSheet(null)
+  }
 
   useEffect(() => () => clearTimeout(toastTimer.current), [])
 

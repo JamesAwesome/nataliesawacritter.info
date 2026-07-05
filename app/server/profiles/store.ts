@@ -7,10 +7,13 @@ export type NewProfile = { emoji: string; name: string; place: string | null }
 export type Profile = typeof critterProfiles.$inferSelect
 export type ProfileCreateResult = { ok: true; row: Profile } | { ok: false; conflict: true }
 
-/** Postgres unique-violation is SQLSTATE 23505; drizzle may wrap the pg error, so walk causes. */
-function isUniqueViolation(err: unknown): boolean {
-  for (let e = err; typeof e === 'object' && e !== null; e = (e as { cause?: unknown }).cause) {
+/** Postgres unique-violation is SQLSTATE 23505; drizzle may wrap the pg error,
+ *  so walk causes — depth-capped so a cyclic chain can't spin. */
+export function isUniqueViolation(err: unknown): boolean {
+  let e = err
+  for (let depth = 0; depth < 8 && typeof e === 'object' && e !== null; depth += 1) {
     if ((e as { code?: unknown }).code === '23505') return true
+    e = (e as { cause?: unknown }).cause
   }
   return false
 }

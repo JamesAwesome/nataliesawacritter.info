@@ -75,7 +75,7 @@ let profileSeq = 0
 export function makeProfile(overrides: Partial<Profile> = {}): Profile {
   profileSeq += 1
   return {
-    id: `00000000-0000-4000-8000-${String(profileSeq).padStart(12, '0')}`,
+    id: `00000000-0000-4000-9000-${String(profileSeq).padStart(12, '0')}`,
     emoji: '🦊',
     name: 'Mr Fox',
     place: 'train station',

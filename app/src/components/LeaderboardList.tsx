@@ -21,7 +21,7 @@ export function LeaderboardList({ rows }: Props) {
   return (
     <ol className="leaderboard">
       {rows.map((row, i) => {
-        const width = Math.max(8, (row.count / max) * 100)
+        const width = Math.round(Math.max(8, (row.count / max) * 100) * 100) / 100
         const gradient = `linear-gradient(90deg, ${BAR_COLORS[i % 7]}, ${BAR_COLORS[(i + 2) % 7]})`
         return (
           <li

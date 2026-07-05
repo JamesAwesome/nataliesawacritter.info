@@ -65,6 +65,7 @@ export function SightingDetail({
   const [photoError, setPhotoError] = useState<string | null>(null)
 
   const PHOTO_MESSAGES = { disabled: 'Photos are disabled right now', failed: "Couldn't update the photo — try again" }
+  const FRIEND_MESSAGES = { disabled: 'Saving is disabled right now', failed: "Couldn't save — try again" }
 
   async function onPickPhoto(input: HTMLInputElement) {
     const file = input.files?.[0]
@@ -127,6 +128,7 @@ export function SightingDetail({
                 accept="image/*"
                 aria-label="Replace photo"
                 disabled={write.busy}
+                className="visually-hidden-input"
                 onChange={(e) => void onPickPhoto(e.currentTarget)}
               />
             </label>
@@ -159,13 +161,10 @@ export function SightingDetail({
                     authHeader,
                   ),
                 () => {},
-                { disabled: 'Saving is disabled right now', failed: "Couldn't save — try again" },
+                FRIEND_MESSAGES,
               )
             } else {
-              write.run((authHeader) => removeProfile(matching.id, authHeader), () => {}, {
-                disabled: 'Saving is disabled right now',
-                failed: "Couldn't save — try again",
-              })
+              write.run((authHeader) => removeProfile(matching.id, authHeader), () => {}, FRIEND_MESSAGES)
             }
           }}
         >

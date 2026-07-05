@@ -11,6 +11,17 @@ export function filterByRange(sightings: Sighting[], from?: string, to?: string)
 
 export type LeaderRow = { emoji: string; count: number }
 
+/** Deterministic, locale-free emoji order: full codepoint sequences. */
+function compareEmoji(a: string, b: string): number {
+  const as = Array.from(a)
+  const bs = Array.from(b)
+  for (let i = 0; i < Math.min(as.length, bs.length); i += 1) {
+    const diff = (as[i].codePointAt(0) ?? 0) - (bs[i].codePointAt(0) ?? 0)
+    if (diff !== 0) return diff
+  }
+  return as.length - bs.length
+}
+
 /** count desc, then that emoji's most-recent createdAt desc, then emoji codepoint asc. */
 export function leaderboard(sightings: Sighting[]): LeaderRow[] {
   const groups = new Map<string, { count: number; latest: string }>()
@@ -28,7 +39,7 @@ export function leaderboard(sightings: Sighting[]): LeaderRow[] {
       (a, b) =>
         b.count - a.count ||
         (a.latest < b.latest ? 1 : a.latest > b.latest ? -1 : 0) ||
-        (a.emoji < b.emoji ? -1 : a.emoji > b.emoji ? 1 : 0),
+        compareEmoji(a.emoji, b.emoji),
     )
     .map(({ emoji, count }) => ({ emoji, count }))
 }

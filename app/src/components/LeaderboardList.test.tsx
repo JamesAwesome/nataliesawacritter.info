@@ -34,6 +34,12 @@ describe('LeaderboardList', () => {
     expect(fills[1].style.width).toBe('8%') // 1/100 = 1% → floored to 8%
   })
 
+  it('rounds bar widths to two decimals', () => {
+    render(<LeaderboardList rows={[{ emoji: '🦊', count: 3 }, { emoji: '🦉', count: 1 }]} />)
+    const fills = document.querySelectorAll<HTMLElement>('.leader-bar-fill')
+    expect(fills[1].style.width).toBe('33.33%')
+  })
+
   it('rows are not tappable (no buttons)', () => {
     render(<LeaderboardList rows={ROWS} />)
     expect(screen.queryByRole('button')).not.toBeInTheDocument()

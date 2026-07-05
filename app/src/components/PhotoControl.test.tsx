@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -31,5 +33,17 @@ describe('PhotoControl', () => {
     render(<PhotoControl photo={null} onPhoto={vi.fn()} />)
     await userEvent.upload(screen.getByLabelText(/add a photo/i), FILE)
     expect(await screen.findByText("Couldn't read that photo")).toBeInTheDocument()
+  })
+})
+
+describe('keyboard access', () => {
+  it('the file input is visually hidden, not display:none', () => {
+    render(<PhotoControl photo={null} onPhoto={vi.fn()} />)
+    const input = screen.getByLabelText(/add a photo/i)
+    expect(input).toHaveClass('visually-hidden-input')
+    const css = readFileSync(path.resolve(__dirname, '../index.css'), 'utf8')
+    const block = css.split('.visually-hidden-input')[1]?.split('}')[0] ?? ''
+    expect(block).toContain('clip-path')
+    expect(block).not.toContain('display: none')
   })
 })

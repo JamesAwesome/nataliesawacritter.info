@@ -777,10 +777,7 @@ button.day-cell {
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-}
-
-.photo-add input {
-  display: none;
+  position: relative;
 }
 
 .photo-add.preparing {
@@ -835,10 +832,27 @@ button.day-cell {
   color: var(--photo-text);
   cursor: pointer;
   text-decoration: underline;
+  position: relative;
 }
-
-.photo-action input { display: none; }
 
 .photo-action.danger { color: var(--danger-text); }
 
 .photo-action:disabled { opacity: 0.5; cursor: default; }
+
+/* Focusable but invisible: keeps file inputs in the tab order (a11y) while
+   the styled label supplies the visuals. */
+.visually-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+}
+
+.photo-add:focus-within,
+.photo-action:focus-within {
+  outline: 2px solid var(--other-text);
+  outline-offset: 2px;
+}
