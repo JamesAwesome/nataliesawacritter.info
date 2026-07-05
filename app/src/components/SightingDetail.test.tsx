@@ -188,7 +188,7 @@ describe('photo block', () => {
   it('renders the img when the sighting has a photo', () => {
     renderDetail({ sighting: makeSighting({ photoPath: '/api/photos/a-1.jpg' }) })
     expect(screen.getByRole('img')).toHaveAttribute('src', '/api/photos/a-1.jpg')
-    expect(screen.getByRole('button', { name: 'Replace photo' })).toBeInTheDocument()
+    expect(screen.getByText('Replace photo')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Remove photo' })).toBeInTheDocument()
   })
 

@@ -115,11 +115,12 @@ export function SightingDetail({
             loading="lazy"
           />
           <div className="photo-actions">
-            <label className="photo-action" role="button">
+            <label className="photo-action">
               Replace photo
               <input
                 type="file"
                 accept="image/*"
+                aria-label="Replace photo"
                 disabled={write.busy}
                 onChange={(e) => void onPickPhoto(e.target.files?.[0])}
               />

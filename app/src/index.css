@@ -753,7 +753,7 @@ button.day-cell {
   background: none;
   padding: 0;
   font: inherit;
-  color: var(--danger);
+  color: var(--danger-text);
   cursor: pointer;
   text-decoration: underline;
 }
@@ -839,6 +839,6 @@ button.day-cell {
 
 .photo-action input { display: none; }
 
-.photo-action.danger { color: var(--danger); }
+.photo-action.danger { color: var(--danger-text); }
 
 .photo-action:disabled { opacity: 0.5; cursor: default; }
