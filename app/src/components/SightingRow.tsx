@@ -1,14 +1,22 @@
 import type { Sighting } from '../api'
 import { formatWhen } from '../lib/format'
 
-type Props = { sighting: Sighting; onSelect?: (id: string) => void }
+type Props = { sighting: Sighting; onSelect?: (id: string) => void; starred?: boolean }
 
-export function SightingRow({ sighting, onSelect }: Props) {
+export function SightingRow({ sighting, onSelect, starred }: Props) {
   const body = (
     <>
       <span className="recent-emoji" aria-hidden="true">{sighting.emoji}</span>
       <span className="recent-main">
-        <span className="recent-name">{sighting.name ?? sighting.emoji}</span>
+        <span className="recent-name">
+          {sighting.name ?? sighting.emoji}
+          {starred === true && (
+            <>
+              <span className="row-star" aria-hidden="true">⭐</span>
+              <span className="visually-hidden">, friend</span>
+            </>
+          )}
+        </span>
         <span className="recent-meta">{formatWhen(sighting.sightedOn, sighting.sightedTime)}</span>
       </span>
       <span className="recent-chevron" aria-hidden="true">›</span>

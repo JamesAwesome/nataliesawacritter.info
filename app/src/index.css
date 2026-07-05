@@ -856,3 +856,18 @@ button.day-cell {
   outline: 2px solid var(--other-text);
   outline-offset: 2px;
 }
+
+.row-star {
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+/* Text sibling of .visually-hidden-input: present to assistive tech, invisible. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
