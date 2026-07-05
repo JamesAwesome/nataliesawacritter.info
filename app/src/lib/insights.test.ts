@@ -53,6 +53,14 @@ describe('leaderboard', () => {
     expect(leaderboard(rows).map((r) => r.emoji)).toEqual(['🐢', '🦆', '🐸'])
   })
 
+  it('tiebreaks by codepoint order, not UTF-16 units', () => {
+    const rows = leaderboard([
+      makeSighting({ emoji: '😀', createdAt: '2026-07-01T00:00:00.000Z' }),
+      makeSighting({ emoji: '�', createdAt: '2026-07-01T00:00:00.000Z' }),
+    ])
+    expect(rows.map((r) => r.emoji)).toEqual(['�', '😀'])
+  })
+
   it('is empty for no sightings', () => {
     expect(leaderboard([])).toEqual([])
   })
