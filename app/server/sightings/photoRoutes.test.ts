@@ -172,6 +172,7 @@ describe('GET /api/photos/:filename', () => {
       const res = await fetch(`${base}/api/photos/${name}`)
       expect(res.status).toBe(200)
       expect(res.headers.get('cache-control')).toContain('immutable')
+      expect(res.headers.get('x-content-type-options')).toBe('nosniff')
       expect(Buffer.from(await res.arrayBuffer())).toEqual(JPEG)
     })
   })

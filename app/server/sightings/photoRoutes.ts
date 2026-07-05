@@ -81,6 +81,7 @@ export function photoFileRouter(photosDir: string): Router {
       sendValidation(res, { filename: 'invalid photo name' })
       return
     }
+    res.setHeader('X-Content-Type-Options', 'nosniff')
     res.sendFile(filename, { root: photosDir, immutable: true, maxAge: '365d' }, (err) => {
       if (err !== undefined && !res.headersSent) {
         res.status(404).json({ error: 'not found' })
