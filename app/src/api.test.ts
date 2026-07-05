@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, createProfile, createSighting, deletePhoto, deleteProfile, deleteSighting, deletePushSubscription, fetchVapidKey, listProfiles, listSightings, savePushSubscription, uploadPhoto } from './api'
+import { ApiError, checkAuth, createProfile, createSighting, deletePhoto, deleteProfile, deleteSighting, deletePushSubscription, fetchVapidKey, listProfiles, listSightings, savePushSubscription, uploadPhoto } from './api'
 import { makeSighting, stubFetchQueue } from './test/helpers'
 
 afterEach(() => {
@@ -156,5 +156,22 @@ describe('push api', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ endpoint: 'https://push.example.com/x' }),
     })
+  })
+})
+
+describe('checkAuth', () => {
+  it('GETs the check endpoint with the auth header and resolves on 204', async () => {
+    const mock = stubFetchQueue([{ status: 204, body: null }])
+    await expect(checkAuth('Basic abc')).resolves.toBeUndefined()
+    expect(mock).toHaveBeenCalledWith('/api/auth/check', {
+      headers: { authorization: 'Basic abc' },
+    })
+  })
+
+  it('throws ApiError with the status on 401 and 503', async () => {
+    stubFetchQueue([{ status: 401, body: { error: 'unauthorized' } }])
+    await expect(checkAuth('Basic bad')).rejects.toMatchObject({ status: 401 })
+    stubFetchQueue([{ status: 503, body: { error: 'writes disabled' } }])
+    await expect(checkAuth('Basic abc')).rejects.toMatchObject({ status: 503 })
   })
 })
