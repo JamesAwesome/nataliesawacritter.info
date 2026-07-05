@@ -26,13 +26,15 @@ function parseNewProfile(body: unknown):
     details.emoji = 'required, 1-16 characters'
   }
 
-  const name = record.name
+  // Trim before validating: friend identity keys on (emoji, name), so stray
+  // whitespace must not mint distinct profiles.
+  const name = typeof record.name === 'string' ? record.name.trim() : record.name
   if (typeof name !== 'string' || name.length === 0 || name.length > 100) {
     details.name = 'required, 1-100 characters'
   }
 
   let place: string | null = null
-  const rawPlace = record.place
+  const rawPlace = typeof record.place === 'string' ? record.place.trim() : record.place
   if (rawPlace === undefined || rawPlace === null || rawPlace === '') {
     place = null
   } else if (typeof rawPlace !== 'string' || rawPlace.length > 100) {

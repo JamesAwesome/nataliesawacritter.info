@@ -40,6 +40,19 @@ describe('useProfiles', () => {
     await waitFor(() => expect(result.current.profiles).toEqual([PROFILE]))
   })
 
+  it('resolves without error when the 409 convergence refetch itself fails', async () => {
+    stubFetchQueue([
+      { status: 200, body: [] },
+      { status: 409, body: { error: 'conflict' } },
+      { status: 500, body: { error: 'internal' } }, // the refetch fails
+    ])
+    const { result } = renderHook(() => useProfiles())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    // must NOT reject — the write succeeded server-side
+    await act(() => result.current.addProfile({ emoji: '🦊', name: 'Mr Fox' }, 'Basic x'))
+    expect(result.current.profiles).toEqual([])
+  })
+
   it('removeProfile deletes locally on 204 and treats 404 as success', async () => {
     stubFetchQueue([
       { status: 200, body: [PROFILE] },

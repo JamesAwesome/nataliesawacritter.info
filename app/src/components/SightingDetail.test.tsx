@@ -137,6 +137,20 @@ describe('friend toggle', () => {
     await vi.waitFor(() => expect(removeProfile).toHaveBeenCalledWith(profile.id, expect.any(String)))
   })
 
+  it('matches an existing friend case- and whitespace-insensitively', () => {
+    const sighting = makeSighting({ emoji: '🦊', name: 'Mr Fox' })
+    const profile = {
+      id: '00000000-0000-4000-8000-000000000010',
+      emoji: '🦊',
+      name: '  mr fox ',
+      place: null,
+      createdAt: '2026-07-04T12:00:00.000Z',
+    }
+    renderDetail({ sighting, profiles: [profile] })
+    expect(screen.queryByRole('button', { name: '⭐ Save as friend' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Remove friend' })).toBeInTheDocument()
+  })
+
   it('hides the toggle for nameless sightings', () => {
     renderDetail({ sighting: makeSighting({ name: null }) })
     expect(screen.queryByRole('button', { name: /friend/i })).not.toBeInTheDocument()

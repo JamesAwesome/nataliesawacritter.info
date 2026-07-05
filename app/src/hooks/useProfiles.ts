@@ -48,8 +48,14 @@ export function useProfiles(): ProfilesState {
       setProfiles((current) => [created, ...current])
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        // Already saved server-side — converge on the existing row.
-        setProfiles(await listProfiles())
+        // Already saved server-side — converge on the existing row. The write
+        // succeeded, so a failed refetch must not surface as a save error;
+        // state converges on the next successful load instead.
+        try {
+          setProfiles(await listProfiles())
+        } catch {
+          // silent: convergence deferred
+        }
         return
       }
       throw err

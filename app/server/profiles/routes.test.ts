@@ -72,6 +72,25 @@ describe('POST /api/profiles', () => {
     })
   })
 
+  it('trims name and place before storing (friend identity keys on name)', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      const res = await post(base, { emoji: '🦊', name: '  Mr Fox  ', place: ' train station ' })
+      expect(res.status).toBe(201)
+      expect(store.create).toHaveBeenCalledWith({ emoji: '🦊', name: 'Mr Fox', place: 'train station' })
+    })
+  })
+
+  it('rejects a whitespace-only name as missing', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      const res = await post(base, { emoji: '🦊', name: '   ' })
+      expect(res.status).toBe(400)
+      expect(((await res.json()) as { details: Record<string, string> }).details.name).toBeDefined()
+      expect(store.create).not.toHaveBeenCalled()
+    })
+  })
+
   it.each([
     ['missing name', { emoji: '🦊' }, 'name'],
     ['empty name', { emoji: '🦊', name: '' }, 'name'],

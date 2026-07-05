@@ -27,9 +27,12 @@ export function DetailsForm({ emoji, initialName, onBack, onSave, saving, initia
 
   function save() {
     const fields: NewSightingInput = { emoji, sightedOn }
-    if (name !== '') fields.name = name
+    // Trim name/place: they feed friend identity (emoji, name) downstream.
+    const trimmedName = name.trim()
+    const trimmedPlace = place.trim()
+    if (trimmedName !== '') fields.name = trimmedName
     if (sightedTime !== '') fields.sightedTime = formatClockTime(sightedTime)
-    if (place !== '') fields.place = place
+    if (trimmedPlace !== '') fields.place = trimmedPlace
     if (comment !== '') fields.comment = comment
     onSave(fields)
   }
