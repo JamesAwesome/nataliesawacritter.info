@@ -206,4 +206,22 @@ describe('calendar navigation and delete', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(screen.queryByText('Fox')).not.toBeInTheDocument()
   })
+
+  it('stars friend sightings in Recent Critters and filters them in History', async () => {
+    const fox = makeSighting({ emoji: '🦊', name: 'Mr Fox' })
+    const owl = makeSighting({ emoji: '🦉', name: 'Prof Hoot' })
+    stubFetchByUrl({
+      '/api/sightings': [{ status: 200, body: [fox, owl] }],
+      '/api/profiles': [{ status: 200, body: [makeProfile({ emoji: '🦊', name: 'Mr Fox' })] }],
+    })
+    render(<App />)
+    const recent = screen.getAllByTestId('recent-critters')[0]
+    expect(await within(recent).findByRole('button', { name: /Mr Fox.*, friend/ })).toBeInTheDocument()
+    expect(within(recent).getByRole('button', { name: /Prof Hoot/ })).not.toHaveAccessibleName(/, friend/)
+    await userEvent.click(screen.getByRole('tab', { name: 'History' }))
+    await userEvent.click(screen.getByRole('button', { name: '⭐ Friends' }))
+    const history = document.getElementById('pane-history')!
+    expect(within(history).getByText('Mr Fox')).toBeInTheDocument()
+    expect(within(history).queryByText('Prof Hoot')).not.toBeInTheDocument()
+  })
 })

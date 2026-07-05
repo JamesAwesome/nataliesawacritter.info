@@ -1,5 +1,6 @@
 import type { Sighting } from '../api'
 import { formatDay } from '../lib/format'
+import { isFriendSighting } from '../lib/friends'
 import { SightingRow } from './SightingRow'
 
 type Props = {
@@ -7,15 +8,16 @@ type Props = {
   sightings: Sighting[]
   onSelect: (id: string) => void
   onClose: () => void
+  friendKeys: Set<string>
 }
 
-export function DayDetail({ date, sightings, onSelect, onClose }: Props) {
+export function DayDetail({ date, sightings, onSelect, onClose, friendKeys }: Props) {
   return (
     <div className="day-detail">
       <h2 className="sheet-heading">{formatDay(date)}</h2>
       <ul className="recent-list">
         {sightings.map((s) => (
-          <SightingRow key={s.id} sighting={s} onSelect={onSelect} />
+          <SightingRow key={s.id} sighting={s} onSelect={onSelect} starred={isFriendSighting(s, friendKeys)} />
         ))}
       </ul>
       <button type="button" className="btn-secondary flow-cancel" onClick={onClose}>
