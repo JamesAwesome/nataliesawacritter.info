@@ -1,6 +1,6 @@
 import { Router, type RequestHandler } from 'express'
 import { removePhotoFile } from './photoRoutes.js'
-import type { NewSighting, SightingsStore } from './store.js'
+import type { NewSighting, Sighting, SightingsStore } from './store.js'
 import { UUID_RE, sendValidation, rejectUnknownFields } from '../httpValidation.js'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
@@ -65,7 +65,7 @@ function parseNewSighting(body: unknown):
   }
 }
 
-export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler, photosDir: string): Router {
+export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler, photosDir: string, onCreated: (sighting: Sighting) => void): Router {
   const router = Router()
 
   router.get('/', async (req, res) => {
@@ -96,7 +96,9 @@ export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler
       sendValidation(res, parsed.details)
       return
     }
-    res.status(201).json(await store.create(parsed.fields))
+    const created = await store.create(parsed.fields)
+    onCreated(created)
+    res.status(201).json(created)
   })
 
   router.delete('/:id', writeGate, async (req, res) => {

@@ -1,8 +1,11 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
+import webpush from 'web-push'
 import { createApp } from './app.js'
 import { createDb } from './db/index.js'
 import { waitForDb } from './db/waitForDb.js'
 import { createProfilesStore } from './profiles/store.js'
+import { createNotifier, type SendPush } from './push/notifier.js'
+import { createPushStore } from './push/store.js'
 import { createSightingsStore } from './sightings/store.js'
 
 const connectionString = process.env.DATABASE_URL
@@ -39,6 +42,28 @@ if (!writeCredentials) {
   console.warn(`${missing} not set — write endpoints disabled (503)`)
 }
 
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY ?? ''
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY ?? ''
+const vapidSubject = process.env.VAPID_SUBJECT ?? ''
+const vapidConfig =
+  vapidPublicKey !== '' && vapidPrivateKey !== '' && vapidSubject !== ''
+    ? { subject: vapidSubject, publicKey: vapidPublicKey, privateKey: vapidPrivateKey }
+    : null
+console.log(vapidConfig ? 'push notifications enabled' : 'push notifications disabled (VAPID_* not set)')
+
+const pushStore = createPushStore(db)
+const sendPush: SendPush = vapidConfig
+  ? (target, payload) => webpush.sendNotification(target, payload, { vapidDetails: vapidConfig })
+  : async () => {
+      throw new Error('push disabled')
+    }
+const notifier = createNotifier({
+  config: vapidConfig,
+  store: pushStore,
+  send: sendPush,
+  today: () => new Date().toISOString().slice(0, 10),
+})
+
 const app = createApp({
   checkDb: async () => {
     await pool.query('SELECT 1')
@@ -47,6 +72,8 @@ const app = createApp({
   profilesStore: createProfilesStore(db),
   writeCredentials,
   photosDir: process.env.PHOTOS_DIR ?? '/data/photos',
+  pushStore,
+  notifier,
 })
 
 const port = Number(process.env.PORT ?? 8080)

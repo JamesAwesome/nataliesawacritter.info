@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createApp } from '../app.js'
 import { createDb } from '../db/index.js'
 import { createProfilesStore } from '../profiles/store.js'
-import { basic, withServer } from '../testUtils.js'
+import { basic, fakePushStore, nullNotifier, withServer } from '../testUtils.js'
 import { createTestDb } from '../testDb.js'
 import { createSightingsStore, type Sighting } from './store.js'
 
@@ -32,6 +32,8 @@ describe('sightings API against real postgres', () => {
       profilesStore: createProfilesStore(handle.db),
       writeCredentials: { user: 'natalie', password: 'sekrit' },
       photosDir: '/tmp/unused-photos',
+      pushStore: fakePushStore(),
+      notifier: nullNotifier(),
     })
   }
 

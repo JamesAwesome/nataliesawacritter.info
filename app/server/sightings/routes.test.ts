@@ -30,10 +30,10 @@ function fakeStore(overrides: Partial<SightingsStore> = {}): SightingsStore {
 
 const passGate: RequestHandler = (_req, _res, next) => next()
 
-function appWith(store: SightingsStore, gate: RequestHandler = passGate): Express {
+function appWith(store: SightingsStore, gate: RequestHandler = passGate, onCreated: (s: Sighting) => void = () => {}): Express {
   const app = express()
   app.use(express.json())
-  app.use('/api/sightings', sightingsRouter(store, gate, '/tmp/unused-photos'))
+  app.use('/api/sightings', sightingsRouter(store, gate, '/tmp/unused-photos', onCreated))
   app.use(errorHandler)
   return app
 }
@@ -180,6 +180,28 @@ describe('POST /api/sightings', () => {
       const res = await post(base, VALID)
       expect(res.status).toBe(500)
       expect(await res.json()).toEqual({ error: 'internal' })
+    })
+  })
+
+  it('calls onCreated with the created row, and not on validation failure', async () => {
+    const onCreated = vi.fn()
+    const store = fakeStore()
+    await withServer(appWith(store, passGate, onCreated), async (base) => {
+      const res = await fetch(`${base}/api/sightings`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(VALID),
+      })
+      expect(res.status).toBe(201)
+      expect(onCreated).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: FIXED_ID, emoji: '🦊' }))
+
+      const bad = await fetch(`${base}/api/sightings`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ emoji: '🦊' }),
+      })
+      expect(bad.status).toBe(400)
+      expect(onCreated).toHaveBeenCalledTimes(1)
     })
   })
 

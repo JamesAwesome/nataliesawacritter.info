@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { createApp, type AppDeps } from './app.js'
 import type { ProfilesStore } from './profiles/store.js'
 import type { SightingsStore } from './sightings/store.js'
-import { basic, withServer } from './testUtils.js'
+import { basic, fakePushStore, nullNotifier, withServer } from './testUtils.js'
 
 function fakeStore(): SightingsStore {
   return {
@@ -33,6 +33,8 @@ function deps(overrides: Partial<AppDeps> = {}): AppDeps {
     profilesStore: fakeProfilesStore(),
     writeCredentials: null,
     photosDir: '/tmp/unused-photos',
+    pushStore: fakePushStore(),
+    notifier: nullNotifier(),
     ...overrides,
   }
 }
