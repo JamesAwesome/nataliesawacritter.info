@@ -16,7 +16,7 @@ describe('RecentCritters', () => {
       makeSighting({ name: 'Duck', emoji: '🦆', sightedOn: SIGHTED_ON, createdAt: CREATED_AT }),
       makeSighting({ name: 'Frog', emoji: '🐸', sightedOn: SIGHTED_ON, createdAt: CREATED_AT }),
     ]
-    render(<RecentCritters sightings={sightings} status="ready" onRetry={() => {}} />)
+    render(<RecentCritters sightings={sightings} status="ready" onRetry={() => {}} friendKeys={new Set<string>()} />)
     const items = screen.getAllByRole('listitem')
     expect(items).toHaveLength(4)
     expect(items[0]).toHaveTextContent('Fox')
@@ -31,19 +31,20 @@ describe('RecentCritters', () => {
         sightings={[makeSighting({ name: null, sightedOn: SIGHTED_ON, createdAt: CREATED_AT })]}
         status="ready"
         onRetry={() => {}}
+        friendKeys={new Set<string>()}
       />,
     )
     expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('🦊')
   })
 
   it('shows the empty state when there are no sightings', () => {
-    render(<RecentCritters sightings={[]} status="ready" onRetry={() => {}} />)
+    render(<RecentCritters sightings={[]} status="ready" onRetry={() => {}} friendKeys={new Set<string>()} />)
     expect(screen.getByText(/no critters yet/i)).toBeInTheDocument()
   })
 
   it('shows error state with a retry button', async () => {
     const onRetry = vi.fn()
-    render(<RecentCritters sightings={[]} status="error" onRetry={onRetry} />)
+    render(<RecentCritters sightings={[]} status="error" onRetry={onRetry} friendKeys={new Set<string>()} />)
     expect(screen.getByText(/couldn't load sightings/i)).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /retry/i }))
     expect(onRetry).toHaveBeenCalledTimes(1)
@@ -52,7 +53,7 @@ describe('RecentCritters', () => {
   it('invokes onSelect with the sighting id when a row is tapped', async () => {
     const onSelect = vi.fn()
     const s = makeSighting()
-    render(<RecentCritters sightings={[s]} status="ready" onRetry={() => {}} onSelect={onSelect} />)
+    render(<RecentCritters sightings={[s]} status="ready" onRetry={() => {}} onSelect={onSelect} friendKeys={new Set<string>()} />)
     await userEvent.click(screen.getByRole('button', { name: /fox/i }))
     expect(onSelect).toHaveBeenCalledWith(s.id)
   })

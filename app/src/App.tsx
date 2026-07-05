@@ -15,6 +15,7 @@ import { Toast } from './components/Toast'
 import { useIsDesktop } from './hooks/useIsDesktop'
 import { useProfiles } from './hooks/useProfiles'
 import { useSightings } from './hooks/useSightings'
+import { friendKeys } from './lib/friends'
 import { leaderboard, recentEmoji } from './lib/insights'
 import { sheetIsValid, type SheetState } from './lib/sheet'
 
@@ -27,6 +28,7 @@ export default function App() {
   // sheet open/close) don't recompute them.
   const topTen = useMemo(() => leaderboard(sightings).slice(0, 10), [sightings])
   const recent = useMemo(() => recentEmoji(sightings, 4), [sightings])
+  const keys = useMemo(() => friendKeys(profiles), [profiles])
   const [sheet, setSheet] = useState<SheetState>(null)
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -82,11 +84,12 @@ export default function App() {
                   status={status}
                   onRetry={retry}
                   onSelect={(id) => openSighting(id)}
+                  friendKeys={keys}
                 />
               )}
             </div>
             <div role="tabpanel" id="pane-history" hidden={activeTab !== 'history'}>
-              <HistoryPane sightings={sightings} onSelect={(id) => openSighting(id)} />
+              <HistoryPane sightings={sightings} onSelect={(id) => openSighting(id)} friendKeys={keys} />
             </div>
             <div role="tabpanel" id="pane-leaderboard" hidden={activeTab !== 'leaderboard'}>
               <TopCrittersPane sightings={sightings} />
@@ -100,6 +103,7 @@ export default function App() {
                 status={status}
                 onRetry={retry}
                 onSelect={(id) => openSighting(id)}
+                friendKeys={keys}
               />
             )}
             {isDesktop && sightings.length > 0 && (
@@ -134,6 +138,7 @@ export default function App() {
             sightings={sightings.filter((s) => s.sightedOn === sheet.date)}
             onSelect={(id) => openSighting(id, sheet.date)}
             onClose={() => setSheet(null)}
+            friendKeys={keys}
           />
         </Sheet>
       )}

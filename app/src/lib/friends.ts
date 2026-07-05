@@ -1,0 +1,17 @@
+import type { Profile, Sighting } from '../api'
+import { normalizedName } from './critters'
+
+// NUL separator: emoji is a free-text field server-side and names contain
+// spaces — NUL is the one character neither will ever carry.
+const SEP = '\u0000'
+
+/** One key per friend profile; build once per profiles change and reuse. */
+export function friendKeys(profiles: Profile[]): Set<string> {
+  return new Set(profiles.map((p) => p.emoji + SEP + normalizedName(p.name)))
+}
+
+/** A sighting is a friend sighting when a profile matches by emoji + normalized name. */
+export function isFriendSighting(sighting: Sighting, keys: Set<string>): boolean {
+  if (sighting.name === null) return false
+  return keys.has(sighting.emoji + SEP + normalizedName(sighting.name))
+}
