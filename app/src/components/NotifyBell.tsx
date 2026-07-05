@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
 import { deletePushSubscription, fetchVapidKey, savePushSubscription } from '../api'
-import { needsIosInstall, pushSupported, urlBase64ToUint8Array } from '../lib/push'
+import { needsIosInstall, pushSupported, urlBase64ToUint8Array, withTimeout } from '../lib/push'
 import { Sheet } from './Sheet'
 
 type BellState = 'unsupported' | 'ios-install' | 'blocked' | 'off' | 'on'
+
+// Generous, but finite: browser push registration can hang indefinitely when
+// the push service is unreachable, and the bell must never stay busy forever.
+const SUBSCRIBE_TIMEOUT_MS = 20_000
 
 // Synchronous, side-effect-free classification available at first render — no need to
 // wait for an effect for these. Plain `pushSupported()` browsers stay 'unsupported' here;
@@ -50,10 +54,13 @@ export function NotifyBell() {
         return
       }
       const registration = await navigator.serviceWorker.ready
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(key) as BufferSource,
-      })
+      const subscription = await withTimeout(
+        registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(key) as BufferSource,
+        }),
+        SUBSCRIBE_TIMEOUT_MS,
+      )
       const json = subscription.toJSON()
       try {
         await savePushSubscription({
@@ -65,7 +72,8 @@ export function NotifyBell() {
         throw err
       }
       setState('on')
-    } catch {
+    } catch (err) {
+      console.error('push subscribe failed:', err)
       setNote("Couldn't turn on notifications — try again")
     } finally {
       setBusy(false)
@@ -83,8 +91,9 @@ export function NotifyBell() {
         deletePushSubscription(subscription.endpoint).catch(() => {}) // server prunes on 410 anyway
       }
       setState('off')
-    } catch {
+    } catch (err) {
       // Local subscription still exists, so 'on' remains truthful — just tell the user.
+      console.error('push unsubscribe failed:', err)
       setNote("Couldn't turn off notifications — try again")
     } finally {
       setBusy(false)

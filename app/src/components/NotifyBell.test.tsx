@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { stubFetchQueue } from '../test/helpers'
@@ -46,9 +46,15 @@ function setUserAgent(value: string) {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+  vi.useRealTimers()
   Reflect.deleteProperty(window.navigator, 'serviceWorker')
   setUserAgent(REAL_UA)
 })
+
+function silenceConsoleError() {
+  return vi.spyOn(console, 'error').mockImplementation(() => {})
+}
 
 describe('NotifyBell', () => {
   it('renders nothing when push is unsupported', () => {
@@ -80,7 +86,8 @@ describe('NotifyBell', () => {
     )
   })
 
-  it('rolls back the browser subscription when the server POST fails', async () => {
+  it('rolls back the browser subscription when the server POST fails, and logs the error', async () => {
+    const error = silenceConsoleError()
     const { subscription } = mockPushEnv()
     stubFetchQueue([
       { status: 200, body: { key: 'BAUG' } },
@@ -91,6 +98,25 @@ describe('NotifyBell', () => {
     await screen.findByText("Couldn't turn on notifications — try again")
     expect(subscription.unsubscribe).toHaveBeenCalled()
     expect(screen.getByRole('button', { name: 'Get notified' })).toBeInTheDocument()
+    expect(error).toHaveBeenCalledWith('push subscribe failed:', expect.anything())
+  })
+
+  it('gives up with the note when the browser subscribe hangs', async () => {
+    const error = silenceConsoleError()
+    const { registration } = mockPushEnv()
+    registration.pushManager.subscribe = vi.fn(() => new Promise(() => {}))
+    stubFetchQueue([{ status: 200, body: { key: 'BAUG' } }])
+    render(<NotifyBell />)
+    const bell = await screen.findByRole('button', { name: 'Get notified' })
+    vi.useFakeTimers()
+    fireEvent.click(bell)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(20_000)
+    })
+    vi.useRealTimers()
+    expect(screen.getByText("Couldn't turn on notifications — try again")).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Get notified' })).toBeEnabled()
+    expect(error).toHaveBeenCalledWith('push subscribe failed:', expect.anything())
   })
 
   it('starts as Alerts on with an existing subscription, and unsubscribes on tap', async () => {
@@ -105,6 +131,7 @@ describe('NotifyBell', () => {
   })
 
   it('shows a note and stays on when the browser unsubscribe fails', async () => {
+    silenceConsoleError()
     const existing = fakeSubscription()
     existing.unsubscribe = vi.fn(async () => {
       throw new Error('boom')

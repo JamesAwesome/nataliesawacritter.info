@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { needsIosInstall, pushSupported, urlBase64ToUint8Array } from './push'
+import { needsIosInstall, pushSupported, urlBase64ToUint8Array, withTimeout } from './push'
 
 const REAL_UA = navigator.userAgent
 
@@ -42,5 +42,29 @@ describe('needsIosInstall', () => {
 describe('pushSupported', () => {
   it('is false in a bare jsdom environment', () => {
     expect(pushSupported()).toBe(false)
+  })
+})
+
+describe('withTimeout', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('resolves with the inner value when it settles in time', async () => {
+    vi.useFakeTimers()
+    await expect(withTimeout(Promise.resolve('ok'), 1000)).resolves.toBe('ok')
+  })
+
+  it('rejects with the inner error when it fails in time', async () => {
+    vi.useFakeTimers()
+    await expect(withTimeout(Promise.reject(new Error('boom')), 1000)).rejects.toThrow('boom')
+  })
+
+  it('rejects when the inner promise never settles', async () => {
+    vi.useFakeTimers()
+    const result = withTimeout(new Promise(() => {}), 1000)
+    const assertion = expect(result).rejects.toThrow('timed out')
+    await vi.advanceTimersByTimeAsync(1000)
+    await assertion
   })
 })
