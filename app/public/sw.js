@@ -9,6 +9,7 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || '🐾 Natalie saw a critter!', {
       body: data.body || '',
+      icon: '/icons/icon-192.png',
       data: { url: data.url || '/' },
     }),
   )
