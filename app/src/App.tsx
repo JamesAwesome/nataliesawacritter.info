@@ -86,7 +86,11 @@ export default function App() {
               )}
             </div>
             <div role="tabpanel" id="pane-history" hidden={activeTab !== 'history'}>
-              <HistoryPane sightings={sightings} onSelect={(id) => openSighting(id)} />
+              <HistoryPane
+                sightings={sightings}
+                onSelect={(id) => openSighting(id)}
+                friendKeys={new Set<string>()} // Task 4 threads the real set
+              />
             </div>
             <div role="tabpanel" id="pane-leaderboard" hidden={activeTab !== 'leaderboard'}>
               <TopCrittersPane sightings={sightings} />

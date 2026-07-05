@@ -610,6 +610,24 @@ button.day-cell {
   color: var(--ink-secondary);
 }
 
+.friends-chip {
+  border: 1px solid var(--border-hairline);
+  background: #fff;
+  color: var(--ink-secondary);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.friends-chip.active {
+  background: var(--tint-yellow);
+  color: var(--ink);
+  border-color: var(--tint-yellow);
+}
+
 .top-critters-pane {
   padding-top: 8px;
 }
