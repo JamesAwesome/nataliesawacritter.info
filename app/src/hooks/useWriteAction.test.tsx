@@ -67,4 +67,31 @@ describe('useWriteAction', () => {
     expect(onSuccess).not.toHaveBeenCalled()
     expect(result.current.actionError).toBeNull()
   })
+
+  it('uses per-run message overrides for error mapping', async () => {
+    setCredentials('sekrit')
+    const { result } = renderHook(() =>
+      useWriteAction({ disabled: 'default disabled', failed: 'default failed' }),
+    )
+    await act(() =>
+      result.current.run(
+        async () => {
+          throw new ApiError(503)
+        },
+        () => {},
+        { disabled: 'photos disabled' },
+      ),
+    )
+    await waitFor(() => expect(result.current.actionError).toBe('photos disabled'))
+
+    await act(() =>
+      result.current.run(
+        async () => {
+          throw new Error('boom')
+        },
+        () => {},
+      ),
+    )
+    await waitFor(() => expect(result.current.actionError).toBe('default failed'))
+  })
 })

@@ -30,10 +30,6 @@ export function SightingDetail({
     disabled: 'Deleting is disabled right now',
     failed: "Couldn't delete — try again",
   })
-  const friendWrite = useWriteAction({
-    disabled: 'Saving is disabled right now',
-    failed: "Couldn't save — try again",
-  })
   const matching =
     sighting.name === null
       ? undefined
@@ -74,26 +70,29 @@ export function SightingDetail({
         <button
           type="button"
           className="btn-secondary friend-toggle"
-          disabled={friendWrite.busy || write.busy || write.prompt.open}
+          disabled={write.busy}
           onClick={() => {
             if (matching === undefined) {
-              friendWrite.run(
+              write.run(
                 (authHeader) =>
                   addProfile(
                     { emoji: sighting.emoji, name: sighting.name as string, place: sighting.place ?? undefined },
                     authHeader,
                   ),
                 () => {},
+                { disabled: 'Saving is disabled right now', failed: "Couldn't save — try again" },
               )
             } else {
-              friendWrite.run((authHeader) => removeProfile(matching.id, authHeader), () => {})
+              write.run((authHeader) => removeProfile(matching.id, authHeader), () => {}, {
+                disabled: 'Saving is disabled right now',
+                failed: "Couldn't save — try again",
+              })
             }
           }}
         >
           {matching === undefined ? '⭐ Save as friend' : 'Remove friend'}
         </button>
       )}
-      {friendWrite.actionError !== null && <p className="flow-error">{friendWrite.actionError}</p>}
       {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
       <div className="details-actions">
         <button type="button" className="btn-secondary" onClick={onBack}>
@@ -102,7 +101,7 @@ export function SightingDetail({
         <button
           type="button"
           className={confirming ? 'btn-danger confirming' : 'btn-danger'}
-          disabled={write.busy || friendWrite.busy || friendWrite.prompt.open}
+          disabled={write.busy}
           onClick={onDeleteClick}
         >
           {confirming ? 'Really delete?' : 'Delete'}
@@ -115,16 +114,6 @@ export function SightingDetail({
             error={write.prompt.error}
             onCancel={write.prompt.onCancel}
             onSubmit={write.prompt.onSubmit}
-          />
-        </div>
-      )}
-      {friendWrite.prompt.open && (
-        <div className="prompt-overlay">
-          <PasswordPrompt
-            open
-            error={friendWrite.prompt.error}
-            onCancel={friendWrite.prompt.onCancel}
-            onSubmit={friendWrite.prompt.onSubmit}
           />
         </div>
       )}

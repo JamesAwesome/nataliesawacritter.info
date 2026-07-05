@@ -156,12 +156,11 @@ describe('friend toggle', () => {
     expect(screen.queryByRole('button', { name: /friend/i })).not.toBeInTheDocument()
   })
 
-  it('cannot open both password prompts at once', async () => {
+  it('only ever renders a single password prompt', async () => {
     renderDetail()
     await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
     await userEvent.click(screen.getByRole('button', { name: 'Really delete?' }))
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '⭐ Save as friend' })).toBeDisabled()
+    expect(screen.getAllByLabelText(/password/i)).toHaveLength(1)
   })
 
   it('prompts for the password on save-as-friend when no credentials, then saves', async () => {

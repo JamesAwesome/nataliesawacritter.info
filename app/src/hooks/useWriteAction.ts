@@ -4,9 +4,9 @@ import { basicHeader, clearCredentials, getCredentials, setCredentials } from '.
 
 export type WriteMessages = { disabled: string; failed: string }
 
-type Pending = { action: (authHeader: string) => Promise<void>; onSuccess: () => void }
+type Pending = { action: (authHeader: string) => Promise<void>; onSuccess: () => void; messages: WriteMessages }
 
-export function useWriteAction(messages: WriteMessages) {
+export function useWriteAction(defaults: WriteMessages) {
   const [pending, setPending] = useState<Pending | null>(null)
   const [promptError, setPromptError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -37,16 +37,20 @@ export function useWriteAction(messages: WriteMessages) {
         setPending(request)
         setPromptError('Wrong password — try again')
       } else if (err instanceof ApiError && err.status === 503) {
-        setActionError(messages.disabled)
+        setActionError(request.messages.disabled)
       } else {
-        setActionError(messages.failed)
+        setActionError(request.messages.failed)
       }
     }
   }
 
   return {
-    run(action: (authHeader: string) => Promise<void>, onSuccess: () => void) {
-      void attempt({ action, onSuccess })
+    run(
+      action: (authHeader: string) => Promise<void>,
+      onSuccess: () => void,
+      messages?: Partial<WriteMessages>,
+    ) {
+      void attempt({ action, onSuccess, messages: { ...defaults, ...messages } })
     },
     busy,
     actionError,

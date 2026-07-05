@@ -38,10 +38,6 @@ export function LogSightingFlow({
     disabled: 'Saving is disabled right now',
     failed: "Couldn't save — try again",
   })
-  const removeWrite = useWriteAction({
-    disabled: 'Removing is disabled right now',
-    failed: "Couldn't remove — try again",
-  })
 
   // Live lookup: once the friend is removed it drops out of `friends`, so the
   // status line reverts to the checkbox without remounting the draft.
@@ -52,7 +48,6 @@ export function LogSightingFlow({
 
   function close() {
     write.abandon()
-    removeWrite.abandon()
     setPicked(null)
     onClose()
   }
@@ -82,7 +77,10 @@ export function LogSightingFlow({
   function removeFriend() {
     if (pickedFriend === null || onRemoveFriend === undefined) return
     const { id } = pickedFriend
-    removeWrite.run((authHeader) => onRemoveFriend(id, authHeader), () => {})
+    write.run((authHeader) => onRemoveFriend(id, authHeader), () => {}, {
+      disabled: 'Removing is disabled right now',
+      failed: "Couldn't remove — try again",
+    })
   }
 
   // The draft lives in DetailsForm's state, so the form must stay MOUNTED while
@@ -103,19 +101,18 @@ export function LogSightingFlow({
       ) : (
         <div className="flow-details">
           {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
-          {removeWrite.actionError !== null && <p className="flow-error">{removeWrite.actionError}</p>}
           <DetailsForm
             key={[picked.emoji, picked.name ?? '', picked.place ?? ''].join(' ')}
             emoji={picked.emoji}
             initialName={picked.name}
             initialPlace={picked.place}
-            saving={write.busy || removeWrite.busy || removeWrite.prompt.open}
+            saving={write.busy}
             onBack={() => setPicked(null)}
             onSave={save}
             friendToggle={onSaveFriend !== undefined}
             sourceFriend={pickedFriend}
             onRemoveFriend={removeFriend}
-            removing={removeWrite.busy || write.busy || write.prompt.open}
+            removing={write.busy}
           />
           {write.prompt.open && (
             <div className="prompt-overlay">
@@ -124,16 +121,6 @@ export function LogSightingFlow({
                 error={write.prompt.error}
                 onCancel={write.prompt.onCancel}
                 onSubmit={write.prompt.onSubmit}
-              />
-            </div>
-          )}
-          {removeWrite.prompt.open && (
-            <div className="prompt-overlay">
-              <PasswordPrompt
-                open
-                error={removeWrite.prompt.error}
-                onCancel={removeWrite.prompt.onCancel}
-                onSubmit={removeWrite.prompt.onSubmit}
               />
             </div>
           )}
