@@ -1,17 +1,39 @@
 import { useState } from 'react'
+import type { Profile } from '../api'
 import { CURATED, EXTENDED, nameFor } from '../lib/critters'
 
 type Props = {
   recent: string[]
   onPick: (emoji: string, name: string | null) => void
   onCancel: () => void
+  friends?: Profile[]
+  onPickFriend?: (profile: Profile) => void
 }
 
-export function EmojiPicker({ recent, onPick, onCancel }: Props) {
+export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFriend }: Props) {
   const [showExtended, setShowExtended] = useState(false)
   return (
     <div className="emoji-picker">
       <h2 className="sheet-heading">What did Natalie see?</h2>
+      {friends.length > 0 && (
+        <>
+          <h3 className="picker-recent-heading">Friends</h3>
+          <div className="picker-grid picker-grid-recent">
+            {friends.map((profile) => (
+              <button
+                key={profile.id}
+                type="button"
+                className="picker-tile friend-tile"
+                aria-label={`Friend ${profile.name}`}
+                onClick={() => onPickFriend?.(profile)}
+              >
+                <span aria-hidden="true">{profile.emoji}</span>
+                <span className="friend-name">{profile.name}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       {recent.length > 0 && (
         <>
           <h3 className="picker-recent-heading">Recently seen</h3>

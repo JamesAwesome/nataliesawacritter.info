@@ -12,6 +12,7 @@ import { Tabs, type Tab } from './components/Tabs'
 import { TopCrittersPane } from './components/TopCrittersPane'
 import { Toast } from './components/Toast'
 import { useIsDesktop } from './hooks/useIsDesktop'
+import { useProfiles } from './hooks/useProfiles'
 import { useSightings } from './hooks/useSightings'
 import { leaderboard, recentEmoji } from './lib/insights'
 
@@ -23,12 +24,13 @@ type SheetState =
 
 export default function App() {
   const { sightings, status, addSighting, removeSighting, retry } = useSightings()
+  const { profiles, addProfile, removeProfile } = useProfiles()
   const isDesktop = useIsDesktop()
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
   // Derivations reused in JSX below; memoized so unrelated re-renders (toast,
   // sheet open/close) don't recompute them.
   const topTen = useMemo(() => leaderboard(sightings).slice(0, 10), [sightings])
-  const recent = useMemo(() => recentEmoji(sightings, 6), [sightings])
+  const recent = useMemo(() => recentEmoji(sightings, 4), [sightings])
   const [sheet, setSheet] = useState<SheetState>(null)
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -111,6 +113,9 @@ export default function App() {
           showToast('🎉 Logged!')
         }}
         recent={recent}
+        friends={profiles}
+        onSaveFriend={addProfile}
+        onRemoveFriend={removeProfile}
       />
       {sheet?.kind === 'day' && (
         <Sheet open onClose={() => setSheet(null)}>
@@ -135,6 +140,9 @@ export default function App() {
                 }
                 onDeleted={() => setSheet(null)}
                 removeSighting={removeSighting}
+                profiles={profiles}
+                addProfile={addProfile}
+                removeProfile={removeProfile}
               />
             </Sheet>
           )

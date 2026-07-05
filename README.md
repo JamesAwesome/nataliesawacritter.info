@@ -34,6 +34,9 @@ For public hosting via Cloudflare tunnel, set `CLOUDFLARE_TUNNEL_TOKEN` in
     GET    /api/sightings?from=YYYY-MM-DD&to=YYYY-MM-DD   # public; filters optional/inclusive
     POST   /api/sightings                                 # basic auth (WRITE_USER/WRITE_PASSWORD)
     DELETE /api/sightings/:id                             # basic auth
+    GET    /api/profiles                                  # public; saved critter friends
+    POST   /api/profiles                                  # basic auth; emoji + name required
+    DELETE /api/profiles/:id                              # basic auth
 
 POST body: `emoji` and `sightedOn` (YYYY-MM-DD) required; `name`, `sightedTime`,
 `place`, `comment` optional. With blank write credentials the write endpoints

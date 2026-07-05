@@ -54,3 +54,37 @@ export async function deleteSighting(id: string, authHeader: string): Promise<vo
   })
   if (!res.ok) throw new ApiError(res.status)
 }
+
+export type Profile = {
+  id: string
+  emoji: string
+  name: string
+  place: string | null
+  createdAt: string
+}
+
+export type NewProfileInput = { emoji: string; name: string; place?: string }
+
+export async function listProfiles(): Promise<Profile[]> {
+  const res = await fetch('/api/profiles')
+  if (!res.ok) throw new ApiError(res.status)
+  return (await res.json()) as Profile[]
+}
+
+export async function createProfile(fields: NewProfileInput, authHeader: string): Promise<Profile> {
+  const res = await fetch('/api/profiles', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: authHeader },
+    body: JSON.stringify(fields),
+  })
+  if (!res.ok) throw new ApiError(res.status)
+  return (await res.json()) as Profile
+}
+
+export async function deleteProfile(id: string, authHeader: string): Promise<void> {
+  const res = await fetch(`/api/profiles/${id}`, {
+    method: 'DELETE',
+    headers: { authorization: authHeader },
+  })
+  if (!res.ok) throw new ApiError(res.status)
+}

@@ -1,5 +1,5 @@
 import express, { type Express, type RequestHandler } from 'express'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { requireWriteAuth } from '../auth.js'
 import { errorHandler } from '../errorHandler.js'
 import { basic, withServer } from '../testUtils.js'
@@ -178,6 +178,39 @@ describe('POST /api/sightings', () => {
       const res = await post(base, VALID)
       expect(res.status).toBe(500)
       expect(await res.json()).toEqual({ error: 'internal' })
+    })
+  })
+
+  describe('future dates', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date('2026-07-04T12:00:00Z'))
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('accepts today and UTC today + 1 (timezone grace)', async () => {
+      const store = fakeStore()
+      await withServer(appWith(store), async (base) => {
+        for (const sightedOn of ['2026-07-04', '2026-07-05']) {
+          const res = await post(base, { emoji: '🦊', sightedOn })
+          expect(res.status).toBe(201)
+        }
+      })
+    })
+
+    it('rejects dates beyond UTC today + 1', async () => {
+      const store = fakeStore()
+      await withServer(appWith(store), async (base) => {
+        const res = await post(base, { emoji: '🦊', sightedOn: '2026-07-06' })
+        expect(res.status).toBe(400)
+        expect((await res.json() as { details: Record<string, string> }).details.sightedOn).toBe(
+          'must not be in the future',
+        )
+        expect(store.create).not.toHaveBeenCalled()
+      })
     })
   })
 })

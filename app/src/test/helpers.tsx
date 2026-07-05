@@ -29,6 +29,18 @@ export function stubFetchQueue(responses: Array<{ status: number; body: unknown 
   return mock
 }
 
+export function stubFetchByUrl(routes: Record<string, Array<{ status: number; body: unknown }>>): Mock {
+  const queues = new Map(Object.entries(routes).map(([url, rs]) => [url, [...rs]]))
+  const mock = vi.fn(async (input: string | URL | Request) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.pathname : new URL(input.url, 'http://x').pathname
+    const key = [...queues.keys()].find((k) => url.startsWith(k))
+    const next = (key !== undefined ? queues.get(key)!.shift() : undefined) ?? { status: 500, body: { error: 'internal' } }
+    return new Response(next.body === null ? null : JSON.stringify(next.body), { status: next.status })
+  })
+  vi.stubGlobal('fetch', mock)
+  return mock
+}
+
 export function stubMatchMedia(matches: boolean): { fireChange(matches: boolean): void } {
   let current = matches
   const listeners = new Set<(e: { matches: boolean }) => void>()

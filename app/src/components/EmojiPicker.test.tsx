@@ -32,3 +32,34 @@ describe('EmojiPicker recently-seen row', () => {
     expect(screen.getByRole('button', { name: 'Recently seen Fox' })).toBeInTheDocument() // recent
   })
 })
+
+const MR_FOX = {
+  id: '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa',
+  emoji: '🦊',
+  name: 'Mr Fox',
+  place: 'train station',
+  createdAt: '2026-07-04T12:00:00.000Z',
+}
+
+describe('EmojiPicker friends row', () => {
+  it('hides the row when there are no friends', () => {
+    render(<EmojiPicker recent={[]} onPick={() => {}} onCancel={() => {}} />)
+    expect(screen.queryByText('Friends')).not.toBeInTheDocument()
+  })
+
+  it('renders friends above everything and fires onPickFriend with the profile', async () => {
+    const onPickFriend = vi.fn()
+    render(
+      <EmojiPicker
+        recent={['🐸']}
+        friends={[MR_FOX]}
+        onPickFriend={onPickFriend}
+        onPick={() => {}}
+        onCancel={() => {}}
+      />,
+    )
+    expect(screen.getByText('Friends')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Friend Mr Fox' }))
+    expect(onPickFriend).toHaveBeenCalledWith(MR_FOX)
+  })
+})

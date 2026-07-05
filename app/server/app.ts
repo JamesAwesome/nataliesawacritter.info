@@ -2,6 +2,8 @@ import path from 'node:path'
 import express, { type Express, type RequestHandler } from 'express'
 import { requireWriteAuth } from './auth.js'
 import { errorHandler } from './errorHandler.js'
+import { profilesRouter } from './profiles/routes.js'
+import type { ProfilesStore } from './profiles/store.js'
 import { sightingsRouter } from './sightings/routes.js'
 import type { SightingsStore } from './sightings/store.js'
 
@@ -9,6 +11,7 @@ export interface AppDeps {
   /** Resolves if the database is reachable, throws otherwise. */
   checkDb: () => Promise<void>
   sightingsStore: SightingsStore
+  profilesStore: ProfilesStore
   /** null → write endpoints respond 503 "writes disabled" (deny by default). */
   writeCredentials: { user: string; password: string } | null
 }
@@ -35,6 +38,7 @@ export function createApp(deps: AppDeps): Express {
     ? requireWriteAuth(deps.writeCredentials.user, deps.writeCredentials.password)
     : writesDisabled
   app.use('/api/sightings', sightingsRouter(deps.sightingsStore, writeGate))
+  app.use('/api/profiles', profilesRouter(deps.profilesStore, writeGate))
 
   const clientDir = path.resolve(import.meta.dirname, '../client')
   app.use((req, res, next) => {

@@ -30,3 +30,9 @@ export const EXTENDED: string[] = [
 export function nameFor(emoji: string): string | null {
   return CURATED.find((c) => c.emoji === emoji)?.name ?? null
 }
+
+/** Friend identity comparisons ignore case and surrounding whitespace
+ *  (mobile autocapitalize makes "Mr fox"/"Mr Fox" the same friend). */
+export function normalizedName(value: string): string {
+  return value.trim().toLowerCase()
+}

@@ -1,9 +1,20 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createApp, type AppDeps } from './app.js'
-import { basic, withServer } from './testUtils.js'
+import type { ProfilesStore } from './profiles/store.js'
 import type { SightingsStore } from './sightings/store.js'
+import { basic, withServer } from './testUtils.js'
 
 function fakeStore(): SightingsStore {
+  return {
+    list: vi.fn(async () => []),
+    create: vi.fn(async () => {
+      throw new Error('unused')
+    }),
+    remove: vi.fn(async () => true),
+  }
+}
+
+function fakeProfilesStore(): ProfilesStore {
   return {
     list: vi.fn(async () => []),
     create: vi.fn(async () => {
@@ -17,6 +28,7 @@ function deps(overrides: Partial<AppDeps> = {}): AppDeps {
   return {
     checkDb: async () => {},
     sightingsStore: fakeStore(),
+    profilesStore: fakeProfilesStore(),
     writeCredentials: null,
     ...overrides,
   }

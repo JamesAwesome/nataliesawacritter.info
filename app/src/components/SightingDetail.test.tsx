@@ -21,6 +21,9 @@ function renderDetail(overrides: Partial<Parameters<typeof SightingDetail>[0]> =
       onBack={onBack}
       onDeleted={onDeleted}
       removeSighting={removeSighting}
+      profiles={[]}
+      addProfile={vi.fn(async () => {})}
+      removeProfile={vi.fn(async () => {})}
       {...overrides}
     />,
   )
@@ -100,5 +103,76 @@ describe('SightingDetail', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Really delete?' }))
     expect(await screen.findByLabelText(/password/i)).toBeInTheDocument()
     expect(localStorage.getItem('critter-write-auth')).toBeNull()
+  })
+})
+
+describe('friend toggle', () => {
+  it('saves a friend from the sighting fields', async () => {
+    setCredentials('sekrit')
+    const addProfile = vi.fn(async () => {})
+    const { sighting } = renderDetail({ addProfile })
+    await userEvent.click(screen.getByRole('button', { name: '⭐ Save as friend' }))
+    await vi.waitFor(() =>
+      expect(addProfile).toHaveBeenCalledWith(
+        { emoji: sighting.emoji, name: sighting.name, place: sighting.place ?? undefined },
+        'Basic ' + btoa('natalie:sekrit'),
+      ),
+    )
+  })
+
+  it('shows Remove friend when a matching profile exists and removes it', async () => {
+    setCredentials('sekrit')
+    const removeProfile = vi.fn(async () => {})
+    const sighting = makeSighting({ emoji: '🦊', name: 'Fox' })
+    const profile = {
+      id: '00000000-0000-4000-8000-000000000009',
+      emoji: '🦊',
+      name: 'Fox',
+      place: null,
+      createdAt: '2026-07-04T12:00:00.000Z',
+    }
+    renderDetail({ sighting, profiles: [profile], removeProfile })
+    expect(screen.queryByRole('button', { name: '⭐ Save as friend' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Remove friend' }))
+    await vi.waitFor(() => expect(removeProfile).toHaveBeenCalledWith(profile.id, expect.any(String)))
+  })
+
+  it('matches an existing friend case- and whitespace-insensitively', () => {
+    const sighting = makeSighting({ emoji: '🦊', name: 'Mr Fox' })
+    const profile = {
+      id: '00000000-0000-4000-8000-000000000010',
+      emoji: '🦊',
+      name: '  mr fox ',
+      place: null,
+      createdAt: '2026-07-04T12:00:00.000Z',
+    }
+    renderDetail({ sighting, profiles: [profile] })
+    expect(screen.queryByRole('button', { name: '⭐ Save as friend' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Remove friend' })).toBeInTheDocument()
+  })
+
+  it('hides the toggle for nameless sightings', () => {
+    renderDetail({ sighting: makeSighting({ name: null }) })
+    expect(screen.queryByRole('button', { name: /friend/i })).not.toBeInTheDocument()
+  })
+
+  it('cannot open both password prompts at once', async () => {
+    renderDetail()
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Really delete?' }))
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '⭐ Save as friend' })).toBeDisabled()
+  })
+
+  it('prompts for the password on save-as-friend when no credentials, then saves', async () => {
+    const addProfile = vi.fn(async () => {})
+    renderDetail({ addProfile })
+    await userEvent.click(screen.getByRole('button', { name: '⭐ Save as friend' }))
+    expect(addProfile).not.toHaveBeenCalled()
+    await userEvent.type(screen.getByLabelText(/password/i), 'sekrit')
+    await userEvent.click(screen.getByRole('button', { name: /^save$/i }))
+    await vi.waitFor(() =>
+      expect(addProfile).toHaveBeenCalledWith(expect.anything(), 'Basic ' + btoa('natalie:sekrit')),
+    )
   })
 })
