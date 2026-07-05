@@ -76,4 +76,19 @@ describe('useProfiles', () => {
     ).rejects.toMatchObject({ status: 503 })
     expect(result.current.profiles).toEqual([PROFILE])
   })
+
+  it('refetches silently when the page becomes visible again', async () => {
+    const fresh = { ...PROFILE, id: '00000000-0000-4000-8000-000000000003', name: 'Professor Hoot' }
+    stubFetchQueue([
+      { status: 200, body: [PROFILE] },
+      { status: 200, body: [fresh, PROFILE] },
+    ])
+    const { result } = renderHook(() => useProfiles())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+    await waitFor(() => expect(result.current.profiles).toHaveLength(2))
+    expect(result.current.status).toBe('ready')
+  })
 })
