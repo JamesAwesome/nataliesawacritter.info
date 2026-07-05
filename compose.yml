@@ -33,8 +33,11 @@ services:
     tmpfs:
       - /tmp
     ports:
-      # Host port is configurable (container always listens on 8080).
-      - "${APP_PORT:-8080}:8080"
+      # Host port is configurable (container always listens on 8080). Bound to
+      # localhost by default, so the app is reachable on this machine but NOT the
+      # LAN. Set APP_BIND=0.0.0.0 to expose it on the LAN. The Cloudflare tunnel
+      # reaches the app over the docker network (app:8080) either way.
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:8080"
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-critters}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-critters}
       WRITE_USER: ${WRITE_USER:-}
