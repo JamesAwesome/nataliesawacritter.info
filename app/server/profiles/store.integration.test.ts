@@ -48,4 +48,17 @@ describe('profiles store', () => {
     expect(await store.remove(created.row.id)).toBe(true)
     expect(await store.remove(created.row.id)).toBe(false)
   })
+
+  it('signals conflict for case/whitespace variants of an existing friend', async () => {
+    await store.create({ emoji: '🦊', name: 'Mr Fox', place: null })
+    expect(await store.create({ emoji: '🦊', name: 'mr fox', place: null })).toEqual({
+      ok: false,
+      conflict: true,
+    })
+    expect(await store.create({ emoji: '🦊', name: '  MR FOX  ', place: null })).toEqual({
+      ok: false,
+      conflict: true,
+    })
+    expect(await store.list()).toHaveLength(1)
+  })
 })
