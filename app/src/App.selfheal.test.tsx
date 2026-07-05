@@ -56,5 +56,10 @@ describe('stale-sheet self-heal (App.tsx adjust-during-render)', () => {
 
     expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
     expect(document.querySelector('.sheet-scrim')).toBeNull()
+
+    // If the row returns, a healed sheet stays closed (state cleared, not merely hidden)
+    sightingsState.current = { ...sightingsState.current, sightings: [ROW] }
+    rerender(<App />)
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
   })
 })
