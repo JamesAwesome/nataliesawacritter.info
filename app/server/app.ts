@@ -4,6 +4,7 @@ import { requireWriteAuth } from './auth.js'
 import { errorHandler } from './errorHandler.js'
 import { profilesRouter } from './profiles/routes.js'
 import type { ProfilesStore } from './profiles/store.js'
+import { photoFileRouter, sightingPhotoRouter } from './sightings/photoRoutes.js'
 import { sightingsRouter } from './sightings/routes.js'
 import type { SightingsStore } from './sightings/store.js'
 
@@ -14,6 +15,7 @@ export interface AppDeps {
   profilesStore: ProfilesStore
   /** null → write endpoints respond 503 "writes disabled" (deny by default). */
   writeCredentials: { user: string; password: string } | null
+  photosDir: string
 }
 
 const writesDisabled: RequestHandler = (_req, res) => {
@@ -37,7 +39,9 @@ export function createApp(deps: AppDeps): Express {
   const writeGate = deps.writeCredentials
     ? requireWriteAuth(deps.writeCredentials.user, deps.writeCredentials.password)
     : writesDisabled
-  app.use('/api/sightings', sightingsRouter(deps.sightingsStore, writeGate))
+  app.use('/api/sightings', sightingsRouter(deps.sightingsStore, writeGate, deps.photosDir))
+  app.use('/api/sightings', sightingPhotoRouter(deps.sightingsStore, writeGate, deps.photosDir))
+  app.use('/api/photos', photoFileRouter(deps.photosDir))
   app.use('/api/profiles', profilesRouter(deps.profilesStore, writeGate))
 
   const clientDir = path.resolve(import.meta.dirname, '../client')

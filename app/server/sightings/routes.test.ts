@@ -33,7 +33,7 @@ const passGate: RequestHandler = (_req, _res, next) => next()
 function appWith(store: SightingsStore, gate: RequestHandler = passGate): Express {
   const app = express()
   app.use(express.json())
-  app.use('/api/sightings', sightingsRouter(store, gate))
+  app.use('/api/sightings', sightingsRouter(store, gate, '/tmp/unused-photos'))
   app.use(errorHandler)
   return app
 }

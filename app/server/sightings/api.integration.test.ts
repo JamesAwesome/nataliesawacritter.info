@@ -31,6 +31,7 @@ describe('sightings API against real postgres', () => {
       sightingsStore: createSightingsStore(handle.db),
       profilesStore: createProfilesStore(handle.db),
       writeCredentials: { user: 'natalie', password: 'sekrit' },
+      photosDir: '/tmp/unused-photos',
     })
   }
 

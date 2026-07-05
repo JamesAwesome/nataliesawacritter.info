@@ -1,3 +1,5 @@
+import { rm } from 'node:fs/promises'
+import path from 'node:path'
 import { Router, type RequestHandler } from 'express'
 import type { NewSighting, SightingsStore } from './store.js'
 import { UUID_RE, sendValidation, rejectUnknownFields } from '../httpValidation.js'
@@ -64,7 +66,7 @@ function parseNewSighting(body: unknown):
   }
 }
 
-export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler): Router {
+export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler, photosDir: string): Router {
   const router = Router()
 
   router.get('/', async (req, res) => {
@@ -104,10 +106,14 @@ export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler
       sendValidation(res, { id: 'must be a uuid' })
       return
     }
+    const existing = await store.getById(id)
     const removed = await store.remove(id)
     if (!removed) {
       res.status(404).json({ error: 'not found' })
       return
+    }
+    if (existing !== null && existing.photoPath !== null) {
+      await rm(path.join(photosDir, path.basename(existing.photoPath)), { force: true }).catch(() => {})
     }
     res.status(204).end()
   })

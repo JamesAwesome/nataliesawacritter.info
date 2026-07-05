@@ -32,6 +32,7 @@ function deps(overrides: Partial<AppDeps> = {}): AppDeps {
     sightingsStore: fakeStore(),
     profilesStore: fakeProfilesStore(),
     writeCredentials: null,
+    photosDir: '/tmp/unused-photos',
     ...overrides,
   }
 }
