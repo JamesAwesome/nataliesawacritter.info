@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { NewProfileInput, Profile, Sighting } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
+import { normalizedName } from '../lib/critters'
 import { formatWhen } from '../lib/format'
 import { PasswordPrompt } from './PasswordPrompt'
 
@@ -33,14 +34,11 @@ export function SightingDetail({
     disabled: 'Saving is disabled right now',
     failed: "Couldn't save — try again",
   })
-  // Case/whitespace-insensitive match: mobile autocapitalize means "Mr fox"
-  // and "Mr Fox" are the same friend as far as the toggle is concerned.
-  const normalized = (value: string) => value.trim().toLowerCase()
   const matching =
     sighting.name === null
       ? undefined
       : profiles.find(
-          (p) => p.emoji === sighting.emoji && normalized(p.name) === normalized(sighting.name as string),
+          (p) => p.emoji === sighting.emoji && normalizedName(p.name) === normalizedName(sighting.name as string),
         )
   const [confirming, setConfirming] = useState(false)
   const confirmTimer = useRef<ReturnType<typeof setTimeout>>(undefined)

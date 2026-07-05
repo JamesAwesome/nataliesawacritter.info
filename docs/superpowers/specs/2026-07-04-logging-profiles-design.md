@@ -152,3 +152,13 @@ stats/filtering · time-zone storage (times remain display strings).
 - **Friend identity hardening** (antagonistic review): names trimmed at the form
   and route; the Sighting Detail match is case/whitespace-insensitive. A DB-level
   unique index on (emoji, lower(trim(name))) is deferred to the photo cycle.
+- **Friend status line in Step B** (designer-consulted, two rounds): when Natalie
+  arrives via a friend tile AND the name field still matches that friend
+  (normalized), the save-as-friend checkbox slot instead shows
+  "⭐ <Name> is one of Natalie's friends · Remove" — Remove uses the app's two-tap
+  "Really remove?" pattern behind auth (second useWriteAction in the flow). The
+  lookup is live: removal (or editing the name away) swaps the slot back to the
+  ordinary checkbox, so a renamed critter stays befriendable and removal has an
+  obvious one-tap undo path. `normalizedName` extracted to lib/critters (shared
+  with SightingDetail). Rejected: long-press (undiscoverable), per-tile ✕
+  (destructive chrome on the happy path), Friends-row edit mode (a whole mode).

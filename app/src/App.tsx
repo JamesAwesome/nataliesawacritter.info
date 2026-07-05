@@ -115,6 +115,7 @@ export default function App() {
         recent={recent}
         friends={profiles}
         onSaveFriend={addProfile}
+        onRemoveFriend={removeProfile}
       />
       {sheet?.kind === 'day' && (
         <Sheet open onClose={() => setSheet(null)}>

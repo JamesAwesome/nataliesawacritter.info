@@ -735,3 +735,25 @@ button.day-cell {
   opacity: 0.5;
   cursor: default;
 }
+
+.friend-status {
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+}
+
+.friend-remove {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--danger);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.friend-remove:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

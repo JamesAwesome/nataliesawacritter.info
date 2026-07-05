@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import type { NewSightingInput } from '../api'
+import { useEffect, useRef, useState } from 'react'
+import type { NewSightingInput, Profile } from '../api'
+import { normalizedName } from '../lib/critters'
 import { formatClockTime, nowClockTime } from '../lib/format'
 
 type Props = {
@@ -11,7 +12,15 @@ type Props = {
   initialPlace?: string | null
   /** When true, renders the "⭐ Save as a friend" checkbox and passes its state via onSave's opts. */
   friendToggle?: boolean
+  /** The still-existing friend profile this form was opened from (live lookup —
+   *  null once removed). While the name field still matches it, the checkbox
+   *  slot shows a friend status line with a two-tap Remove instead. */
+  sourceFriend?: Profile | null
+  onRemoveFriend?: () => void
+  removing?: boolean
 }
+
+const CONFIRM_WINDOW_MS = 4000
 
 function today(): string {
   const now = new Date()
@@ -20,13 +29,34 @@ function today(): string {
   return `${now.getFullYear()}-${month}-${day}`
 }
 
-export function DetailsForm({ emoji, initialName, onBack, onSave, saving, initialPlace, friendToggle }: Props) {
+export function DetailsForm({
+  emoji,
+  initialName,
+  onBack,
+  onSave,
+  saving,
+  initialPlace,
+  friendToggle,
+  sourceFriend,
+  onRemoveFriend,
+  removing,
+}: Props) {
   const [name, setName] = useState(initialName ?? '')
   const [sightedOn, setSightedOn] = useState(today)
   const [sightedTime, setSightedTime] = useState('')
   const [place, setPlace] = useState(initialPlace ?? '')
   const [comment, setComment] = useState('')
   const [saveAsFriend, setSaveAsFriend] = useState(false)
+  const [confirmingRemove, setConfirmingRemove] = useState(false)
+  const confirmTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => () => clearTimeout(confirmTimer.current), [])
+
+  // One predicate drives one slot: while the (live) source friend's name still
+  // matches the field, show the status line; edit it away and the ordinary
+  // save-as-friend checkbox returns (a renamed critter is befriendable).
+  const liveFriend =
+    sourceFriend != null && normalizedName(sourceFriend.name) === normalizedName(name) ? sourceFriend : null
 
   function save() {
     const fields: NewSightingInput = { emoji, sightedOn }
@@ -39,10 +69,22 @@ export function DetailsForm({ emoji, initialName, onBack, onSave, saving, initia
     if (comment !== '') fields.comment = comment
     if (friendToggle) {
       // A friend needs a name — an empty name silently drops the request.
-      onSave(fields, { saveAsFriend: saveAsFriend && trimmedName !== '' })
+      onSave(fields, { saveAsFriend: saveAsFriend && trimmedName !== '' && liveFriend === null })
     } else {
       onSave(fields)
     }
+  }
+
+  function onRemoveClick() {
+    if (!confirmingRemove) {
+      setConfirmingRemove(true)
+      clearTimeout(confirmTimer.current)
+      confirmTimer.current = setTimeout(() => setConfirmingRemove(false), CONFIRM_WINDOW_MS)
+      return
+    }
+    clearTimeout(confirmTimer.current)
+    setConfirmingRemove(false)
+    onRemoveFriend?.()
   }
 
   return (
@@ -86,16 +128,30 @@ export function DetailsForm({ emoji, initialName, onBack, onSave, saving, initia
         Comment
         <textarea rows={2} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Comment (optional)" />
       </label>
-      {friendToggle && (
-        <label className="friend-checkbox">
-          <input
-            type="checkbox"
-            checked={saveAsFriend}
-            disabled={name.trim() === ''}
-            onChange={(e) => setSaveAsFriend(e.target.checked)}
-          />
-          ⭐ Save as a friend
-        </label>
+      {liveFriend !== null ? (
+        <p className="friend-status">
+          ⭐ {liveFriend.name} is one of Natalie's friends ·{' '}
+          <button
+            type="button"
+            className={confirmingRemove ? 'friend-remove confirming' : 'friend-remove'}
+            disabled={removing}
+            onClick={onRemoveClick}
+          >
+            {confirmingRemove ? 'Really remove?' : 'Remove'}
+          </button>
+        </p>
+      ) : (
+        friendToggle && (
+          <label className="friend-checkbox">
+            <input
+              type="checkbox"
+              checked={saveAsFriend}
+              disabled={name.trim() === ''}
+              onChange={(e) => setSaveAsFriend(e.target.checked)}
+            />
+            ⭐ Save as a friend
+          </label>
+        )
       )}
       <div className="details-actions">
         <button type="button" className="btn-secondary" onClick={onBack}>

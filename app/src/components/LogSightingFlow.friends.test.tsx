@@ -106,4 +106,70 @@ describe('LogSightingFlow friends', () => {
     await userEvent.type(screen.getByLabelText(/critter name/i), 'Buzz')
     expect(screen.getByRole('checkbox', { name: /save as a friend/i })).toBeEnabled()
   })
+
+  it('arriving via a friend tile shows the friend status line instead of the checkbox', async () => {
+    render(
+      <LogSightingFlow
+        open
+        onClose={() => {}}
+        onSave={vi.fn(async () => {})}
+        onLogged={vi.fn()}
+        friends={[MR_FOX]}
+        onSaveFriend={vi.fn(async () => {})}
+        onRemoveFriend={vi.fn(async () => {})}
+      />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Friend Mr Fox' }))
+    expect(screen.getByText(/Mr Fox is one of Natalie's friends/)).toBeInTheDocument()
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+  })
+
+  it('editing the name away swaps back to the checkbox; restoring (any case) swaps again', async () => {
+    render(
+      <LogSightingFlow
+        open
+        onClose={() => {}}
+        onSave={vi.fn(async () => {})}
+        onLogged={vi.fn()}
+        friends={[MR_FOX]}
+        onSaveFriend={vi.fn(async () => {})}
+        onRemoveFriend={vi.fn(async () => {})}
+      />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Friend Mr Fox' }))
+    const nameInput = screen.getByLabelText(/critter name/i)
+    await userEvent.clear(nameInput)
+    await userEvent.type(nameInput, 'Mrs Fox')
+    expect(screen.queryByText(/is one of Natalie's friends/)).not.toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /save as a friend/i })).toBeEnabled()
+    await userEvent.clear(nameInput)
+    await userEvent.type(nameInput, 'mr fox ')
+    expect(screen.getByText(/Mr Fox is one of Natalie's friends/)).toBeInTheDocument()
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+  })
+
+  it('two-tap Remove deletes the friend and the slot reverts to the checkbox', async () => {
+    setCredentials('sekrit')
+    const onRemoveFriend = vi.fn(async () => {})
+    const props = {
+      open: true,
+      onClose: () => {},
+      onSave: vi.fn(async () => {}),
+      onLogged: vi.fn(),
+      onSaveFriend: vi.fn(async () => {}),
+      onRemoveFriend,
+    }
+    const { rerender } = render(<LogSightingFlow {...props} friends={[MR_FOX]} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Friend Mr Fox' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    expect(onRemoveFriend).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: 'Really remove?' }))
+    await vi.waitFor(() =>
+      expect(onRemoveFriend).toHaveBeenCalledWith(MR_FOX.id, 'Basic ' + btoa('natalie:sekrit')),
+    )
+    // App's profiles list updates after removal → friend drops out of `friends`.
+    rerender(<LogSightingFlow {...props} friends={[]} />)
+    expect(screen.queryByText(/is one of Natalie's friends/)).not.toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /save as a friend/i })).toBeInTheDocument()
+  })
 })
