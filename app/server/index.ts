@@ -34,6 +34,7 @@ const app = createApp({
   sightingsStore: createSightingsStore(db),
   profilesStore: createProfilesStore(db),
   writeCredentials,
+  photosDir: process.env.PHOTOS_DIR ?? '/data/photos',
 })
 
 const port = Number(process.env.PORT ?? 8080)

@@ -6,6 +6,9 @@ import { setCredentials } from '../auth'
 import { makeSighting, useFakeClock } from '../test/helpers'
 import { SightingDetail } from './SightingDetail'
 
+const downscalePhoto = vi.hoisted(() => vi.fn())
+vi.mock('../lib/photo', () => ({ downscalePhoto }))
+
 afterEach(() => {
   localStorage.clear()
 })
@@ -24,6 +27,8 @@ function renderDetail(overrides: Partial<Parameters<typeof SightingDetail>[0]> =
       profiles={[]}
       addProfile={vi.fn(async () => {})}
       removeProfile={vi.fn(async () => {})}
+      uploadPhoto={vi.fn(async () => {})}
+      removePhoto={vi.fn(async () => {})}
       {...overrides}
     />,
   )
@@ -156,12 +161,11 @@ describe('friend toggle', () => {
     expect(screen.queryByRole('button', { name: /friend/i })).not.toBeInTheDocument()
   })
 
-  it('cannot open both password prompts at once', async () => {
+  it('only ever renders a single password prompt', async () => {
     renderDetail()
     await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
     await userEvent.click(screen.getByRole('button', { name: 'Really delete?' }))
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '⭐ Save as friend' })).toBeDisabled()
+    expect(screen.getAllByLabelText(/password/i)).toHaveLength(1)
   })
 
   it('prompts for the password on save-as-friend when no credentials, then saves', async () => {
@@ -173,6 +177,63 @@ describe('friend toggle', () => {
     await userEvent.click(screen.getByRole('button', { name: /^save$/i }))
     await vi.waitFor(() =>
       expect(addProfile).toHaveBeenCalledWith(expect.anything(), 'Basic ' + btoa('natalie:sekrit')),
+    )
+  })
+})
+
+describe('photo block', () => {
+  it('renders the img when the sighting has a photo', () => {
+    renderDetail({ sighting: makeSighting({ photoPath: '/api/photos/a-1.jpg' }) })
+    expect(screen.getByRole('img')).toHaveAttribute('src', '/api/photos/a-1.jpg')
+    expect(screen.getByText('Replace photo')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Remove photo' })).toBeInTheDocument()
+  })
+
+  it('adds a photo immediately from the picker when there is none', async () => {
+    setCredentials('sekrit')
+    downscalePhoto.mockResolvedValueOnce(new Blob(['x'], { type: 'image/jpeg' }))
+    const uploadPhoto = vi.fn(async () => {})
+    const { sighting } = renderDetail({ uploadPhoto })
+    await userEvent.upload(screen.getByLabelText(/add a photo/i), new File(['p'], 'p.jpg', { type: 'image/jpeg' }))
+    await vi.waitFor(() =>
+      expect(uploadPhoto).toHaveBeenCalledWith(sighting.id, expect.any(Blob), 'Basic ' + btoa('natalie:sekrit')),
+    )
+  })
+
+  it('removes with the two-tap confirm', async () => {
+    setCredentials('sekrit')
+    const removePhoto = vi.fn(async () => {})
+    const sighting = makeSighting({ photoPath: '/api/photos/a-1.jpg' })
+    renderDetail({ sighting, removePhoto })
+    await userEvent.click(screen.getByRole('button', { name: 'Remove photo' }))
+    expect(removePhoto).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: 'Really remove?' }))
+    await vi.waitFor(() => expect(removePhoto).toHaveBeenCalledWith(sighting.id, expect.any(String)))
+  })
+
+  it('replaces via the picker', async () => {
+    setCredentials('sekrit')
+    downscalePhoto.mockResolvedValueOnce(new Blob(['y'], { type: 'image/jpeg' }))
+    const uploadPhoto = vi.fn(async () => {})
+    const sighting = makeSighting({ photoPath: '/api/photos/a-1.jpg' })
+    renderDetail({ sighting, uploadPhoto })
+    await userEvent.upload(screen.getByLabelText('Replace photo'), new File(['q'], 'q.jpg', { type: 'image/jpeg' }))
+    await vi.waitFor(() => expect(uploadPhoto).toHaveBeenCalledWith(sighting.id, expect.any(Blob), expect.any(String)))
+  })
+
+  it('resets the replace-photo input so re-picking the same file after a failure retries', async () => {
+    setCredentials('sekrit')
+    downscalePhoto.mockRejectedValueOnce(new Error('bad photo')).mockResolvedValueOnce(new Blob(['z'], { type: 'image/jpeg' }))
+    const uploadPhoto = vi.fn(async () => {})
+    const sighting = makeSighting({ photoPath: '/api/photos/a-1.jpg' })
+    renderDetail({ sighting, uploadPhoto })
+    const file = new File(['q'], 'q.jpg', { type: 'image/jpeg' })
+    await userEvent.upload(screen.getByLabelText('Replace photo'), file)
+    expect(await screen.findByText("Couldn't read that photo")).toBeInTheDocument()
+    expect(uploadPhoto).not.toHaveBeenCalled()
+    await userEvent.upload(screen.getByLabelText('Replace photo'), file)
+    await vi.waitFor(() =>
+      expect(uploadPhoto).toHaveBeenCalledWith(sighting.id, expect.any(Blob), expect.any(String)),
     )
   })
 })

@@ -34,6 +34,9 @@ For public hosting via Cloudflare tunnel, set `CLOUDFLARE_TUNNEL_TOKEN` in
     GET    /api/sightings?from=YYYY-MM-DD&to=YYYY-MM-DD   # public; filters optional/inclusive
     POST   /api/sightings                                 # basic auth (WRITE_USER/WRITE_PASSWORD)
     DELETE /api/sightings/:id                             # basic auth
+    PUT    /api/sightings/:id/photo                       # basic auth; raw image/jpeg body (≤6MB)
+    DELETE /api/sightings/:id/photo                       # basic auth
+    GET    /api/photos/:filename                          # public; immutable cache
     GET    /api/profiles                                  # public; saved critter friends
     POST   /api/profiles                                  # basic auth; emoji + name required
     DELETE /api/profiles/:id                              # basic auth

@@ -1,5 +1,5 @@
 import { vi, beforeEach, afterEach, type Mock } from 'vitest'
-import type { Sighting } from '../api'
+import type { Sighting, Profile } from '../api'
 
 let counter = 0
 
@@ -68,4 +68,18 @@ export function useFakeClock(): void {
   afterEach(() => {
     vi.useRealTimers()
   })
+}
+
+let profileSeq = 0
+
+export function makeProfile(overrides: Partial<Profile> = {}): Profile {
+  profileSeq += 1
+  return {
+    id: `00000000-0000-4000-8000-${String(profileSeq).padStart(12, '0')}`,
+    emoji: '🦊',
+    name: 'Mr Fox',
+    place: 'train station',
+    createdAt: '2026-07-04T12:00:00.000Z',
+    ...overrides,
+  }
 }

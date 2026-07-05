@@ -11,6 +11,8 @@ function fakeStore(): SightingsStore {
       throw new Error('unused')
     }),
     remove: vi.fn(async () => true),
+    getById: vi.fn(async () => null),
+    setPhotoPath: vi.fn(async () => null),
   }
 }
 
@@ -30,6 +32,7 @@ function deps(overrides: Partial<AppDeps> = {}): AppDeps {
     sightingsStore: fakeStore(),
     profilesStore: fakeProfilesStore(),
     writeCredentials: null,
+    photosDir: '/tmp/unused-photos',
     ...overrides,
   }
 }

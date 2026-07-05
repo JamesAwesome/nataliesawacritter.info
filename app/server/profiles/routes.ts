@@ -1,12 +1,8 @@
-import { Router, type RequestHandler, type Response } from 'express'
+import { Router, type RequestHandler } from 'express'
 import type { NewProfile, ProfilesStore } from './store.js'
+import { UUID_RE, sendValidation, rejectUnknownFields } from '../httpValidation.js'
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const KNOWN_FIELDS = new Set(['emoji', 'name', 'place'])
-
-function sendValidation(res: Response, details: Record<string, string>) {
-  res.status(400).json({ error: 'validation', details })
-}
 
 function parseNewProfile(body: unknown):
   | { ok: true; fields: NewProfile }
@@ -17,9 +13,7 @@ function parseNewProfile(body: unknown):
   }
   const record = body as Record<string, unknown>
 
-  for (const key of Object.keys(record)) {
-    if (!KNOWN_FIELDS.has(key)) details[key] = 'unknown field'
-  }
+  rejectUnknownFields(record, KNOWN_FIELDS, details)
 
   const emoji = record.emoji
   if (typeof emoji !== 'string' || emoji.length === 0 || emoji.length > 16) {

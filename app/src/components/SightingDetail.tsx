@@ -3,7 +3,9 @@ import type { NewProfileInput, Profile, Sighting } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
 import { normalizedName } from '../lib/critters'
 import { formatWhen } from '../lib/format'
+import { downscalePhoto } from '../lib/photo'
 import { PasswordPrompt } from './PasswordPrompt'
+import { PhotoControl } from './PhotoControl'
 
 type Props = {
   sighting: Sighting
@@ -13,6 +15,8 @@ type Props = {
   profiles: Profile[]
   addProfile(fields: NewProfileInput, authHeader: string): Promise<void>
   removeProfile(id: string, authHeader: string): Promise<void>
+  uploadPhoto(id: string, photo: Blob, authHeader: string): Promise<void>
+  removePhoto(id: string, authHeader: string): Promise<void>
 }
 
 const CONFIRM_WINDOW_MS = 4000
@@ -25,14 +29,12 @@ export function SightingDetail({
   profiles,
   addProfile,
   removeProfile,
+  uploadPhoto,
+  removePhoto,
 }: Props) {
   const write = useWriteAction({
     disabled: 'Deleting is disabled right now',
     failed: "Couldn't delete — try again",
-  })
-  const friendWrite = useWriteAction({
-    disabled: 'Saving is disabled right now',
-    failed: "Couldn't save — try again",
   })
   const matching =
     sighting.name === null
@@ -57,6 +59,46 @@ export function SightingDetail({
     write.run((authHeader) => removeSighting(sighting.id, authHeader), onDeleted)
   }
 
+  const [confirmingPhoto, setConfirmingPhoto] = useState(false)
+  const photoConfirmTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(photoConfirmTimer.current), [])
+  const [photoError, setPhotoError] = useState<string | null>(null)
+
+  const PHOTO_MESSAGES = { disabled: 'Photos are disabled right now', failed: "Couldn't update the photo — try again" }
+
+  async function onPickPhoto(input: HTMLInputElement) {
+    const file = input.files?.[0]
+    if (file === undefined) return
+    setPhotoError(null)
+    try {
+      const blob = await downscalePhoto(file)
+      write.run((authHeader) => uploadPhoto(sighting.id, blob, authHeader), () => {}, PHOTO_MESSAGES)
+    } catch {
+      setPhotoError("Couldn't read that photo")
+    } finally {
+      input.value = ''
+    }
+  }
+
+  function onDetailPhoto(blob: Blob | null) {
+    if (blob === null) return
+    setPhotoError(null)
+    write.run((authHeader) => uploadPhoto(sighting.id, blob, authHeader), () => {}, PHOTO_MESSAGES)
+  }
+
+  function onRemovePhotoClick() {
+    if (!confirmingPhoto) {
+      setConfirmingPhoto(true)
+      clearTimeout(photoConfirmTimer.current)
+      photoConfirmTimer.current = setTimeout(() => setConfirmingPhoto(false), CONFIRM_WINDOW_MS)
+      return
+    }
+    clearTimeout(photoConfirmTimer.current)
+    setConfirmingPhoto(false)
+    setPhotoError(null)
+    write.run((authHeader) => removePhoto(sighting.id, authHeader), () => {}, PHOTO_MESSAGES)
+  }
+
   return (
     <div className="sighting-detail">
       <div className="detail-head">
@@ -69,32 +111,68 @@ export function SightingDetail({
           📍 <strong>{sighting.place}</strong>
         </p>
       )}
+      {sighting.photoPath !== null ? (
+        <div className="detail-photo-block">
+          <img
+            className="detail-photo"
+            src={sighting.photoPath}
+            alt={sighting.name ?? `${sighting.emoji} sighting`}
+            loading="lazy"
+          />
+          <div className="photo-actions">
+            <label className="photo-action">
+              Replace photo
+              <input
+                type="file"
+                accept="image/*"
+                aria-label="Replace photo"
+                disabled={write.busy}
+                onChange={(e) => void onPickPhoto(e.currentTarget)}
+              />
+            </label>
+            <button
+              type="button"
+              className={confirmingPhoto ? 'photo-action danger confirming' : 'photo-action danger'}
+              disabled={write.busy}
+              onClick={onRemovePhotoClick}
+            >
+              {confirmingPhoto ? 'Really remove?' : 'Remove photo'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <PhotoControl photo={null} onPhoto={(blob) => void onDetailPhoto(blob)} />
+      )}
+      {photoError !== null && <p className="flow-error">{photoError}</p>}
       {sighting.comment !== null && <p className="detail-comment">{sighting.comment}</p>}
       {sighting.name !== null && (
         <button
           type="button"
           className="btn-secondary friend-toggle"
-          disabled={friendWrite.busy || write.busy || write.prompt.open}
+          disabled={write.busy}
           onClick={() => {
             if (matching === undefined) {
-              friendWrite.run(
+              write.run(
                 (authHeader) =>
                   addProfile(
                     { emoji: sighting.emoji, name: sighting.name as string, place: sighting.place ?? undefined },
                     authHeader,
                   ),
                 () => {},
+                { disabled: 'Saving is disabled right now', failed: "Couldn't save — try again" },
               )
             } else {
-              friendWrite.run((authHeader) => removeProfile(matching.id, authHeader), () => {})
+              write.run((authHeader) => removeProfile(matching.id, authHeader), () => {}, {
+                disabled: 'Saving is disabled right now',
+                failed: "Couldn't save — try again",
+              })
             }
           }}
         >
           {matching === undefined ? '⭐ Save as friend' : 'Remove friend'}
         </button>
       )}
-      {friendWrite.actionError !== null && <p className="flow-error">{friendWrite.actionError}</p>}
-      {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
+      {write.actionError !== null && <p className="flow-error" data-testid="detail-error">{write.actionError}</p>}
       <div className="details-actions">
         <button type="button" className="btn-secondary" onClick={onBack}>
           Back
@@ -102,7 +180,7 @@ export function SightingDetail({
         <button
           type="button"
           className={confirming ? 'btn-danger confirming' : 'btn-danger'}
-          disabled={write.busy || friendWrite.busy || friendWrite.prompt.open}
+          disabled={write.busy}
           onClick={onDeleteClick}
         >
           {confirming ? 'Really delete?' : 'Delete'}
@@ -115,16 +193,6 @@ export function SightingDetail({
             error={write.prompt.error}
             onCancel={write.prompt.onCancel}
             onSubmit={write.prompt.onSubmit}
-          />
-        </div>
-      )}
-      {friendWrite.prompt.open && (
-        <div className="prompt-overlay">
-          <PasswordPrompt
-            open
-            error={friendWrite.prompt.error}
-            onCancel={friendWrite.prompt.onCancel}
-            onSubmit={friendWrite.prompt.onSubmit}
           />
         </div>
       )}

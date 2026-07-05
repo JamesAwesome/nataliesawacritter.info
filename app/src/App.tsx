@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { deletePhoto, uploadPhoto } from './api'
 import { CalendarPane } from './components/CalendarPane'
 import { DayDetail } from './components/DayDetail'
 import { Header } from './components/Header'
@@ -23,7 +24,7 @@ type SheetState =
   | { kind: 'sighting'; id: string; fromDay?: string }
 
 export default function App() {
-  const { sightings, status, addSighting, removeSighting, retry } = useSightings()
+  const { sightings, status, addSighting, removeSighting, applySighting, retry } = useSightings()
   const { profiles, addProfile, removeProfile } = useProfiles()
   const isDesktop = useIsDesktop()
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
@@ -60,7 +61,7 @@ export default function App() {
           <main className="main-col">
             <div className="mobile-only">{logButton}</div>
             {status === 'error' && (
-              <p className="flow-error">
+              <p className="flow-error" data-testid="app-error">
                 Couldn't load sightings 😿{' '}
                 <button type="button" className="link-button" onClick={retry}>
                   Retry
@@ -116,6 +117,9 @@ export default function App() {
         friends={profiles}
         onSaveFriend={addProfile}
         onRemoveFriend={removeProfile}
+        onUploadPhoto={async (id, photo, authHeader) => {
+          applySighting(await uploadPhoto(id, photo, authHeader))
+        }}
       />
       {sheet?.kind === 'day' && (
         <Sheet open onClose={() => setSheet(null)}>
@@ -143,6 +147,13 @@ export default function App() {
                 profiles={profiles}
                 addProfile={addProfile}
                 removeProfile={removeProfile}
+                uploadPhoto={async (id, photo, authHeader) => {
+                  applySighting(await uploadPhoto(id, photo, authHeader))
+                }}
+                removePhoto={async (id, authHeader) => {
+                  await deletePhoto(id, authHeader)
+                  applySighting({ ...selected, photoPath: null })
+                }}
               />
             </Sheet>
           )

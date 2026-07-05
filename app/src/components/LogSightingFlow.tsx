@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { NewProfileInput, NewSightingInput, Profile } from '../api'
+import type { NewProfileInput, NewSightingInput, Profile, Sighting } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
 import { PasswordPrompt } from './PasswordPrompt'
 import { Sheet } from './Sheet'
@@ -9,7 +9,7 @@ import { EmojiPicker } from './EmojiPicker'
 type Props = {
   open: boolean
   onClose: () => void
-  onSave: (fields: NewSightingInput, authHeader: string) => Promise<void>
+  onSave: (fields: NewSightingInput, authHeader: string) => Promise<Sighting | void>
   onLogged: () => void
   recent?: string[]
   friends?: Profile[]
@@ -19,6 +19,9 @@ type Props = {
   /** When provided, arriving via a friend tile shows a status line with a
    *  two-tap Remove in place of the save-as-friend checkbox. */
   onRemoveFriend?: (id: string, authHeader: string) => Promise<void>
+  /** When provided, DetailsForm shows a photo picker; the picked photo uploads
+   *  best-effort after the sighting saves (failures never block logging). */
+  onUploadPhoto?: (id: string, photo: Blob, authHeader: string) => Promise<void>
 }
 
 type Picked = { emoji: string; name: string | null; place: string | null; friendId: string | null }
@@ -32,15 +35,12 @@ export function LogSightingFlow({
   friends = [],
   onSaveFriend,
   onRemoveFriend,
+  onUploadPhoto,
 }: Props) {
   const [picked, setPicked] = useState<Picked | null>(null)
   const write = useWriteAction({
     disabled: 'Saving is disabled right now',
     failed: "Couldn't save — try again",
-  })
-  const removeWrite = useWriteAction({
-    disabled: 'Removing is disabled right now',
-    failed: "Couldn't remove — try again",
   })
 
   // Live lookup: once the friend is removed it drops out of `friends`, so the
@@ -52,21 +52,29 @@ export function LogSightingFlow({
 
   function close() {
     write.abandon()
-    removeWrite.abandon()
     setPicked(null)
     onClose()
   }
 
-  function save(fields: NewSightingInput, opts?: { saveAsFriend: boolean }) {
+  function save(fields: NewSightingInput, opts?: { saveAsFriend: boolean; photo: Blob | null }) {
     write.run(
       async (authHeader) => {
-        await onSave(fields, authHeader)
+        const created = await onSave(fields, authHeader)
         if (opts?.saveAsFriend && fields.name !== undefined && onSaveFriend !== undefined) {
           // Best-effort: the sighting is already logged; a failed friend save
           // must not surface as a logging error (Sighting Detail's toggle is
           // the recovery path). 409 already-a-friend resolves inside addProfile.
           try {
             await onSaveFriend({ emoji: fields.emoji, name: fields.name, place: fields.place }, authHeader)
+          } catch {
+            // silent by design
+          }
+        }
+        if (opts?.photo != null && onUploadPhoto !== undefined && created != null) {
+          // Best-effort like the friend save: the sighting is logged; Detail's
+          // add-photo is the recovery path.
+          try {
+            await onUploadPhoto(created.id, opts.photo, authHeader)
           } catch {
             // silent by design
           }
@@ -82,7 +90,10 @@ export function LogSightingFlow({
   function removeFriend() {
     if (pickedFriend === null || onRemoveFriend === undefined) return
     const { id } = pickedFriend
-    removeWrite.run((authHeader) => onRemoveFriend(id, authHeader), () => {})
+    write.run((authHeader) => onRemoveFriend(id, authHeader), () => {}, {
+      disabled: 'Removing is disabled right now',
+      failed: "Couldn't remove — try again",
+    })
   }
 
   // The draft lives in DetailsForm's state, so the form must stay MOUNTED while
@@ -102,20 +113,20 @@ export function LogSightingFlow({
         />
       ) : (
         <div className="flow-details">
-          {write.actionError !== null && <p className="flow-error">{write.actionError}</p>}
-          {removeWrite.actionError !== null && <p className="flow-error">{removeWrite.actionError}</p>}
+          {write.actionError !== null && <p className="flow-error" data-testid="flow-error">{write.actionError}</p>}
           <DetailsForm
             key={[picked.emoji, picked.name ?? '', picked.place ?? ''].join(' ')}
             emoji={picked.emoji}
             initialName={picked.name}
             initialPlace={picked.place}
-            saving={write.busy || removeWrite.busy || removeWrite.prompt.open}
+            saving={write.busy}
             onBack={() => setPicked(null)}
             onSave={save}
             friendToggle={onSaveFriend !== undefined}
             sourceFriend={pickedFriend}
             onRemoveFriend={removeFriend}
-            removing={removeWrite.busy || write.busy || write.prompt.open}
+            removing={write.busy}
+            photoControl={onUploadPhoto !== undefined}
           />
           {write.prompt.open && (
             <div className="prompt-overlay">
@@ -124,16 +135,6 @@ export function LogSightingFlow({
                 error={write.prompt.error}
                 onCancel={write.prompt.onCancel}
                 onSubmit={write.prompt.onSubmit}
-              />
-            </div>
-          )}
-          {removeWrite.prompt.open && (
-            <div className="prompt-overlay">
-              <PasswordPrompt
-                open
-                error={removeWrite.prompt.error}
-                onCancel={removeWrite.prompt.onCancel}
-                onSubmit={removeWrite.prompt.onSubmit}
               />
             </div>
           )}

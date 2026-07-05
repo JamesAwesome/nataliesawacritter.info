@@ -39,6 +39,20 @@ export function createSightingsStore(db: NodePgDatabase<typeof schema>) {
         .returning({ id: sightings.id })
       return removed.length > 0
     },
+
+    async getById(id: string): Promise<Sighting | null> {
+      const [row] = await db.select().from(sightings).where(eq(sightings.id, id))
+      return row ?? null
+    },
+
+    async setPhotoPath(id: string, photoPath: string | null): Promise<Sighting | null> {
+      const [row] = await db
+        .update(sightings)
+        .set({ photoPath })
+        .where(eq(sightings.id, id))
+        .returning()
+      return row ?? null
+    },
   }
 }
 

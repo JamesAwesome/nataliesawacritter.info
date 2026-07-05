@@ -39,6 +39,7 @@ services:
       WRITE_USER: ${WRITE_USER:-}
       WRITE_PASSWORD: ${WRITE_PASSWORD:-}
       TZ: ${TIMEZONE:-America/New_York}
+      PHOTOS_DIR: /data/photos
     volumes:
       - photos:/data/photos
     depends_on:

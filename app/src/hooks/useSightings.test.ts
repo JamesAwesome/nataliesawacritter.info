@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { type Sighting } from '../api'
 import { makeSighting, stubFetchQueue } from '../test/helpers'
 import { useSightings } from './useSightings'
 
@@ -96,5 +97,30 @@ describe('useSightings', () => {
       act(() => result.current.removeSighting(row.id, 'Basic x')),
     ).rejects.toMatchObject({ status: 503 })
     expect(result.current.sightings).toEqual([row])
+  })
+
+  it('addSighting resolves with the created row', async () => {
+    const created = makeSighting()
+    stubFetchQueue([
+      { status: 200, body: [] },
+      { status: 201, body: created },
+    ])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    let returned: Sighting | undefined
+    await act(async () => {
+      returned = await result.current.addSighting({ emoji: '🦊', sightedOn: '2026-07-01' }, 'Basic x')
+    })
+    expect(returned).toEqual(created)
+  })
+
+  it('applySighting replaces the matching row in place', async () => {
+    const original = makeSighting()
+    stubFetchQueue([{ status: 200, body: [original] }])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    const updated = { ...original, photoPath: '/api/photos/x-1.jpg' }
+    act(() => result.current.applySighting(updated))
+    expect(result.current.sightings).toEqual([updated])
   })
 })

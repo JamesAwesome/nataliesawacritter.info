@@ -15,6 +15,13 @@
       "when": 1783176496932,
       "tag": "0001_critter-profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783262235042,
+      "tag": "0002_normalize-friend-name-index",
+      "breakpoints": true
     }
   ]
 }

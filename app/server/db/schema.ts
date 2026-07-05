@@ -1,4 +1,4 @@
-import { date, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
+import { date, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
 export const sightings = pgTable('sightings', {
   // uuid (not serial): reads are public, so IDs must not be enumerable
@@ -14,14 +14,10 @@ export const sightings = pgTable('sightings', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
-export const critterProfiles = pgTable(
-  'critter_profiles',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    emoji: text('emoji').notNull(),
-    name: text('name').notNull(),
-    place: text('place'),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [uniqueIndex('critter_profiles_emoji_name_idx').on(table.emoji, table.name)],
-)
+export const critterProfiles = pgTable('critter_profiles', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  emoji: text('emoji').notNull(),
+  name: text('name').notNull(),
+  place: text('place'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})

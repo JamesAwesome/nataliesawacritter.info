@@ -4,8 +4,9 @@ import { ApiError, createSighting, deleteSighting, listSightings, type NewSighti
 export type SightingsState = {
   sightings: Sighting[]
   status: 'loading' | 'ready' | 'error'
-  addSighting(fields: NewSightingInput, authHeader: string): Promise<void>
+  addSighting(fields: NewSightingInput, authHeader: string): Promise<Sighting>
   removeSighting(id: string, authHeader: string): Promise<void>
+  applySighting(updated: Sighting): void
   retry(): void
 }
 
@@ -38,6 +39,7 @@ export function useSightings(): SightingsState {
   const addSighting = useCallback(async (fields: NewSightingInput, authHeader: string) => {
     const created = await createSighting(fields, authHeader)
     setSightings((current) => [created, ...current])
+    return created
   }, [])
 
   const removeSighting = useCallback(async (id: string, authHeader: string) => {
@@ -50,5 +52,9 @@ export function useSightings(): SightingsState {
     setSightings((current) => current.filter((s) => s.id !== id))
   }, [])
 
-  return { sightings, status, addSighting, removeSighting, retry }
+  const applySighting = useCallback((updated: Sighting) => {
+    setSightings((current) => current.map((s) => (s.id === updated.id ? updated : s)))
+  }, [])
+
+  return { sightings, status, addSighting, removeSighting, applySighting, retry }
 }
