@@ -24,7 +24,8 @@ the `pgdata` named volume; only `docker compose down -v` destroys it.
     cp .env.example .env    # then set POSTGRES_PASSWORD (see comments inside)
     docker compose up -d --build
 
-App: http://localhost:8080 — `GET /api/health` reports DB connectivity.
+App: http://localhost:8080 — `GET /api/health` reports DB connectivity. If 8080 is
+already taken, set `APP_PORT` in `.env` (the container still listens on 8080 internally).
 
 For public hosting via Cloudflare tunnel, set `CLOUDFLARE_TUNNEL_TOKEN` in
 `.env` and run `docker compose --profile tunnel up -d`.

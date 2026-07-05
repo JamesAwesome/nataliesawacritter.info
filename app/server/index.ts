@@ -1,6 +1,7 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { createApp } from './app.js'
 import { createDb } from './db/index.js'
+import { waitForDb } from './db/waitForDb.js'
 import { createProfilesStore } from './profiles/store.js'
 import { createSightingsStore } from './sightings/store.js'
 
@@ -11,6 +12,17 @@ if (!connectionString) {
 }
 
 const { pool, db } = createDb(connectionString)
+
+// The database may not be reachable the instant we boot (postgres still starting,
+// mid-restart, or DNS not yet resolving `postgres`). Wait for a live connection
+// with backoff instead of crashing on the first getaddrinfo/ECONNREFUSED error.
+await waitForDb(() => pool.query('SELECT 1'), {
+  onRetry: (error, attempt, delayMs) => {
+    const code = (error as { cause?: { code?: string }; code?: string })?.cause?.code ??
+      (error as { code?: string })?.code
+    console.warn(`database not reachable (attempt ${attempt}: ${code}); retrying in ${delayMs}ms`)
+  },
+})
 
 // cwd-relative: run from app/ in dev, /app in the container
 await migrate(db, { migrationsFolder: 'drizzle' })
