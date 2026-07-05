@@ -12,6 +12,10 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, next) => {
     typeof err.status === 'number' && err.status >= 400 && err.status < 500
       ? err.status
       : 500
+  if (status === 413) {
+    res.status(413).json({ error: 'payload too large' })
+    return
+  }
   if (status === 500) console.error('unhandled error:', err)
   res.status(status).json(status === 500 ? { error: 'internal' } : { error: 'bad request' })
 }

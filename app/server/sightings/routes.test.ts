@@ -22,6 +22,8 @@ function fakeStore(overrides: Partial<SightingsStore> = {}): SightingsStore {
     list: vi.fn(async () => []),
     create: vi.fn(async (fields) => rowFor(fields)),
     remove: vi.fn(async () => true),
+    getById: vi.fn(async () => null),
+    setPhotoPath: vi.fn(async () => null),
     ...overrides,
   }
 }
