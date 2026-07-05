@@ -45,6 +45,13 @@ export function createApp(deps: AppDeps): Express {
   const writeGate = deps.writeCredentials
     ? requireWriteAuth(deps.writeCredentials.user, deps.writeCredentials.password)
     : writesDisabled
+
+  // Entry gate for the logging flow: lets the client verify the magic word
+  // before showing the picker. Semantics come entirely from writeGate.
+  app.get('/api/auth/check', writeGate, (_req, res) => {
+    res.status(204).end()
+  })
+
   app.use(
     '/api/sightings',
     sightingsRouter(deps.sightingsStore, writeGate, deps.photosDir, (sighting) => {
