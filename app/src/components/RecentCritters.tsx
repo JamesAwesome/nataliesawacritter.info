@@ -1,4 +1,5 @@
 import type { Sighting } from '../api'
+import { isFriendSighting } from '../lib/friends'
 import { SightingRow } from './SightingRow'
 
 type Props = {
@@ -6,9 +7,10 @@ type Props = {
   status: 'loading' | 'ready' | 'error'
   onRetry: () => void
   onSelect?: (id: string) => void
+  friendKeys: Set<string>
 }
 
-export function RecentCritters({ sightings, status, onRetry, onSelect }: Props) {
+export function RecentCritters({ sightings, status, onRetry, onSelect, friendKeys }: Props) {
   return (
     <section className="recent-critters" data-testid="recent-critters">
       <h2>Recent Critters</h2>
@@ -27,7 +29,7 @@ export function RecentCritters({ sightings, status, onRetry, onSelect }: Props) 
       {status === 'ready' && sightings.length > 0 && (
         <ul className="recent-list">
           {sightings.slice(0, 4).map((s) => (
-            <SightingRow key={s.id} sighting={s} onSelect={onSelect} />
+            <SightingRow key={s.id} sighting={s} onSelect={onSelect} starred={isFriendSighting(s, friendKeys)} />
           ))}
         </ul>
       )}
