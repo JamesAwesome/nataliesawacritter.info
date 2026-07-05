@@ -44,6 +44,9 @@ services:
       WRITE_PASSWORD: ${WRITE_PASSWORD:-}
       TZ: ${TIMEZONE:-America/New_York}
       PHOTOS_DIR: /data/photos
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
     volumes:
       - photos:/data/photos
     depends_on:
