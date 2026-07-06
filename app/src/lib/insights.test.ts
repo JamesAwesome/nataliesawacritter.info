@@ -31,16 +31,67 @@ describe('filterByRange', () => {
 })
 
 describe('leaderboard', () => {
-  it('counts by emoji, descending', () => {
+  it('counts by emoji for unnamed sightings, descending', () => {
     const rows = [
-      makeSighting({ emoji: '🦊' }),
-      makeSighting({ emoji: '🦊' }),
-      makeSighting({ emoji: '🦉' }),
+      makeSighting({ emoji: '🦊', name: null }),
+      makeSighting({ emoji: '🦊', name: null }),
+      makeSighting({ emoji: '🦉', name: null }),
     ]
     expect(leaderboard(rows)).toEqual([
-      { emoji: '🦊', count: 2 },
-      { emoji: '🦉', count: 1 },
+      { emoji: '🦊', name: null, count: 2 },
+      { emoji: '🦉', name: null, count: 1 },
     ])
+  })
+
+  it('counts the same emoji under different names separately', () => {
+    const rows = [
+      makeSighting({ emoji: '🐦', name: 'Cardinal' }),
+      makeSighting({ emoji: '🐦', name: 'Cardinal' }),
+      makeSighting({ emoji: '🐦', name: 'Blue Jay' }),
+    ]
+    expect(leaderboard(rows)).toEqual([
+      { emoji: '🐦', name: 'Cardinal', count: 2 },
+      { emoji: '🐦', name: 'Blue Jay', count: 1 },
+    ])
+  })
+
+  it('merges names case-insensitively', () => {
+    const rows = [
+      makeSighting({ emoji: '🐦', name: 'Cardinal' }),
+      makeSighting({ emoji: '🐦', name: 'cardinal' }),
+      makeSighting({ emoji: '🐦', name: '  CARDINAL  ' }),
+    ]
+    const result = leaderboard(rows)
+    expect(result).toHaveLength(1)
+    expect(result[0].count).toBe(3)
+    expect(result[0].emoji).toBe('🐦')
+  })
+
+  it('groups unnamed sightings by emoji with a null name', () => {
+    const rows = [
+      makeSighting({ emoji: '🐦', name: null }),
+      makeSighting({ emoji: '🐦', name: 'Cardinal' }),
+    ]
+    expect(leaderboard(rows)).toEqual([
+      { emoji: '🐦', name: null, count: 1 },
+      { emoji: '🐦', name: 'Cardinal', count: 1 },
+    ])
+  })
+
+  it("uses the most-recent sighting's casing as the display name", () => {
+    const rows = [
+      makeSighting({ emoji: '🐦', name: 'cardinal', createdAt: '2026-07-01T00:00:00.000Z' }),
+      makeSighting({ emoji: '🐦', name: 'Cardinal', createdAt: '2026-07-05T00:00:00.000Z' }),
+    ]
+    expect(leaderboard(rows)[0].name).toBe('Cardinal')
+  })
+
+  it('breaks a full tie (count, latest, emoji) by name ascending', () => {
+    const rows = [
+      makeSighting({ emoji: '🐦', name: 'Cardinal', createdAt: '2026-07-05T00:00:00.000Z' }),
+      makeSighting({ emoji: '🐦', name: 'Blue Jay', createdAt: '2026-07-05T00:00:00.000Z' }),
+    ]
+    expect(leaderboard(rows).map((r) => r.name)).toEqual(['Blue Jay', 'Cardinal'])
   })
 
   it('breaks count ties by most-recent sighting, then codepoint', () => {

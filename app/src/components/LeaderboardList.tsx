@@ -25,13 +25,16 @@ export function LeaderboardList({ rows }: Props) {
         const gradient = `linear-gradient(90deg, ${BAR_COLORS[i % 7]}, ${BAR_COLORS[(i + 2) % 7]})`
         return (
           <li
-            key={row.emoji}
+            key={`${row.emoji} ${row.name ?? ''}`}
             className="leader-row"
-            aria-label={`Rank ${i + 1}: ${nameFor(row.emoji) ?? row.emoji}, ${row.count} sighting${row.count === 1 ? '' : 's'}`}
+            aria-label={`Rank ${i + 1}: ${row.name ?? nameFor(row.emoji) ?? row.emoji}, ${row.count} sighting${row.count === 1 ? '' : 's'}`}
           >
             <span className="leader-rank">{i < 3 ? MEDALS[i] : `#${i + 1}`}</span>
-            <span className="leader-emoji" aria-hidden="true">
-              {row.emoji}
+            <span className="leader-critter">
+              <span className="leader-emoji" aria-hidden="true">
+                {row.emoji}
+              </span>
+              {row.name !== null && <span className="leader-name">{row.name}</span>}
             </span>
             <span className="leader-bar-track">
               <span className="leader-bar-fill" style={{ width: `${width}%`, background: gradient }} />

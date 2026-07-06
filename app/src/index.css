@@ -723,9 +723,18 @@ button.day-cell {
 
 .leader-row {
   display: grid;
-  grid-template-columns: 22px 28px 1fr auto;
+  /* rank · (emoji + optional name) · bar · count. The critter cell is `auto`
+     so it grows to fit the name; the bar takes the remaining 1fr. */
+  grid-template-columns: 22px auto 1fr auto;
   align-items: center;
   gap: 8px;
+}
+
+.leader-critter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0; /* let the name ellipsis instead of squeezing the bar */
 }
 
 .leader-rank {
@@ -737,6 +746,15 @@ button.day-cell {
 
 .leader-emoji {
   font-size: 20px;
+}
+
+.leader-name {
+  font-size: 12px;
+  color: var(--ink-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 84px;
 }
 
 .leader-bar-track {
