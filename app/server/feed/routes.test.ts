@@ -46,7 +46,7 @@ describe('GET /feed.xml', () => {
       expect(res.headers.get('cache-control')).toBe('public, max-age=300')
       const body = await res.text()
       expect(body).toContain('<rss version="2.0"')
-      expect(body).toContain('🦊 Natalie saw a Mr Fox')
+      expect(body).toContain('🦊 Natalie saw a Mr Fox — July 5, 2026')
     })
   })
 

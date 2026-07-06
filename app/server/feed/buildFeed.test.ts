@@ -44,33 +44,38 @@ describe('buildFeed', () => {
   it('emits one item per sighting with a named title, guid, and pubDate', () => {
     const xml = buildFeed([sighting()], SITE)
     expect(itemCount(xml)).toBe(1)
-    expect(xml).toContain('<title>🦊 Natalie saw a Mr Fox</title>')
+    expect(xml).toContain('<title>🦊 Natalie saw a Mr Fox — July 5, 2026</title>')
     expect(xml).toContain('<guid isPermaLink="false">3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa</guid>')
     expect(xml).toContain('<pubDate>Sun, 05 Jul 2026 12:00:00 GMT</pubDate>')
   })
 
   it('falls back to "a critter" when unnamed', () => {
     const xml = buildFeed([sighting({ name: null })], SITE)
-    expect(xml).toContain('<title>🦊 Natalie saw a critter</title>')
+    expect(xml).toContain('<title>🦊 Natalie saw a critter — July 5, 2026</title>')
   })
 
   it('escapes XML-special characters in names so the feed stays well-formed', () => {
     const xml = buildFeed([sighting({ name: 'Tom & <Jerry>' })], SITE)
-    expect(xml).toContain('<title>🦊 Natalie saw a Tom &amp; &lt;Jerry&gt;</title>')
+    expect(xml).toContain('<title>🦊 Natalie saw a Tom &amp; &lt;Jerry&gt; — July 5, 2026</title>')
     expect(xml).not.toContain('Tom & <Jerry>')
     expect(hasNakedAmpersand(xml)).toBe(false)
   })
 
   it('prepends "a" before a consonant name and "an" before a vowel name', () => {
     expect(buildFeed([sighting({ emoji: '🐦', name: 'Cardinal' })], SITE)).toContain(
-      '<title>🐦 Natalie saw a Cardinal</title>',
+      '<title>🐦 Natalie saw a Cardinal — July 5, 2026</title>',
     )
     expect(buildFeed([sighting({ emoji: '🦉', name: 'Owl' })], SITE)).toContain(
-      '<title>🦉 Natalie saw an Owl</title>',
+      '<title>🦉 Natalie saw an Owl — July 5, 2026</title>',
     )
     expect(buildFeed([sighting({ name: 'Fox' })], SITE)).toContain(
-      '<title>🦊 Natalie saw a Fox</title>',
+      '<title>🦊 Natalie saw a Fox — July 5, 2026</title>',
     )
+  })
+
+  it('appends the time after the date in the title when a time is present', () => {
+    const xml = buildFeed([sighting({ sightedTime: 'dawn' })], SITE)
+    expect(xml).toContain('<title>🦊 Natalie saw a Mr Fox — July 5, 2026 · dawn</title>')
   })
 
   it('includes an absolute enclosure and inline img when a photo is present', () => {

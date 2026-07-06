@@ -34,10 +34,19 @@ function articleFor(name: string): string {
   return /^[aeiou]/i.test(name) ? 'an' : 'a'
 }
 
+function whenSuffix(s: Sighting): string {
+  const date = formatDate(s.sightedOn)
+  return s.sightedTime !== null && s.sightedTime !== ''
+    ? `${date} · ${s.sightedTime}`
+    : date
+}
+
 function titleFor(s: Sighting): string {
-  return s.name === null
-    ? `${s.emoji} Natalie saw a critter`
-    : `${s.emoji} Natalie saw ${articleFor(s.name)} ${s.name}`
+  const base =
+    s.name === null
+      ? `${s.emoji} Natalie saw a critter`
+      : `${s.emoji} Natalie saw ${articleFor(s.name)} ${s.name}`
+  return `${base} — ${whenSuffix(s)}`
 }
 
 /** Description HTML (user text escaped even inside CDATA so it renders as text,
