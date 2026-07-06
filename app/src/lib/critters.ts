@@ -1,3 +1,5 @@
+import { customFor } from './customEmoji'
+
 export type Critter = { emoji: string; name: string; tint: string }
 
 // docs/design/README.md — "Critter tile tints" token row
@@ -34,6 +36,8 @@ export const EXTENDED: string[] = [
 ]
 
 export function nameFor(emoji: string): string | null {
+  const custom = customFor(emoji)
+  if (custom !== null) return custom.name
   return CURATED.find((c) => c.emoji === emoji)?.name ?? null
 }
 
