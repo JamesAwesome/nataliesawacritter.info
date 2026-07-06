@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Seagull">
+  <path d="M18 40 L2 50 L16 53 Z" fill="#b9c2cc"/>
+  <path d="M4 49 L11 50 L9 54 Z" fill="#2a2320"/>
+  <ellipse cx="30" cy="38" rx="16" ry="13" fill="#f4f1ea"/>
+  <path d="M22 29 q12 3 16 16 q-12 2 -18 -6 Z" fill="#b9c2cc"/>
+  <circle cx="42" cy="24" r="11" fill="#f4f1ea"/>
+  <path d="M52 22 L63 24 L52 27 Z" fill="#f2b33a"/>
+  <circle cx="57" cy="25" r="1.2" fill="#d2555c"/>
+  <circle cx="45.5" cy="22" r="1.8" fill="#2a2320"/>
+  <path d="M28 50 v6 M34 50 v6" stroke="#e0a0a0" stroke-width="2" stroke-linecap="round"/>
+</svg>

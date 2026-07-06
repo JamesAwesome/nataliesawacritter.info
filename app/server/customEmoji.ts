@@ -8,6 +8,7 @@ const STAND_INS: Record<string, string> = {
   chickadee: '🐦',
   goldfinch: '🐦',
   sparrow: '🐦',
+  seagull: '🐦',
 }
 
 export const KNOWN_SLUGS = new Set(Object.keys(STAND_INS))

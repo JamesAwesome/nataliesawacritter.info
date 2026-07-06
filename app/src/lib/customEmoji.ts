@@ -9,6 +9,7 @@ export const CUSTOM: CustomEmoji[] = [
   { slug: 'chickadee', name: 'Chickadee', standIn: '🐦' },
   { slug: 'goldfinch', name: 'Goldfinch', standIn: '🐦' },
   { slug: 'sparrow', name: 'Sparrow', standIn: '🐦' },
+  { slug: 'seagull', name: 'Seagull', standIn: '🐦' },
 ]
 
 const BY_SLUG = new Map(CUSTOM.map((c) => [c.slug, c]))

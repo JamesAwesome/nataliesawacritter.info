@@ -33,7 +33,7 @@ describe('customEmoji catalogue', () => {
   // bird to one side without the other fails a test (client↔server drift guard).
   it('exposes exactly the shipped slug set', () => {
     expect(CUSTOM.map((c) => c.slug)).toEqual([
-      'robin', 'cardinal', 'blue-jay', 'chickadee', 'goldfinch', 'sparrow',
+      'robin', 'cardinal', 'blue-jay', 'chickadee', 'goldfinch', 'sparrow', 'seagull',
     ])
   })
 })
