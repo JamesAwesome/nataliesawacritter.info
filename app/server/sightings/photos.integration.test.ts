@@ -36,6 +36,7 @@ describe('photo lifecycle against real postgres + disk', () => {
       photosDir,
       pushStore: fakePushStore(),
       notifier: nullNotifier(),
+      siteUrl: 'https://example.test',
     })
   }
 
