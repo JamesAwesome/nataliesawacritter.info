@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import type { Profile } from '../api'
 import { CURATED, EXTENDED, nameFor } from '../lib/critters'
+import { CUSTOM, tokenFor } from '../lib/customEmoji'
 import { CritterGlyph } from './CritterGlyph'
 
 type Props = {
@@ -72,6 +73,14 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
           </div>
         </>
       )}
+      <h3 className="picker-recent-heading">Birds</h3>
+      <div className="picker-grid picker-grid-recent">
+        {CUSTOM.map((c) => (
+          <PickerTile key={c.slug} ariaLabel={c.name} onClick={() => onPick(tokenFor(c.slug), c.name)}>
+            <CritterGlyph emoji={tokenFor(c.slug)} />
+          </PickerTile>
+        ))}
+      </div>
       <div className="picker-grid">
         {CURATED.map((c) => (
           <PickerTile key={c.emoji} tint={c.tint} ariaLabel={c.name} onClick={() => onPick(c.emoji, c.name)}>
