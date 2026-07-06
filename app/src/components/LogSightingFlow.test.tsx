@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { NewSightingInput } from '../api'
@@ -258,5 +258,23 @@ describe('entry auth gate', () => {
     renderFlow()
     expect(screen.getByText('What did Natalie see?')).toBeInTheDocument()
     expect(mock).not.toHaveBeenCalled()
+  })
+
+  it('ignores a check that resolves after cancel (no silent credential store)', async () => {
+    let resolveCheck!: (res: Response) => void
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise<Response>((res) => { resolveCheck = res })),
+    )
+    renderFlow({}, { credentials: false })
+    await userEvent.type(screen.getByLabelText(/password/i), 'sekrit')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    // The check comes back valid, but the user already cancelled — a late 204
+    // must not store credentials or unlock behind their back.
+    await act(async () => {
+      resolveCheck(new Response(null, { status: 204 }))
+    })
+    expect(getCredentials()).toBeNull()
   })
 })

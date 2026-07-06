@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { NewProfileInput, NewSightingInput, Profile, Sighting } from '../api'
 import { ApiError, checkAuth } from '../api'
 import { basicHeader, getCredentials, setCredentials } from '../auth'
@@ -49,6 +49,9 @@ export function LogSightingFlow({
   const [gateBusy, setGateBusy] = useState(false)
   const [gateError, setGateError] = useState<string | null>(null)
   const [gateDisabled, setGateDisabled] = useState(false)
+  // Bumped on close so a check still in flight can't mutate gate state (or
+  // silently store credentials) after the user has bailed out.
+  const gateSession = useRef(0)
   const locked = !unlocked && getCredentials() === null
   const write = useWriteAction({
     disabled: 'Saving is disabled right now',
@@ -63,6 +66,7 @@ export function LogSightingFlow({
       : null
 
   function close() {
+    gateSession.current += 1
     write.abandon()
     setPicked(null)
     setUnlocked(false)
@@ -73,13 +77,16 @@ export function LogSightingFlow({
   }
 
   async function unlock(password: string) {
+    const session = gateSession.current
     setGateBusy(true)
     setGateError(null)
     try {
       await checkAuth(basicHeader({ user: 'natalie', password }))
+      if (session !== gateSession.current) return
       setCredentials(password)
       setUnlocked(true)
     } catch (err) {
+      if (session !== gateSession.current) return
       if (err instanceof ApiError && err.status === 401) {
         setGateError('Wrong password — try again')
       } else if (err instanceof ApiError && err.status === 503) {
@@ -88,7 +95,7 @@ export function LogSightingFlow({
         setGateError("Couldn't check the password — try again")
       }
     } finally {
-      setGateBusy(false)
+      if (session === gateSession.current) setGateBusy(false)
     }
   }
 
