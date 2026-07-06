@@ -14,7 +14,7 @@ export function Footer() {
         rel="noopener noreferrer"
         aria-label="RSS feed"
       >
-        <img src="/rss.svg" alt="RSS feed" />
+        <img src="/rss.svg" alt="" />
       </a>
     </footer>
   )
