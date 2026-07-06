@@ -290,6 +290,9 @@ body {
   .sheet-handle {
     display: none;
   }
+  .sheet-drag {
+    padding: 0;
+  }
 }
 
 .toast {
