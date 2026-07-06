@@ -11,6 +11,16 @@ export type SightingsState = {
   retry(): void
 }
 
+// Canonical order, matching the server query (sighted date desc, then logged
+// time desc). Applied after optimistic inserts so a backdated sighting lands in
+// chronological place instead of jumping to the top. sightedOn is 'YYYY-MM-DD'
+// and createdAt is an ISO string — both sort correctly as plain strings.
+function compareSightings(a: Sighting, b: Sighting): number {
+  if (a.sightedOn !== b.sightedOn) return a.sightedOn < b.sightedOn ? 1 : -1
+  if (a.createdAt !== b.createdAt) return a.createdAt < b.createdAt ? 1 : -1
+  return 0
+}
+
 export function useSightings(): SightingsState {
   const [sightings, setSightings] = useState<Sighting[]>([])
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
@@ -52,7 +62,8 @@ export function useSightings(): SightingsState {
 
   const addSighting = useCallback(async (fields: NewSightingInput, authHeader: string) => {
     const created = await createSighting(fields, authHeader)
-    setSightings((current) => [created, ...current])
+    // Stable sort keeps `created` ahead of same-timestamp rows (newest-first).
+    setSightings((current) => [created, ...current].sort(compareSightings))
     return created
   }, [])
 

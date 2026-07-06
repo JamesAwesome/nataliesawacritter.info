@@ -48,6 +48,29 @@ describe('useSightings', () => {
     await act(() => result.current.addSighting({ emoji: '🦉', sightedOn: '2026-07-03' }, 'Basic x'))
     expect(result.current.sightings.map((s) => s.emoji)).toEqual(['🦉', '🦊'])
   })
+  it('inserts an added sighting in sighted-date order, not just at the top', async () => {
+    const newer = makeSighting({
+      id: '00000000-0000-4000-8000-0000000000a1',
+      emoji: '🦉',
+      sightedOn: '2026-07-05',
+      createdAt: '2026-07-05T09:00:00.000Z',
+    })
+    // Sighted earlier (07-01) but logged most recently (07-06) — must sort BELOW the 07-05 one.
+    const backdated = makeSighting({
+      id: '00000000-0000-4000-8000-0000000000b2',
+      emoji: '🦊',
+      sightedOn: '2026-07-01',
+      createdAt: '2026-07-06T09:00:00.000Z',
+    })
+    stubFetchQueue([
+      { status: 200, body: [newer] },
+      { status: 201, body: backdated },
+    ])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    await act(() => result.current.addSighting({ emoji: '🦊', sightedOn: '2026-07-01' }, 'Basic x'))
+    expect(result.current.sightings.map((s) => s.sightedOn)).toEqual(['2026-07-05', '2026-07-01'])
+  })
 
   it('addSighting rethrows ApiError without mutating state', async () => {
     stubFetchQueue([
