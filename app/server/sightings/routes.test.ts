@@ -121,7 +121,7 @@ describe('POST /api/sightings', () => {
   it.each([
     ['missing emoji', { sightedOn: '2026-07-03' }, 'emoji'],
     ['empty emoji', { ...VALID, emoji: '' }, 'emoji'],
-    ['emoji too long', { ...VALID, emoji: 'x'.repeat(17) }, 'emoji'],
+    ['emoji too long', { ...VALID, emoji: 'x'.repeat(41) }, 'emoji'],
     ['emoji wrong type', { ...VALID, emoji: 7 }, 'emoji'],
     ['missing sightedOn', { emoji: '🦊' }, 'sightedOn'],
     ['bad sightedOn format', { ...VALID, sightedOn: '07/03/2026' }, 'sightedOn'],
@@ -140,6 +140,19 @@ describe('POST /api/sightings', () => {
       expect(parsed.error).toBe('validation')
       expect(parsed.details[field]).toBeDefined()
       expect(store.create).not.toHaveBeenCalled()
+    })
+  })
+
+  it('accepts a known custom emoji token and rejects an unknown one', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      const ok = await post(base, { ...VALID, emoji: 'custom:robin' })
+      expect(ok.status).toBe(201)
+
+      const bad = await post(base, { ...VALID, emoji: 'custom:nope' })
+      expect(bad.status).toBe(400)
+      const parsed = (await bad.json()) as ValidationEnvelope
+      expect(parsed.details.emoji).toBeDefined()
     })
   })
 

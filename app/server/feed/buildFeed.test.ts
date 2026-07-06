@@ -132,4 +132,10 @@ describe('buildFeed', () => {
     expect(xml).not.toContain('<lastBuildDate>')
     expect(hasNakedAmpersand(xml)).toBe(false)
   })
+
+  it('uses the Unicode stand-in for a custom emoji in the title', () => {
+    const xml = buildFeed([sighting({ emoji: 'custom:robin', name: 'Robin' })], SITE)
+    expect(xml).toContain('<title>🐦 Natalie saw a Robin — July 5, 2026</title>')
+    expect(xml).not.toContain('custom:robin')
+  })
 })

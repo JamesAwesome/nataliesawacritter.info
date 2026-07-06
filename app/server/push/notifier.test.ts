@@ -57,6 +57,11 @@ describe('payloadFor', () => {
     expect((JSON.parse(payloadFor(sighting({ place: 'the garden' }))) as { body: string }).body).toBe('the garden')
     expect((JSON.parse(payloadFor(sighting())) as { body: string }).body).toBe('')
   })
+
+  it('uses the stand-in for a custom emoji in the push title', () => {
+    const payload = JSON.parse(payloadFor(sighting({ emoji: 'custom:robin', name: 'Robin' }))) as { title: string }
+    expect(payload.title).toBe('🐦 Natalie saw Robin!')
+  })
 })
 
 describe('notifySighting', () => {

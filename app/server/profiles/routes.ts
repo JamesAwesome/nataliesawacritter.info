@@ -1,6 +1,7 @@
 import { Router, type RequestHandler } from 'express'
 import type { NewProfile, ProfilesStore } from './store.js'
 import { UUID_RE, sendValidation, rejectUnknownFields } from '../httpValidation.js'
+import { validateEmoji } from '../emojiField.js'
 
 const KNOWN_FIELDS = new Set(['emoji', 'name', 'place'])
 
@@ -16,9 +17,8 @@ function parseNewProfile(body: unknown):
   rejectUnknownFields(record, KNOWN_FIELDS, details)
 
   const emoji = record.emoji
-  if (typeof emoji !== 'string' || emoji.length === 0 || emoji.length > 16) {
-    details.emoji = 'required, 1-16 characters'
-  }
+  const emojiError = validateEmoji(emoji)
+  if (emojiError !== null) details.emoji = emojiError
 
   // Trim before validating: friend identity keys on (emoji, name), so stray
   // whitespace must not mint distinct profiles.

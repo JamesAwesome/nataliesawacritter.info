@@ -1,4 +1,5 @@
 import type { Sighting } from '../sightings/store.js'
+import { standInFor } from '../customEmoji.js'
 
 function xmlEscape(value: string): string {
   return value
@@ -42,10 +43,11 @@ function whenSuffix(s: Sighting): string {
 }
 
 function titleFor(s: Sighting): string {
+  const glyph = standInFor(s.emoji)
   const base =
     s.name === null
-      ? `${s.emoji} Natalie saw a critter`
-      : `${s.emoji} Natalie saw ${articleFor(s.name)} ${s.name}`
+      ? `${glyph} Natalie saw a critter`
+      : `${glyph} Natalie saw ${articleFor(s.name)} ${s.name}`
   return `${base} — ${whenSuffix(s)}`
 }
 
