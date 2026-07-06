@@ -200,8 +200,11 @@ describe('LogSightingFlow', () => {
     expect(onSave).not.toHaveBeenCalled()
   })
 
-  it('has a Birds section; picking Robin advances with the name pre-filled', async () => {
+  it('folds custom birds into Other → Birds; picking Robin advances with the name pre-filled', async () => {
     renderFlow()
+    // Custom birds live in the categorized "Other" grid now, not a top-level section.
+    expect(screen.queryByRole('button', { name: 'Robin' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /other/i }))
     await userEvent.click(screen.getByRole('button', { name: 'Robin' }))
     expect(screen.getByLabelText(/critter name/i)).toHaveValue('Robin')
   })
