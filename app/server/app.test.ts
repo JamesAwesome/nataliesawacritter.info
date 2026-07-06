@@ -35,6 +35,7 @@ function deps(overrides: Partial<AppDeps> = {}): AppDeps {
     photosDir: '/tmp/unused-photos',
     pushStore: fakePushStore(),
     notifier: nullNotifier(),
+    siteUrl: 'https://example.test',
     ...overrides,
   }
 }

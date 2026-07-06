@@ -2,6 +2,7 @@ import path from 'node:path'
 import express, { type Express, type RequestHandler } from 'express'
 import { requireWriteAuth } from './auth.js'
 import { errorHandler } from './errorHandler.js'
+import { feedRouter } from './feed/routes.js'
 import { profilesRouter } from './profiles/routes.js'
 import type { ProfilesStore } from './profiles/store.js'
 import type { Notifier } from './push/notifier.js'
@@ -22,6 +23,7 @@ export interface AppDeps {
   pushStore: PushStore
   /** publicKey null → push endpoints 503 and notifySighting no-ops. */
   notifier: Notifier
+  siteUrl: string
 }
 
 const writesDisabled: RequestHandler = (_req, res) => {
@@ -62,6 +64,7 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/photos', photoFileRouter(deps.photosDir))
   app.use('/api/profiles', profilesRouter(deps.profilesStore, writeGate))
   app.use('/api/push', pushRouter(deps.pushStore, deps.notifier.publicKey))
+  app.use(feedRouter(deps.sightingsStore, deps.siteUrl))
 
   const clientDir = path.resolve(import.meta.dirname, '../client')
   app.use((req, res, next) => {

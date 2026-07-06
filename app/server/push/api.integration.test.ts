@@ -46,6 +46,7 @@ describe('push delivery through the sightings API', () => {
       photosDir: '/tmp/unused-photos',
       pushStore,
       notifier,
+      siteUrl: 'https://example.test',
     })
 
     await withServer(app, async (base) => {

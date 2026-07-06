@@ -64,6 +64,8 @@ const notifier = createNotifier({
   today: () => new Date().toISOString().slice(0, 10),
 })
 
+const siteUrl = process.env.SITE_URL ?? 'https://nataliesawacritter.info'
+
 const app = createApp({
   checkDb: async () => {
     await pool.query('SELECT 1')
@@ -74,6 +76,7 @@ const app = createApp({
   photosDir: process.env.PHOTOS_DIR ?? '/data/photos',
   pushStore,
   notifier,
+  siteUrl,
 })
 
 const port = Number(process.env.PORT ?? 8080)

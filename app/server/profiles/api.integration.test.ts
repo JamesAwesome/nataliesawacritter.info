@@ -30,6 +30,7 @@ describe('profiles API against real postgres', () => {
       photosDir: '/tmp/unused-photos',
       pushStore: fakePushStore(),
       notifier: nullNotifier(),
+      siteUrl: 'https://example.test',
     })
   }
 
