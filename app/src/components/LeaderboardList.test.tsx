@@ -61,4 +61,26 @@ describe('LeaderboardList', () => {
     expect(within(items[1]).queryByText('Cardinal')).not.toBeInTheDocument()
     expect(items[1]).toHaveAttribute('aria-label', 'Rank 2: Fox, 2 sightings')
   })
+
+  it('keeps the grid at four cells so the bar is never pushed out (name lives in the critter cell)', () => {
+    render(
+      <LeaderboardList
+        rows={[
+          { emoji: '🐦', name: 'Cardinal', count: 5 },
+          { emoji: '🦊', name: null, count: 2 },
+        ]}
+      />,
+    )
+    const items = screen.getAllByRole('listitem')
+    // The grid template has 4 tracks; every row (named or not) must have exactly
+    // 4 direct children, or a stray child wraps and collapses the bar to 0 width.
+    for (const item of items) {
+      expect(item.children).toHaveLength(4)
+      expect(item.querySelector('.leader-bar-track')).not.toBeNull()
+    }
+    // The name sits inside the critter cell next to the emoji, not as a 5th grid child.
+    const critter = items[0].querySelector('.leader-critter')
+    expect(critter).not.toBeNull()
+    expect(within(critter as HTMLElement).getByText('Cardinal')).toBeInTheDocument()
+  })
 })

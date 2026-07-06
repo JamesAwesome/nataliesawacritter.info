@@ -30,10 +30,12 @@ export function LeaderboardList({ rows }: Props) {
             aria-label={`Rank ${i + 1}: ${row.name ?? nameFor(row.emoji) ?? row.emoji}, ${row.count} sighting${row.count === 1 ? '' : 's'}`}
           >
             <span className="leader-rank">{i < 3 ? MEDALS[i] : `#${i + 1}`}</span>
-            <span className="leader-emoji" aria-hidden="true">
-              {row.emoji}
+            <span className="leader-critter">
+              <span className="leader-emoji" aria-hidden="true">
+                {row.emoji}
+              </span>
+              {row.name !== null && <span className="leader-name">{row.name}</span>}
             </span>
-            {row.name !== null && <span className="leader-name">{row.name}</span>}
             <span className="leader-bar-track">
               <span className="leader-bar-fill" style={{ width: `${width}%`, background: gradient }} />
             </span>
