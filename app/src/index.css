@@ -256,6 +256,7 @@ body {
   max-height: 85vh;
   overflow-y: auto;
   animation: sheet-up 0.25s ease-out;
+  transition: transform 0.22s ease-out;
 }
 
 .sheet-handle {
@@ -264,6 +265,12 @@ body {
   border-radius: 999px;
   background: var(--border-hairline);
   margin: 0 auto 10px;
+}
+
+.sheet-drag {
+  touch-action: none;
+  padding: 4px 0;
+  cursor: grab;
 }
 
 @keyframes sheet-in {
@@ -279,6 +286,9 @@ body {
     max-width: 460px;
     border-radius: 24px;
     animation: sheet-in 0.18s ease-out;
+  }
+  .sheet-handle {
+    display: none;
   }
 }
 
@@ -477,6 +487,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .sheet {
     animation: none;
+    transition: none;
   }
 }
 
