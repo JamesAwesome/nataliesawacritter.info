@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api'
-import { setCredentials } from '../auth'
+import { getCredentials, setCredentials } from '../auth'
 import { useWriteAction } from './useWriteAction'
 
 const MSG = { disabled: 'disabled msg', failed: 'failed msg' }
@@ -32,6 +32,19 @@ describe('useWriteAction', () => {
     act(() => result.current.prompt.onSubmit('sekrit'))
     await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1))
     expect(localStorage.getItem('critter-write-auth')).not.toBeNull()
+  })
+
+  it('keeps a prompt-submitted password after a non-401 failure', async () => {
+    const action = vi.fn(async () => {
+      throw new ApiError(503)
+    })
+    const { result } = renderHook(() => useWriteAction(MSG))
+    act(() => result.current.run(action, vi.fn()))
+    expect(result.current.prompt.open).toBe(true)
+    act(() => result.current.prompt.onSubmit('sekrit'))
+    await waitFor(() => expect(result.current.actionError).toBe('disabled msg'))
+    // 503 (unlike 401) must not discard the password the user just typed.
+    expect(getCredentials()).toEqual({ user: 'natalie', password: 'sekrit' })
   })
 
   it('401 clears credentials and re-prompts with the error', async () => {

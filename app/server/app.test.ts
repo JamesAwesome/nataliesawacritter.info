@@ -132,3 +132,28 @@ describe('sightings wiring', () => {
     })
   })
 })
+
+describe('GET /api/auth/check', () => {
+  it('204s with valid credentials, 401s with wrong or missing', async () => {
+    const app = createApp(deps({ writeCredentials: { user: 'natalie', password: 'sekrit' } }))
+    await withServer(app, async (base) => {
+      const ok = await fetch(`${base}/api/auth/check`, {
+        headers: { authorization: basic('natalie', 'sekrit') },
+      })
+      expect(ok.status).toBe(204)
+      const wrong = await fetch(`${base}/api/auth/check`, {
+        headers: { authorization: basic('natalie', 'nope') },
+      })
+      expect(wrong.status).toBe(401)
+      expect((await fetch(`${base}/api/auth/check`)).status).toBe(401)
+    })
+  })
+
+  it('503s when writes are disabled', async () => {
+    await withServer(createApp(deps()), async (base) => {
+      const res = await fetch(`${base}/api/auth/check`)
+      expect(res.status).toBe(503)
+      expect(await res.json()).toEqual({ error: 'writes disabled' })
+    })
+  })
+})

@@ -5,9 +5,10 @@ type Props = {
   error: string | null
   onSubmit: (password: string) => void
   onCancel: () => void
+  busy?: boolean
 }
 
-export function PasswordPrompt({ open, error, onSubmit, onCancel }: Props) {
+export function PasswordPrompt({ open, error, onSubmit, onCancel, busy = false }: Props) {
   const [password, setPassword] = useState('')
   if (!open) return null
   return (
@@ -27,7 +28,7 @@ export function PasswordPrompt({ open, error, onSubmit, onCancel }: Props) {
         <button type="button" className="btn-secondary" onClick={onCancel}>
           Cancel
         </button>
-        <button type="button" className="btn-primary" onClick={() => onSubmit(password)}>
+        <button type="button" className="btn-primary" disabled={busy} onClick={() => onSubmit(password)}>
           Save
         </button>
       </div>

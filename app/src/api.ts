@@ -107,6 +107,13 @@ export async function deletePhoto(id: string, authHeader: string): Promise<void>
   if (!res.ok) throw new ApiError(res.status)
 }
 
+export async function checkAuth(authHeader: string): Promise<void> {
+  const res = await fetch('/api/auth/check', {
+    headers: { authorization: authHeader },
+  })
+  if (!res.ok) throw new ApiError(res.status)
+}
+
 export type PushSubscriptionInput = { endpoint: string; keys: { p256dh: string; auth: string } }
 
 /** Returns null when push is disabled server-side (503). */

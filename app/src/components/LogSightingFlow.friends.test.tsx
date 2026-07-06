@@ -94,6 +94,7 @@ describe('LogSightingFlow friends', () => {
   })
 
   it('the toggle is disabled until a name is entered', async () => {
+    setCredentials('sekrit')
     render(
       <LogSightingFlow open onClose={() => {}} onSave={vi.fn(async () => {})} onLogged={vi.fn()} onSaveFriend={vi.fn(async () => {})} />,
     )
@@ -105,6 +106,7 @@ describe('LogSightingFlow friends', () => {
   })
 
   it('arriving via a friend tile shows the friend status line instead of the checkbox', async () => {
+    setCredentials('sekrit')
     render(
       <LogSightingFlow
         open
@@ -122,6 +124,7 @@ describe('LogSightingFlow friends', () => {
   })
 
   it('editing the name away swaps back to the checkbox; restoring (any case) swaps again', async () => {
+    setCredentials('sekrit')
     render(
       <LogSightingFlow
         open

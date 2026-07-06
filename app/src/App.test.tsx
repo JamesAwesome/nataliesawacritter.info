@@ -113,6 +113,7 @@ describe('App shell', () => {
   })
 
   it('surfaces recently seen critters in the picker after sightings load', async () => {
+    setCredentials('sekrit')
     stubFetchQueue([{ status: 200, body: [makeSighting({ emoji: '🦉', name: 'Owl' })] }])
     render(<App />)
     await userEvent.click(screen.getAllByRole('button', { name: /log a sighting/i })[0])
@@ -120,6 +121,7 @@ describe('App shell', () => {
   })
 
   it('threads friends into the picker', async () => {
+    setCredentials('sekrit')
     stubFetchByUrl({
       '/api/sightings': [{ status: 200, body: [] }],
       '/api/profiles': [
