@@ -268,6 +268,14 @@ body {
 }
 
 .sheet-drag {
+  /* Pin the handle to the top of the scrollable sheet so it stays visible (and
+     grabbable) even when the content is tall enough to scroll. The white
+     background hides content scrolling underneath; the sheet itself is white so
+     there is no seam above the strip. */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
   touch-action: none;
   padding: 4px 0;
   cursor: grab;
