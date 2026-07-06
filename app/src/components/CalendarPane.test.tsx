@@ -44,4 +44,16 @@ describe('CalendarPane', () => {
     expect(document.querySelector('.day-cell.today')).not.toBeNull()
     expect(document.querySelectorAll('.day-cell.out-month').length).toBeGreaterThan(0)
   })
+
+  it('renders a custom-emoji day as images, not the raw token text', () => {
+    const day = '2026-07-02'
+    const sightings = [
+      makeSighting({ sightedOn: day, emoji: 'custom:robin' }),
+      makeSighting({ sightedOn: day, emoji: 'custom:cardinal' }),
+    ]
+    render(<CalendarPane sightings={sightings} onDayOpen={() => {}} />)
+    const imgs = document.querySelectorAll('.day-emoji img')
+    expect(imgs.length).toBe(2)
+    expect(document.body.textContent).not.toContain('custom:robin')
+  })
 })

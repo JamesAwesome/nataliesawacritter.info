@@ -1,5 +1,6 @@
 import type { Sighting } from '../sightings/store.js'
 import type { PushStore } from './store.js'
+import { standInFor } from '../customEmoji.js'
 
 export type VapidConfig = { subject: string; publicKey: string; privateKey: string }
 
@@ -25,10 +26,11 @@ function utcYesterday(todayIso: string): string {
 }
 
 export function payloadFor(sighting: Sighting): string {
+  const glyph = standInFor(sighting.emoji)
   const title =
     sighting.name === null
-      ? `${sighting.emoji} Natalie saw a critter!`
-      : `${sighting.emoji} Natalie saw ${sighting.name}!`
+      ? `${glyph} Natalie saw a critter!`
+      : `${glyph} Natalie saw ${sighting.name}!`
   const body = [sighting.place, sighting.comment].filter((part) => part !== null).join(' — ')
   return JSON.stringify({ title, body, url: '/' })
 }

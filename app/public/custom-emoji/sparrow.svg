@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Sparrow">
+  <path d="M18 40 L2 50 L16 53 Z" fill="#7a5f3f"/>
+  <ellipse cx="30" cy="38" rx="16" ry="13" fill="#9c7a52"/>
+  <ellipse cx="35" cy="43" rx="11" ry="8" fill="#d9c6a8"/>
+  <path d="M22 30 q11 3 15 15 q-11 2 -17 -5 Z" fill="#6f5636"/>
+  <circle cx="42" cy="24" r="11" fill="#9c7a52"/>
+  <path d="M31 22 a11 11 0 0 1 22 0 Z" fill="#a05a34"/>
+  <path d="M52 23 L61 25 L52 28 Z" fill="#6b5537"/>
+  <circle cx="45.5" cy="21" r="1.7" fill="#2a2320"/>
+  <path d="M28 50 v6 M34 50 v6" stroke="#8a6a44" stroke-width="2" stroke-linecap="round"/>
+</svg>

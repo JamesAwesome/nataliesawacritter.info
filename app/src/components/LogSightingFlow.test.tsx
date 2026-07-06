@@ -199,6 +199,12 @@ describe('LogSightingFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
     expect(onSave).not.toHaveBeenCalled()
   })
+
+  it('has a Birds section; picking Robin advances with the name pre-filled', async () => {
+    renderFlow()
+    await userEvent.click(screen.getByRole('button', { name: 'Robin' }))
+    expect(screen.getByLabelText(/critter name/i)).toHaveValue('Robin')
+  })
 })
 
 describe('entry auth gate', () => {

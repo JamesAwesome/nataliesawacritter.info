@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Chickadee">
+  <path d="M18 40 L2 50 L16 53 Z" fill="#8a847c"/>
+  <ellipse cx="30" cy="38" rx="16" ry="13" fill="#9a938b"/>
+  <ellipse cx="35" cy="43" rx="11" ry="8" fill="#f4f1ea"/>
+  <path d="M22 30 q11 3 15 15 q-11 2 -17 -5 Z" fill="#7a736b"/>
+  <circle cx="42" cy="24" r="11" fill="#f4f1ea"/>
+  <path d="M31 22 a11 11 0 0 1 22 0 Z" fill="#2a2320"/>
+  <path d="M38 32 q5 3 10 1 q-2 5 -9 2 Z" fill="#2a2320"/>
+  <path d="M52 23 L61 25 L52 28 Z" fill="#2a2320"/>
+  <circle cx="45.5" cy="21" r="1.7" fill="#2a2320"/>
+  <path d="M28 50 v6 M34 50 v6" stroke="#5a5148" stroke-width="2" stroke-linecap="round"/>
+</svg>

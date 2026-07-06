@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import type { Profile } from '../api'
 import { CURATED, EXTENDED, nameFor } from '../lib/critters'
+import { CUSTOM, tokenFor } from '../lib/customEmoji'
+import { CritterGlyph } from './CritterGlyph'
 
 type Props = {
   recent: string[]
@@ -48,7 +50,7 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
                 ariaLabel={`Friend ${profile.name}`}
                 onClick={() => onPickFriend?.(profile)}
               >
-                <span aria-hidden="true">{profile.emoji}</span>
+                <CritterGlyph emoji={profile.emoji} />
                 <span className="friend-name">{profile.name}</span>
               </PickerTile>
             ))}
@@ -65,16 +67,24 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
                 ariaLabel={`Recently seen ${nameFor(emoji) ?? emoji}`}
                 onClick={() => onPick(emoji, nameFor(emoji))}
               >
-                {emoji}
+                <CritterGlyph emoji={emoji} />
               </PickerTile>
             ))}
           </div>
         </>
       )}
+      <h3 className="picker-recent-heading">Birds</h3>
+      <div className="picker-grid picker-grid-recent">
+        {CUSTOM.map((c) => (
+          <PickerTile key={c.slug} ariaLabel={c.name} onClick={() => onPick(tokenFor(c.slug), c.name)}>
+            <CritterGlyph emoji={tokenFor(c.slug)} />
+          </PickerTile>
+        ))}
+      </div>
       <div className="picker-grid">
         {CURATED.map((c) => (
           <PickerTile key={c.emoji} tint={c.tint} ariaLabel={c.name} onClick={() => onPick(c.emoji, c.name)}>
-            {c.emoji}
+            <CritterGlyph emoji={c.emoji} />
           </PickerTile>
         ))}
         <button
@@ -91,7 +101,7 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
           <div className="picker-grid picker-grid-extended">
             {EXTENDED.map((emoji) => (
               <PickerTile key={emoji} ariaLabel={emoji} onClick={() => onPick(emoji, null)}>
-                {emoji}
+                <CritterGlyph emoji={emoji} />
               </PickerTile>
             ))}
           </div>

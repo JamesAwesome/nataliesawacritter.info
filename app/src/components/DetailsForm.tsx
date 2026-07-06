@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { NewSightingInput, Profile } from '../api'
 import { normalizedName } from '../lib/critters'
 import { formatClockTime, nowClockTime } from '../lib/format'
+import { CritterGlyph } from './CritterGlyph'
 import { PhotoControl } from './PhotoControl'
 
 type Props = {
@@ -97,7 +98,7 @@ export function DetailsForm({
   return (
     <div className="details-form">
       <div className="details-head">
-        <span className="details-emoji" aria-hidden="true">{emoji}</span>
+        <CritterGlyph emoji={emoji} className="details-emoji" />
         <label className="field grow">
           Critter name
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Critter name" />

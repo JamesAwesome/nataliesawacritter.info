@@ -1,15 +1,17 @@
 import type { Sighting } from '../api'
+import { nameFor } from '../lib/critters'
 import { formatWhen } from '../lib/format'
+import { CritterGlyph } from './CritterGlyph'
 
 type Props = { sighting: Sighting; onSelect?: (id: string) => void; starred?: boolean }
 
 export function SightingRow({ sighting, onSelect, starred }: Props) {
   const body = (
     <>
-      <span className="recent-emoji" aria-hidden="true">{sighting.emoji}</span>
+      <CritterGlyph emoji={sighting.emoji} className="recent-emoji" />
       <span className="recent-main">
         <span className="recent-name">
-          {sighting.name ?? sighting.emoji}
+          {sighting.name ?? (nameFor(sighting.emoji) ?? sighting.emoji)}
           {starred === true && (
             <>
               <span className="row-star" aria-hidden="true">⭐</span>

@@ -1,5 +1,6 @@
 import { nameFor } from '../lib/critters'
 import type { LeaderRow } from '../lib/insights'
+import { CritterGlyph } from './CritterGlyph'
 
 // docs/design/README.md §4 — the 7-stop rainbow, cycled index i and i+2 per row.
 // Token references (not hex) keep the no-raw-hex rule.
@@ -31,9 +32,7 @@ export function LeaderboardList({ rows }: Props) {
           >
             <span className="leader-rank">{i < 3 ? MEDALS[i] : `#${i + 1}`}</span>
             <span className="leader-critter">
-              <span className="leader-emoji" aria-hidden="true">
-                {row.emoji}
-              </span>
+              <CritterGlyph emoji={row.emoji} className="leader-emoji" />
               {row.name !== null && <span className="leader-name">{row.name}</span>}
             </span>
             <span className="leader-bar-track">

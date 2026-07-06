@@ -2,6 +2,7 @@ import { Router, type RequestHandler } from 'express'
 import { removePhotoFile } from './photoRoutes.js'
 import type { NewSighting, Sighting, SightingsStore } from './store.js'
 import { UUID_RE, sendValidation, rejectUnknownFields } from '../httpValidation.js'
+import { validateEmoji } from '../emojiField.js'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -35,9 +36,8 @@ function parseNewSighting(body: unknown):
   rejectUnknownFields(record, KNOWN_FIELDS, details)
 
   const emoji = record.emoji
-  if (typeof emoji !== 'string' || emoji.length === 0 || emoji.length > 16) {
-    details.emoji = 'required, 1-16 characters'
-  }
+  const emojiError = validateEmoji(emoji)
+  if (emojiError !== null) details.emoji = emojiError
 
   const sightedOn = record.sightedOn
   if (typeof sightedOn !== 'string' || !isValidDate(sightedOn)) {

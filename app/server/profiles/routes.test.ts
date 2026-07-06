@@ -96,7 +96,7 @@ describe('POST /api/profiles', () => {
     ['empty name', { emoji: '🦊', name: '' }, 'name'],
     ['name too long', { emoji: '🦊', name: 'x'.repeat(101) }, 'name'],
     ['missing emoji', { name: 'Mr Fox' }, 'emoji'],
-    ['emoji too long', { emoji: 'x'.repeat(17), name: 'Mr Fox' }, 'emoji'],
+    ['emoji too long', { emoji: 'x'.repeat(41), name: 'Mr Fox' }, 'emoji'],
     ['place too long', { emoji: '🦊', name: 'Mr Fox', place: 'x'.repeat(101) }, 'place'],
     ['unknown field', { emoji: '🦊', name: 'Mr Fox', nickname: 'Foxy' }, 'nickname'],
   ])('400s on %s', async (_label, body, field) => {
@@ -106,6 +106,18 @@ describe('POST /api/profiles', () => {
       expect(res.status).toBe(400)
       expect(((await res.json()) as { details: Record<string, string> }).details[field]).toBeDefined()
       expect(store.create).not.toHaveBeenCalled()
+    })
+  })
+
+  it('accepts a known custom emoji token and rejects an unknown one', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      const ok = await post(base, { emoji: 'custom:robin', name: 'Robin' })
+      expect(ok.status).toBe(201)
+
+      const bad = await post(base, { emoji: 'custom:nope', name: 'Robin' })
+      expect(bad.status).toBe(400)
+      expect(((await bad.json()) as { details: Record<string, string> }).details.emoji).toBeDefined()
     })
   })
 

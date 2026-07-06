@@ -23,4 +23,10 @@ describe('starred', () => {
     expect(screen.queryByText('⭐')).not.toBeInTheDocument()
     expect(screen.queryByText(', friend')).not.toBeInTheDocument()
   })
+
+  it('shows the resolved custom name (not the token) when the name is null', () => {
+    render(<SightingRow sighting={makeSighting({ emoji: 'custom:robin', name: null })} onSelect={() => {}} />)
+    expect(screen.getByText('Robin')).toBeInTheDocument()
+    expect(screen.queryByText('custom:robin')).not.toBeInTheDocument()
+  })
 })

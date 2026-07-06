@@ -41,4 +41,10 @@ describe('nameFor', () => {
     expect(nameFor('🐙')).toBeNull()
     expect(nameFor('🦔')).toBeNull() // demoted out of CURATED
   })
+
+  it('resolves custom-emoji names from their token', () => {
+    expect(nameFor('custom:robin')).toBe('Robin')
+    expect(nameFor('custom:blue-jay')).toBe('Blue Jay')
+    expect(nameFor('custom:unknown')).toBeNull()
+  })
 })

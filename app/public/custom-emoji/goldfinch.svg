@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Goldfinch">
+  <path d="M18 40 L2 50 L16 53 Z" fill="#2a2320"/>
+  <ellipse cx="30" cy="38" rx="16" ry="13" fill="#f2cf3a"/>
+  <path d="M22 29 q12 3 16 16 q-12 2 -18 -5 Z" fill="#2a2320"/>
+  <circle cx="42" cy="24" r="11" fill="#f2cf3a"/>
+  <path d="M35 18 a11 11 0 0 1 14 -2 L37 22 Z" fill="#2a2320"/>
+  <path d="M52 23 L61 25 L52 28 Z" fill="#f0932a"/>
+  <circle cx="45.5" cy="22" r="1.7" fill="#2a2320"/>
+  <path d="M28 50 v6 M34 50 v6" stroke="#c98a3a" stroke-width="2" stroke-linecap="round"/>
+</svg>
