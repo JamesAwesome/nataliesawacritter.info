@@ -161,6 +161,15 @@ describe('App shell', () => {
     await userEvent.click(within(recent).getByText('Fox'))
     expect(await screen.findByRole('img')).toHaveAttribute('src', withPhoto.photoPath)
   })
+
+  it('renders the attribution footer', () => {
+    stubFetchQueue([{ status: 200, body: [] }])
+    render(<App />)
+    expect(screen.getByRole('link', { name: 'James Awesome' })).toHaveAttribute(
+      'href',
+      'https://github.com/JamesAwesome',
+    )
+  })
 })
 
 describe('calendar navigation and delete', () => {

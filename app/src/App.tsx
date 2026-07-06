@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { deletePhoto, uploadPhoto } from './api'
 import { CalendarPane } from './components/CalendarPane'
 import { DayDetail } from './components/DayDetail'
+import { Footer } from './components/Footer'
 import { Header } from './components/Header'
 import { HistoryPane } from './components/HistoryPane'
 import { LeaderboardList } from './components/LeaderboardList'
@@ -115,6 +116,7 @@ export default function App() {
           </aside>
         </div>
       </div>
+      <Footer />
       <LogSightingFlow
         open={sheet?.kind === 'log'}
         onClose={() => setSheet(null)}
