@@ -1,15 +1,16 @@
-export type CustomEmoji = { slug: string; name: string; standIn: string }
+export type CategoryKey = 'birds' | 'mammals' | 'reptiles' | 'sea' | 'bugs'
+export type CustomEmoji = { slug: string; name: string; standIn: string; category: CategoryKey }
 
 export const CUSTOM_PREFIX = 'custom:'
 
 export const CUSTOM: CustomEmoji[] = [
-  { slug: 'robin', name: 'Robin', standIn: '🐦' },
-  { slug: 'cardinal', name: 'Cardinal', standIn: '🐦' },
-  { slug: 'blue-jay', name: 'Blue Jay', standIn: '🐦' },
-  { slug: 'chickadee', name: 'Chickadee', standIn: '🐦' },
-  { slug: 'goldfinch', name: 'Goldfinch', standIn: '🐦' },
-  { slug: 'sparrow', name: 'Sparrow', standIn: '🐦' },
-  { slug: 'seagull', name: 'Seagull', standIn: '🐦' },
+  { slug: 'robin', name: 'Robin', standIn: '🐦', category: 'birds' },
+  { slug: 'cardinal', name: 'Cardinal', standIn: '🐦', category: 'birds' },
+  { slug: 'blue-jay', name: 'Blue Jay', standIn: '🐦', category: 'birds' },
+  { slug: 'chickadee', name: 'Chickadee', standIn: '🐦', category: 'birds' },
+  { slug: 'goldfinch', name: 'Goldfinch', standIn: '🐦', category: 'birds' },
+  { slug: 'sparrow', name: 'Sparrow', standIn: '🐦', category: 'birds' },
+  { slug: 'seagull', name: 'Seagull', standIn: '🐦', category: 'birds' },
 ]
 
 const BY_SLUG = new Map(CUSTOM.map((c) => [c.slug, c]))

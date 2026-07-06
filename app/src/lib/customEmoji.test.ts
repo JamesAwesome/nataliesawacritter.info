@@ -36,4 +36,9 @@ describe('customEmoji catalogue', () => {
       'robin', 'cardinal', 'blue-jay', 'chickadee', 'goldfinch', 'sparrow', 'seagull',
     ])
   })
+
+  it('every catalogue entry has one of the five category keys', () => {
+    const keys = new Set(['birds', 'mammals', 'reptiles', 'sea', 'bugs'])
+    for (const c of CUSTOM) expect(keys.has(c.category)).toBe(true)
+  })
 })
