@@ -42,4 +42,9 @@ describe('emoji categories', () => {
     const keys = new Set(CATEGORIES.map((c) => c.key))
     for (const c of CUSTOM) expect(keys.has(c.category)).toBe(true)
   })
+
+  it('includes the moose in the Mammals category', () => {
+    const mammals = CATEGORIES.find((c) => c.key === 'mammals')
+    expect(mammals?.items).toContain('🫎')
+  })
 })
