@@ -1004,6 +1004,19 @@ button.day-cell {
   text-decoration: underline;
 }
 
+.footer-rss,
+.footer-rss:hover {
+  display: inline-flex;
+  vertical-align: -0.25em;
+  text-decoration: none;
+}
+
+.footer-rss img {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
 /* Custom-emoji images sit in the same box as a text emoji at each site. */
 img.details-emoji,
 img.detail-emoji,
