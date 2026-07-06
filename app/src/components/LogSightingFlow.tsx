@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { NewProfileInput, NewSightingInput, Profile, Sighting } from '../api'
+import { ApiError, checkAuth } from '../api'
+import { basicHeader, getCredentials, setCredentials } from '../auth'
 import { useWriteAction } from '../hooks/useWriteAction'
 import { PasswordPrompt } from './PasswordPrompt'
 import { Sheet } from './Sheet'
@@ -38,6 +40,16 @@ export function LogSightingFlow({
   onUploadPhoto,
 }: Props) {
   const [picked, setPicked] = useState<Picked | null>(null)
+  // Lazily seeded from stored credentials at mount: once a session has been let
+  // in (whether it started with stored credentials or passed the gate), it
+  // stays unlocked even if a later save-time 401 clears the stored password —
+  // that stale-password recovery is useWriteAction's write.prompt backstop,
+  // not the entry gate's job. close() resets this so reopening re-evaluates.
+  const [unlocked, setUnlocked] = useState(() => getCredentials() !== null)
+  const [gateBusy, setGateBusy] = useState(false)
+  const [gateError, setGateError] = useState<string | null>(null)
+  const [gateDisabled, setGateDisabled] = useState(false)
+  const locked = !unlocked && getCredentials() === null
   const write = useWriteAction({
     disabled: 'Saving is disabled right now',
     failed: "Couldn't save — try again",
@@ -53,7 +65,31 @@ export function LogSightingFlow({
   function close() {
     write.abandon()
     setPicked(null)
+    setUnlocked(false)
+    setGateBusy(false)
+    setGateError(null)
+    setGateDisabled(false)
     onClose()
+  }
+
+  async function unlock(password: string) {
+    setGateBusy(true)
+    setGateError(null)
+    try {
+      await checkAuth(basicHeader({ user: 'natalie', password }))
+      setCredentials(password)
+      setUnlocked(true)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setGateError('Wrong password — try again')
+      } else if (err instanceof ApiError && err.status === 503) {
+        setGateDisabled(true)
+      } else {
+        setGateError("Couldn't check the password — try again")
+      }
+    } finally {
+      setGateBusy(false)
+    }
   }
 
   function save(fields: NewSightingInput, opts?: { saveAsFriend: boolean; photo: Blob | null }) {
@@ -103,7 +139,21 @@ export function LogSightingFlow({
   // details step is active.
   return (
     <Sheet open={open} onClose={close}>
-      {picked === null ? (
+      {locked ? (
+        gateDisabled ? (
+          <p className="flow-error" data-testid="flow-error">
+            Logging is disabled right now
+          </p>
+        ) : (
+          <PasswordPrompt
+            open
+            error={gateError}
+            busy={gateBusy}
+            onCancel={close}
+            onSubmit={(password) => void unlock(password)}
+          />
+        )
+      ) : picked === null ? (
         <EmojiPicker
           recent={recent}
           friends={friends}
