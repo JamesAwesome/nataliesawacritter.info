@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import type { Profile } from '../api'
-import { CURATED, EXTENDED, nameFor } from '../lib/critters'
-import { CUSTOM, tokenFor } from '../lib/customEmoji'
+import { CURATED, nameFor } from '../lib/critters'
+import { CATEGORIES } from '../lib/emojiCategories'
 import { CritterGlyph } from './CritterGlyph'
 
 type Props = {
@@ -73,14 +73,6 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
           </div>
         </>
       )}
-      <h3 className="picker-recent-heading">Birds</h3>
-      <div className="picker-grid picker-grid-recent">
-        {CUSTOM.map((c) => (
-          <PickerTile key={c.slug} ariaLabel={c.name} onClick={() => onPick(tokenFor(c.slug), c.name)}>
-            <CritterGlyph emoji={tokenFor(c.slug)} />
-          </PickerTile>
-        ))}
-      </div>
       <div className="picker-grid">
         {CURATED.map((c) => (
           <PickerTile key={c.emoji} tint={c.tint} ariaLabel={c.name} onClick={() => onPick(c.emoji, c.name)}>
@@ -98,13 +90,22 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
       {showExtended && (
         <>
           <hr className="picker-divider" />
-          <div className="picker-grid picker-grid-extended">
-            {EXTENDED.map((emoji) => (
-              <PickerTile key={emoji} ariaLabel={emoji} onClick={() => onPick(emoji, null)}>
-                <CritterGlyph emoji={emoji} />
-              </PickerTile>
-            ))}
-          </div>
+          {CATEGORIES.map((cat) => (
+            <div key={cat.key} className="picker-category">
+              <h3 className="picker-recent-heading">{cat.label}</h3>
+              <div className="picker-grid picker-grid-extended">
+                {cat.items.map((item) => (
+                  <PickerTile
+                    key={item}
+                    ariaLabel={nameFor(item) ?? item}
+                    onClick={() => onPick(item, nameFor(item))}
+                  >
+                    <CritterGlyph emoji={item} />
+                  </PickerTile>
+                ))}
+              </div>
+            </div>
+          ))}
         </>
       )}
       <button type="button" className="btn-secondary flow-cancel" onClick={onCancel}>
