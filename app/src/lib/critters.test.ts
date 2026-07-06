@@ -25,6 +25,7 @@ describe('critter sets', () => {
     expect(EXTENDED).toContain('🦁')
     expect(EXTENDED).toContain('🦔')
     expect(EXTENDED).toContain('🦋')
+    expect(EXTENDED).toContain('🪿')
     expect(EXTENDED.length).toBeGreaterThanOrEqual(90)
     for (const emoji of EXTENDED) {
       expect(emoji.length).toBeLessThanOrEqual(16)
