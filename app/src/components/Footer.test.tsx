@@ -17,4 +17,16 @@ describe('Footer', () => {
     expect(screen.getByText(/©/)).toBeInTheDocument()
     expect(screen.getByText(/James Awesome/)).toBeInTheDocument()
   })
+
+  it('links to the RSS feed with the feed logo', () => {
+    render(<Footer />)
+    // The link carries the accessible name; the logo img is decorative (alt="")
+    // so it does not add a second element with the "img" role to the page.
+    const link = screen.getByRole('link', { name: 'RSS feed' })
+    expect(link).toHaveAttribute('href', '/feed.xml')
+    const img = link.querySelector('img')
+    expect(img).not.toBeNull()
+    expect(img?.getAttribute('src')).toBe('/rss.svg')
+    expect(img?.getAttribute('alt')).toBe('')
+  })
 })

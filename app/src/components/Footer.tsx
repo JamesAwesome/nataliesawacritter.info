@@ -5,6 +5,16 @@ export function Footer() {
       © {year} ·{' '}
       <a href="https://github.com/JamesAwesome" target="_blank" rel="noopener noreferrer">
         James Awesome
+      </a>{' '}
+      ·{' '}
+      <a
+        className="footer-rss"
+        href="/feed.xml"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="RSS feed"
+      >
+        <img src="/rss.svg" alt="" />
       </a>
     </footer>
   )
