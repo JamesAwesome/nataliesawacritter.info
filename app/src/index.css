@@ -253,7 +253,12 @@ body {
   width: 100%;
   border-radius: 26px 26px 0 0;
   padding: 10px 18px 22px;
+  /* dvh (not vh): on mobile Chrome vh is the large viewport with the URL bar
+     hidden, so a tall sheet extends up behind the URL bar and the pinned handle
+     disappears under it. dvh tracks the visible viewport. vh stays as a fallback
+     for browsers without dvh. */
   max-height: 85vh;
+  max-height: 85dvh;
   overflow-y: auto;
   animation: sheet-up 0.25s ease-out;
   transition: transform 0.22s ease-out;
