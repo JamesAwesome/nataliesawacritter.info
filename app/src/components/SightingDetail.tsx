@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { NewProfileInput, Profile, Sighting } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
-import { normalizedName } from '../lib/critters'
+import { nameFor, normalizedName } from '../lib/critters'
 import { formatWhen } from '../lib/format'
 import { downscalePhoto } from '../lib/photo'
+import { CritterGlyph } from './CritterGlyph'
 import { PasswordPrompt } from './PasswordPrompt'
 import { PhotoControl } from './PhotoControl'
 
@@ -103,8 +104,8 @@ export function SightingDetail({
   return (
     <div className="sighting-detail">
       <div className="detail-head">
-        <span className="detail-emoji" aria-hidden="true">{sighting.emoji}</span>
-        <h2>{sighting.name ?? sighting.emoji}</h2>
+        <CritterGlyph emoji={sighting.emoji} className="detail-emoji" />
+        <h2>{sighting.name ?? (nameFor(sighting.emoji) ?? sighting.emoji)}</h2>
         <p className="detail-meta">{formatWhen(sighting.sightedOn, sighting.sightedTime)}</p>
       </div>
       {sighting.place !== null && (
@@ -117,7 +118,7 @@ export function SightingDetail({
           <img
             className="detail-photo"
             src={sighting.photoPath}
-            alt={sighting.name ?? `${sighting.emoji} sighting`}
+            alt={sighting.name ?? (nameFor(sighting.emoji) ?? `${sighting.emoji} sighting`)}
             loading="lazy"
           />
           <div className="photo-actions">

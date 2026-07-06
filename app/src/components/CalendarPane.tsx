@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Sighting } from '../api'
 import { addMonths, currentYearMonth, monthGrid, monthLabel, todayString } from '../lib/calendar'
 import { formatDay } from '../lib/format'
+import { CritterGlyph } from './CritterGlyph'
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
@@ -56,14 +57,16 @@ export function CalendarPane({ sightings, onDayOpen }: Props) {
           ]
             .filter(Boolean)
             .join(' ')
-          const emoji = cell.sightings.slice(0, 2).map((s) => s.emoji).join('')
+          const shown = cell.sightings.slice(0, 2)
           const overflow = cell.sightings.length - 2
           const body = (
             <>
               <span className="day-num">{cell.dayOfMonth}</span>
               {cell.inMonth && cell.sightings.length > 0 && (
                 <span className="day-emoji">
-                  {emoji}
+                  {shown.map((s) => (
+                    <CritterGlyph key={s.id} emoji={s.emoji} />
+                  ))}
                   {overflow > 0 ? ` +${overflow}` : ''}
                 </span>
               )}
