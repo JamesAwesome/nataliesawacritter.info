@@ -44,7 +44,7 @@ describe('buildFeed', () => {
   it('emits one item per sighting with a named title, guid, and pubDate', () => {
     const xml = buildFeed([sighting()], SITE)
     expect(itemCount(xml)).toBe(1)
-    expect(xml).toContain('<title>🦊 Natalie saw Mr Fox</title>')
+    expect(xml).toContain('<title>🦊 Natalie saw a Mr Fox</title>')
     expect(xml).toContain('<guid isPermaLink="false">3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa</guid>')
     expect(xml).toContain('<pubDate>Sun, 05 Jul 2026 12:00:00 GMT</pubDate>')
   })
@@ -56,9 +56,21 @@ describe('buildFeed', () => {
 
   it('escapes XML-special characters in names so the feed stays well-formed', () => {
     const xml = buildFeed([sighting({ name: 'Tom & <Jerry>' })], SITE)
-    expect(xml).toContain('<title>🦊 Natalie saw Tom &amp; &lt;Jerry&gt;</title>')
+    expect(xml).toContain('<title>🦊 Natalie saw a Tom &amp; &lt;Jerry&gt;</title>')
     expect(xml).not.toContain('Tom & <Jerry>')
     expect(hasNakedAmpersand(xml)).toBe(false)
+  })
+
+  it('prepends "a" before a consonant name and "an" before a vowel name', () => {
+    expect(buildFeed([sighting({ emoji: '🐦', name: 'Cardinal' })], SITE)).toContain(
+      '<title>🐦 Natalie saw a Cardinal</title>',
+    )
+    expect(buildFeed([sighting({ emoji: '🦉', name: 'Owl' })], SITE)).toContain(
+      '<title>🦉 Natalie saw an Owl</title>',
+    )
+    expect(buildFeed([sighting({ name: 'Fox' })], SITE)).toContain(
+      '<title>🦊 Natalie saw a Fox</title>',
+    )
   })
 
   it('includes an absolute enclosure and inline img when a photo is present', () => {
@@ -68,12 +80,23 @@ describe('buildFeed', () => {
     expect(hasNakedAmpersand(xml)).toBe(false)
   })
 
-  it('has no enclosure or item description when there is no photo, place, comment, or time', () => {
+  it('always shows the sighting date in the description', () => {
+    const xml = buildFeed([sighting({ sightedOn: '2026-07-05' })], SITE)
+    expect(xml).toContain('<p>📅 July 5, 2026</p>')
+  })
+
+  it('combines the date and time on one line when a time is present', () => {
+    const xml = buildFeed([sighting({ sightedOn: '2026-07-05', sightedTime: 'dawn' })], SITE)
+    expect(xml).toContain('<p>📅 July 5, 2026 · dawn</p>')
+  })
+
+  it('a bare sighting still gets a description carrying just the date line', () => {
     const xml = buildFeed([sighting()], SITE)
     expect(xml).not.toContain('<enclosure')
-    // The channel has a plain-text description; items use CDATA — so no CDATA
-    // block means no item description.
-    expect(xml).not.toContain('<![CDATA[')
+    expect(xml).toContain('<description><![CDATA[')
+    expect(xml).toContain('<p>📅 July 5, 2026</p>')
+    expect(xml).not.toContain('📍') // no place line
+    expect(xml).not.toContain('<img') // no photo
   })
 
   it('renders place, time, and comment (escaped) in the description', () => {
@@ -83,7 +106,7 @@ describe('buildFeed', () => {
     )
     expect(xml).toContain('<description><![CDATA[')
     expect(xml).toContain('the &quot;garden&quot;')
-    expect(xml).toContain('dawn')
+    expect(xml).toContain('📅 July 5, 2026 · dawn')
     expect(xml).toContain('a &amp; b')
     expect(hasNakedAmpersand(xml)).toBe(false)
   })

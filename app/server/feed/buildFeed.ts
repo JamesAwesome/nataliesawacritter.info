@@ -19,18 +19,37 @@ function rfc822(sightedOn: string): string {
   return new Date(`${sightedOn}T12:00:00Z`).toUTCString()
 }
 
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+
+/** "2026-07-05" → "July 5, 2026". Parses the string directly — no Date, no timezone. */
+function formatDate(sightedOn: string): string {
+  const [year, month, day] = sightedOn.split('-')
+  return `${MONTHS[Number(month) - 1]} ${Number(day)}, ${year}`
+}
+
+function articleFor(name: string): string {
+  return /^[aeiou]/i.test(name) ? 'an' : 'a'
+}
+
 function titleFor(s: Sighting): string {
   return s.name === null
     ? `${s.emoji} Natalie saw a critter`
-    : `${s.emoji} Natalie saw ${s.name}`
+    : `${s.emoji} Natalie saw ${articleFor(s.name)} ${s.name}`
 }
 
 /** Description HTML (user text escaped even inside CDATA so it renders as text,
- *  never markup); empty string when there is nothing to show. */
+ *  never markup); always includes the date line. */
 function descriptionHtml(s: Sighting, siteUrl: string): string {
   const lines: string[] = []
   if (s.place !== null && s.place !== '') lines.push(`<p>📍 ${xmlEscape(s.place)}</p>`)
-  if (s.sightedTime !== null && s.sightedTime !== '') lines.push(`<p>🕐 ${xmlEscape(s.sightedTime)}</p>`)
+  const when =
+    s.sightedTime !== null && s.sightedTime !== ''
+      ? `${formatDate(s.sightedOn)} · ${xmlEscape(s.sightedTime)}`
+      : formatDate(s.sightedOn)
+  lines.push(`<p>📅 ${when}</p>`)
   if (s.comment !== null && s.comment !== '') lines.push(`<p>${xmlEscape(s.comment)}</p>`)
   if (s.photoPath !== null) lines.push(`<img src="${xmlEscape(siteUrl + s.photoPath)}" alt="" />`)
   return lines.join('\n')
