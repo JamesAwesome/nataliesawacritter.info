@@ -1,8 +1,10 @@
 # 🐾 Natalie Saw a Critter!
 
-Natalie sees things, she sees them with her eyes. This app lets her log wildlife
-sightings and view them as a calendar, a filterable history, and a Top Critters
-leaderboard. Live (eventually) at nataliesawacritter.info.
+Natalie sees things, she sees them with her eyes. This app lets her log
+wildlife sightings — with photos and saved "critter friends" — and view them as
+a calendar, a filterable history, and a Top Critters leaderboard. Friends can
+subscribe to push notifications (it installs as a PWA on phones) to hear about
+new sightings as they happen. Live at nataliesawacritter.info.
 
 The full UI design lives in [`docs/design/`](docs/design/README.md) — open
 `docs/design/Natalies Critter Tracker.dc.html` in a browser for the interactive
@@ -74,6 +76,7 @@ friends through this.
     GET    /api/profiles                                  # public; saved critter friends
     POST   /api/profiles                                  # basic auth; emoji + name required
     DELETE /api/profiles/:id                              # basic auth
+    GET    /api/auth/check                                # basic auth; 204/401, 503 when writes disabled
     GET    /api/push/vapid-public-key                     # public; 503 when push disabled
     POST   /api/push/subscriptions                        # public; browser push subscription JSON
     DELETE /api/push/subscriptions                        # public; body {endpoint}
@@ -104,3 +107,8 @@ Note: `app/pnpm-workspace.yaml` is auto-generated/maintained by pnpm 11's supply
     pnpm typecheck
 
 CI runs all of the above plus a docker image build on every PR and push to main.
+
+## Author & license
+
+Made by [James Awesome](https://github.com/JamesAwesome). Licensed under
+GPL-3.0 — see [LICENSE](LICENSE).
