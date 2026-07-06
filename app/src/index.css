@@ -253,9 +253,15 @@ body {
   width: 100%;
   border-radius: 26px 26px 0 0;
   padding: 10px 18px 22px;
+  /* dvh (not vh): on mobile Chrome vh is the large viewport with the URL bar
+     hidden, so a tall sheet extends up behind the URL bar and the pinned handle
+     disappears under it. dvh tracks the visible viewport. vh stays as a fallback
+     for browsers without dvh. */
   max-height: 85vh;
+  max-height: 85dvh;
   overflow-y: auto;
   animation: sheet-up 0.25s ease-out;
+  transition: transform 0.22s ease-out;
 }
 
 .sheet-handle {
@@ -264,6 +270,20 @@ body {
   border-radius: 999px;
   background: var(--border-hairline);
   margin: 0 auto 10px;
+}
+
+.sheet-drag {
+  /* Pin the handle to the top of the scrollable sheet so it stays visible (and
+     grabbable) even when the content is tall enough to scroll. The white
+     background hides content scrolling underneath; the sheet itself is white so
+     there is no seam above the strip. */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+  touch-action: none;
+  padding: 4px 0;
+  cursor: grab;
 }
 
 @keyframes sheet-in {
@@ -279,6 +299,12 @@ body {
     max-width: 460px;
     border-radius: 24px;
     animation: sheet-in 0.18s ease-out;
+  }
+  .sheet-handle {
+    display: none;
+  }
+  .sheet-drag {
+    padding: 0;
   }
 }
 
@@ -477,6 +503,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .sheet {
     animation: none;
+    transition: none;
   }
 }
 
@@ -941,4 +968,20 @@ button.day-cell {
   clip-path: inset(50%);
   overflow: hidden;
   white-space: nowrap;
+}
+
+.app-footer {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-secondary);
+}
+
+.app-footer a {
+  color: var(--other-text);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
 }
