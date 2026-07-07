@@ -48,7 +48,7 @@ describe('DetailsForm', () => {
 
   it('warns that the place field is public', () => {
     render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={() => {}} saving={false} />)
-    expect(screen.getByText(/public/i)).toBeInTheDocument()
-    expect(screen.getByText(/home address or exact/i)).toBeInTheDocument()
+    const hint = screen.getByText(/don't reveal where you live/i)
+    expect(hint).toHaveTextContent(/public/i)
   })
 })
