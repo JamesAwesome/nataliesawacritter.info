@@ -175,3 +175,30 @@ describe('security headers', () => {
     })
   })
 })
+
+describe('rate limiting', () => {
+  it('429s mutations past the limit, keyed per client IP', async () => {
+    const app = createApp(deps({ rateLimits: { authPerMin: 100, mutationPerMin: 2 } }))
+    await withServer(app, async (base) => {
+      const post = () =>
+        fetch(`${base}/api/push/subscriptions`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.9' },
+          body: JSON.stringify({}),
+        })
+      const a = await post()
+      const b = await post()
+      const c = await post()
+      expect(c.status).toBe(429) // third mutation from the same IP is limited
+      expect(a.status).not.toBe(429)
+      expect(b.status).not.toBe(429)
+    })
+  })
+
+  it('does not rate-limit GET reads', async () => {
+    const app = createApp(deps({ rateLimits: { authPerMin: 100, mutationPerMin: 2 } }))
+    await withServer(app, async (base) => {
+      for (let i = 0; i < 5; i++) expect((await fetch(`${base}/api/sightings`)).status).toBe(200)
+    })
+  })
+})

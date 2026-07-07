@@ -1,5 +1,6 @@
 import path from 'node:path'
 import express, { type Express, type RequestHandler } from 'express'
+import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import { requireWriteAuth } from './auth.js'
 import { errorHandler } from './errorHandler.js'
@@ -25,6 +26,8 @@ export interface AppDeps {
   /** publicKey null → push endpoints 503 and notifySighting no-ops. */
   notifier: Notifier
   siteUrl: string
+  /** Rate-limit ceilings per minute per client IP. Defaults applied in createApp. */
+  rateLimits?: { authPerMin: number; mutationPerMin: number }
 }
 
 const writesDisabled: RequestHandler = (_req, res) => {
@@ -59,6 +62,34 @@ export function createApp(deps: AppDeps): Express {
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
     next()
   })
+
+  const limits = deps.rateLimits ?? { authPerMin: 10, mutationPerMin: 30 }
+  // Origin is tunnel-only, so CF-Connecting-IP (set by Cloudflare) is trustworthy;
+  // fall back to req.ip for local/dev.
+  const clientKey = (req: express.Request): string => {
+    const cf = req.headers['cf-connecting-ip']
+    return (typeof cf === 'string' ? cf : req.ip) ?? 'unknown'
+  }
+  const validate = { trustProxy: false, xForwardedForHeader: false }
+  const mutationLimiter = rateLimit({
+    windowMs: 60_000,
+    limit: limits.mutationPerMin,
+    keyGenerator: clientKey,
+    skip: (req) => req.method === 'GET', // public reads/feed unaffected
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate,
+  })
+  const authLimiter = rateLimit({
+    windowMs: 60_000,
+    limit: limits.authPerMin,
+    keyGenerator: clientKey,
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate,
+  })
+  app.use(mutationLimiter)
+
   app.use(express.json())
 
   app.get('/api/health', async (_req, res) => {
@@ -77,7 +108,7 @@ export function createApp(deps: AppDeps): Express {
 
   // Entry gate for the logging flow: lets the client verify the magic word
   // before showing the picker. Semantics come entirely from writeGate.
-  app.get('/api/auth/check', writeGate, (_req, res) => {
+  app.get('/api/auth/check', authLimiter, writeGate, (_req, res) => {
     res.status(204).end()
   })
 
