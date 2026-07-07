@@ -67,6 +67,31 @@ On iPhone, web push requires the app to be installed first: Share →
 Add to Home Screen, then tap the bell inside the installed app. The bell walks
 friends through this.
 
+## Security & privacy
+
+Reads are public by design (sightings, profiles, photos, the RSS feed); writes
+require HTTP Basic auth (`WRITE_USER` / `WRITE_PASSWORD` — use a high-entropy
+password). Hardening in place:
+
+- **Security headers** — `helmet` with a tuned Content-Security-Policy,
+  `frame-ancestors 'none'`, HSTS, `Referrer-Policy`, `Permissions-Policy`; no
+  `X-Powered-By`.
+- **Rate limiting** — failed write-auth attempts and public mutations (incl. push
+  subscribe) are throttled per client IP (keyed on `CF-Connecting-IP`, so it works
+  behind the Cloudflare tunnel). Public GET reads/feed are never limited.
+- **Photo GPS stripping** — uploaded photos are stripped of EXIF/GPS/XMP metadata
+  server-side (via `exif-be-gone`), on top of the client's canvas re-encode.
+  Filenames are random tokens; a non-image body is rejected.
+- **Push SSRF allowlist** — subscription endpoints are restricted to real
+  push-service hosts (FCM/Mozilla/Apple/WNS).
+- **Privacy** — sightings are public, so the log form warns against entering a
+  home address or exact location, and the public API coarsens the insert
+  timestamp to the minute. The origin is reachable only via the tunnel (compose
+  binds `127.0.0.1`).
+
+Not yet done (tracked, low severity): gating reads, IPTC/COM photo metadata
+stripping, delivery-time push re-validation, shorter photo cache TTL.
+
 ## API
 
     GET    /api/sightings?from=YYYY-MM-DD&to=YYYY-MM-DD   # public; filters optional/inclusive
