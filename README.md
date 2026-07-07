@@ -105,11 +105,16 @@ Note: `app/pnpm-workspace.yaml` is auto-generated/maintained by pnpm 11's supply
 ## Tests & checks
 
     pnpm test            # unit + client + integration (integration needs Docker)
-    pnpm test:coverage
+    pnpm test:coverage   # same run, with coverage thresholds enforced
     pnpm lint
     pnpm typecheck
 
 CI runs all of the above plus a docker image build on every PR and push to main.
+
+**Coverage gate:** `pnpm test:coverage` fails if coverage falls below the
+thresholds in `app/vitest.config.ts` (statements 93 / branches 90 / functions 92 /
+lines 94 — a floor a few points below current). CI runs it, so the gate applies to
+every PR: new code generally needs tests to land.
 
 ## Author & license
 
