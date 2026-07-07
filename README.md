@@ -1,4 +1,4 @@
-# 🐾 Natalie Saw a Critter!
+# 🐾 [Natalie Saw a Critter!](https://nataliesawacritter.info)
 
 [![CI](https://github.com/JamesAwesome/nataliesawacritter.info/actions/workflows/ci.yml/badge.svg)](https://github.com/JamesAwesome/nataliesawacritter.info/actions/workflows/ci.yml)
 [![RSS feed](https://img.shields.io/badge/RSS-feed-EE802F?logo=rss&logoColor=white)](https://nataliesawacritter.info/feed.xml)
@@ -82,7 +82,7 @@ friends through this.
     GET    /api/push/vapid-public-key                     # public; 503 when push disabled
     POST   /api/push/subscriptions                        # public; browser push subscription JSON
     DELETE /api/push/subscriptions                        # public; body {endpoint}
-    GET    /feed.xml                                       # public; RSS 2.0 feed of recent sightings
+    GET    /feed.xml                                      # public; RSS 2.0 feed of recent sightings
 
 POST body: `emoji` and `sightedOn` (YYYY-MM-DD) required; `name`, `sightedTime`,
 `place`, `comment` optional. With blank write credentials the write endpoints
