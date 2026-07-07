@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Groundhog">
+  <path d="M20 40 q-4 4 -1 9" stroke="#7a5c3a" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M44 40 q4 4 1 9" stroke="#7a5c3a" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="32" cy="40" rx="14" ry="18" fill="#8a6a44"/>
+  <ellipse cx="32" cy="44" rx="9" ry="12" fill="#b89b74"/>
+  <circle cx="32" cy="18" r="11" fill="#8a6a44"/>
+  <circle cx="25" cy="10" r="3" fill="#7a5c3a"/>
+  <circle cx="39" cy="10" r="3" fill="#7a5c3a"/>
+  <ellipse cx="32" cy="21" rx="4" ry="3" fill="#c9b090"/>
+  <circle cx="32" cy="18.5" r="1.6" fill="#2a2320"/>
+  <rect x="30.6" y="22" width="2.8" height="3" rx="0.6" fill="#f4f1ea"/>
+  <circle cx="27" cy="15" r="1.6" fill="#2a2320"/>
+  <circle cx="37" cy="15" r="1.6" fill="#2a2320"/>
+  <path d="M27 57 v3 M37 57 v3" stroke="#7a5c3a" stroke-width="4" stroke-linecap="round"/>
+</svg>

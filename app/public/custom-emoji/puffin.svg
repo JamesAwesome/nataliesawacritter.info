@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Atlantic Puffin">
+  <path d="M18 40 L2 49 L16 53 Z" fill="#20201e"/>
+  <ellipse cx="30" cy="38" rx="16" ry="13" fill="#2a2320"/>
+  <ellipse cx="34" cy="42" rx="11" ry="9" fill="#f4f1ea"/>
+  <path d="M20 30 q11 3 15 14 q-11 2 -17 -5 Z" fill="#20201e"/>
+  <circle cx="42" cy="24" r="11" fill="#2a2320"/>
+  <circle cx="43" cy="25" r="7.5" fill="#f4f1ea"/>
+  <path d="M50 19 q11 1 11 6 q0 5 -11 6 q-4 -6 0 -12 Z" fill="#f0932a"/>
+  <path d="M55 20 q4 4 0 11" stroke="#d2555c" stroke-width="1.2" fill="none"/>
+  <circle cx="45" cy="22" r="1.6" fill="#2a2320"/>
+  <path d="M28 50 v6 M34 50 v6" stroke="#f0932a" stroke-width="2" stroke-linecap="round"/>
+</svg>
