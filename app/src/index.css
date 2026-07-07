@@ -252,7 +252,11 @@ body {
   background: #fff;
   width: 100%;
   border-radius: 26px 26px 0 0;
-  padding: 10px 18px 22px;
+  /* No top padding: the sticky .sheet-drag owns the top spacing instead. A
+     sticky child is clamped to its containing block (this element's content
+     box), so any padding-top here would be a transparent band above the pinned
+     strip that scrolling content shows through. */
+  padding: 0 18px 22px;
   /* dvh (not vh): on mobile Chrome vh is the large viewport with the URL bar
      hidden, so a tall sheet extends up behind the URL bar and the pinned handle
      disappears under it. dvh tracks the visible viewport. vh stays as a fallback
@@ -275,14 +279,15 @@ body {
 .sheet-drag {
   /* Pin the handle to the top of the scrollable sheet so it stays visible (and
      grabbable) even when the content is tall enough to scroll. The white
-     background hides content scrolling underneath; the sheet itself is white so
-     there is no seam above the strip. */
+     background hides content scrolling underneath. This strip owns the sheet's
+     top spacing (the .sheet has no padding-top) so the opaque band reaches the
+     very top edge — 14px = the former 10px sheet padding + the 4px strip pad. */
   position: sticky;
   top: 0;
   z-index: 1;
   background: #fff;
   touch-action: none;
-  padding: 4px 0;
+  padding: 14px 0 4px;
   cursor: grab;
 }
 
@@ -304,7 +309,9 @@ body {
     display: none;
   }
   .sheet-drag {
-    padding: 0;
+    /* Handle is hidden here; keep the sheet's former 10px top padding as the
+       strip's own top spacing. */
+    padding: 10px 0 0;
   }
 }
 
