@@ -89,9 +89,11 @@ describe('POST /api/push/subscriptions', () => {
     const wns = 'https://db5p.notify.windows.com/w/?token=xyz'
     const evil = 'https://192.168.1.10/steal'
     const other = 'https://evil.example.com/push'
+    const trailingDot = 'https://fcm.googleapis.com./fcm/send/abc' // valid FQDN form
     await withServer(appForPush(), async (base) => {
       expect((await subscribe(base, ok)).status).toBe(201)
       expect((await subscribe(base, wns)).status).toBe(201)
+      expect((await subscribe(base, trailingDot)).status).toBe(201) // trailing-dot host accepted
       expect((await subscribe(base, evil)).status).toBe(400)
       expect((await subscribe(base, other)).status).toBe(400)
     })

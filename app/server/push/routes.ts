@@ -17,7 +17,7 @@ function isAllowedPushEndpoint(value: string): boolean {
     return false
   }
   if (url.protocol !== 'https:') return false
-  const host = url.hostname.toLowerCase()
+  const host = url.hostname.toLowerCase().replace(/\.$/, '') // tolerate a trailing-dot FQDN
   return PUSH_EXACT.has(host) || PUSH_SUFFIXES.some((s) => host.endsWith(s))
 }
 
