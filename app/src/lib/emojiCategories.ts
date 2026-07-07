@@ -1,45 +1,37 @@
-import { CUSTOM, tokenFor } from './customEmoji'
+import { CUSTOM, tokenFor, type CategoryKey } from './customEmoji'
 
-export type EmojiCategory = { key: string; label: string; items: string[] }
+export type EmojiCategory = { key: CategoryKey; label: string; items: string[] }
 
-// The "Other" grid, grouped so each category holds every emoji of its kind —
-// custom birds + curated animals + the rest. Curated animals also stay in the
-// top quick-pick grid; here they make each category complete. Coverage against
-// CURATED + EXTENDED is enforced by emojiCategories.test.ts.
-export const CATEGORIES: EmojiCategory[] = [
-  {
-    key: 'birds',
-    label: 'Birds',
-    items: [
-      ...CUSTOM.map((c) => tokenFor(c.slug)),
-      '🐦', '🦉', '🦆', '🦃', '🦅',
-      '🐔', '🐓', '🐣', '🐤', '🐥', '🐧', '🕊️', '🦢', '🪿', '🦤', '🦩', '🦚', '🦜', '🐦‍⬛',
-    ],
-  },
-  {
-    key: 'mammals',
-    label: 'Mammals',
-    items: [
-      '🦌', '🐿️', '🐇', '🦝', '🦨', '🦇', '🐭', '🦊', '🐻', '🦫',
-      '🐶', '🐕', '🦮', '🐕‍🦺', '🐩', '🐺', '🐱', '🐈', '🐈‍⬛', '🦁', '🐯', '🐅', '🐆',
-      '🐴', '🐎', '🦄', '🦓', '🦬', '🐮', '🐂', '🐃', '🐄', '🐷', '🐖', '🐗', '🐽',
-      '🐏', '🐑', '🐐', '🐪', '🐫', '🦙', '🦒', '🐘', '🦣', '🦏', '🦛',
-      '🐁', '🐀', '🐹', '🦔', '🐻‍❄️', '🐨', '🐼', '🦥', '🦦', '🦘', '🦡',
-    ],
-  },
-  {
-    key: 'reptiles',
-    label: 'Reptiles & Amphibians',
-    items: ['🐸', '🐢', '🐍', '🐊', '🦎', '🐉', '🐲', '🦕', '🦖'],
-  },
-  {
-    key: 'sea',
-    label: 'Sea Life',
-    items: ['🐳', '🐋', '🐬', '🦭', '🐟', '🐠', '🐡', '🦈', '🐙', '🦀', '🦞', '🦐', '🦑', '🦪'],
-  },
-  {
-    key: 'bugs',
-    label: 'Bugs',
-    items: ['🐌', '🦋', '🐛', '🐜', '🐝', '🪲', '🐞', '🦗', '🪳', '🕷️', '🦂', '🦟', '🪰', '🪱'],
-  },
+// Unicode members per category (curated + extended animals of that kind).
+// Coverage against CURATED ∪ EXTENDED is enforced by emojiCategories.test.ts.
+const UNICODE: Record<CategoryKey, string[]> = {
+  birds: ['🐦', '🦉', '🦆', '🦃', '🦅', '🐔', '🐓', '🐣', '🐤', '🐥', '🐧', '🕊️', '🦢', '🪿', '🦤', '🦩', '🦚', '🦜', '🐦‍⬛'],
+  mammals: [
+    '🦌', '🐿️', '🐇', '🦝', '🦨', '🦇', '🐭', '🦊', '🐻', '🦫',
+    '🐶', '🐕', '🦮', '🐕‍🦺', '🐩', '🐺', '🐱', '🐈', '🐈‍⬛', '🦁', '🐯', '🐅', '🐆',
+    '🐴', '🐎', '🦄', '🦓', '🦬', '🐮', '🐂', '🐃', '🐄', '🐷', '🐖', '🐗', '🐽',
+    '🐏', '🐑', '🐐', '🐪', '🐫', '🦙', '🦒', '🐘', '🦣', '🦏', '🦛',
+    '🐁', '🐀', '🐹', '🦔', '🐻‍❄️', '🐨', '🐼', '🦥', '🦦', '🦘', '🦡', '🫎',
+  ],
+  reptiles: ['🐸', '🐢', '🐍', '🐊', '🦎', '🐉', '🐲', '🦕', '🦖'],
+  sea: ['🐳', '🐋', '🐬', '🦭', '🐟', '🐠', '🐡', '🦈', '🐙', '🦀', '🦞', '🦐', '🦑', '🦪'],
+  bugs: ['🐌', '🦋', '🐛', '🐜', '🐝', '🪲', '🐞', '🦗', '🪳', '🕷️', '🦂', '🦟', '🪰', '🪱'],
+}
+
+const ORDER: { key: CategoryKey; label: string }[] = [
+  { key: 'birds', label: 'Birds' },
+  { key: 'mammals', label: 'Mammals' },
+  { key: 'reptiles', label: 'Reptiles & Amphibians' },
+  { key: 'sea', label: 'Sea Life' },
+  { key: 'bugs', label: 'Bugs' },
 ]
+
+function customTokensFor(key: CategoryKey): string[] {
+  return CUSTOM.filter((c) => c.category === key).map((c) => tokenFor(c.slug))
+}
+
+export const CATEGORIES: EmojiCategory[] = ORDER.map(({ key, label }) => ({
+  key,
+  label,
+  items: [...customTokensFor(key), ...UNICODE[key]],
+}))

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Ruffed Grouse">
+  <path d="M14 38 L2 31 L4 40 L2 50 L15 46 Z" fill="#7a5f3f"/>
+  <ellipse cx="32" cy="38" rx="17" ry="14" fill="#9c7a52"/>
+  <ellipse cx="36" cy="43" rx="11" ry="9" fill="#c9b088"/>
+  <path d="M24 30 q12 3 16 15 q-12 2 -18 -5 Z" fill="#7a5f3f"/>
+  <path d="M41 22 q5 -5 9 -2" stroke="#6f5636" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <circle cx="44" cy="25" r="10" fill="#9c7a52"/>
+  <path d="M53 24 L60 26 L53 28 Z" fill="#6b5537"/>
+  <circle cx="47" cy="23" r="1.6" fill="#2a2320"/>
+  <path d="M30 51 v5 M36 51 v5" stroke="#8a6a44" stroke-width="2" stroke-linecap="round"/>
+</svg>

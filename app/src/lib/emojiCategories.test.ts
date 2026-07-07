@@ -14,10 +14,7 @@ describe('emoji categories', () => {
     expect([...nonCustom].sort()).toEqual([...expected].sort())
   })
 
-  it('includes every custom bird in the Birds category, with no duplicates anywhere', () => {
-    const birds = CATEGORIES.find((c) => c.key === 'birds')
-    expect(birds).toBeDefined()
-    for (const c of CUSTOM) expect(birds?.items).toContain(tokenFor(c.slug))
+  it('has no duplicate items across categories', () => {
     expect(new Set(allItems).size).toBe(allItems.length)
   })
 
@@ -25,5 +22,26 @@ describe('emoji categories', () => {
     expect(CATEGORIES.map((c) => c.label)).toEqual([
       'Birds', 'Mammals', 'Reptiles & Amphibians', 'Sea Life', 'Bugs',
     ])
+  })
+
+  it('places every custom token in exactly its declared category', () => {
+    for (const c of CUSTOM) {
+      const inCat = CATEGORIES.find((cat) => cat.key === c.category)
+      expect(inCat, `category ${c.category} exists`).toBeDefined()
+      expect(inCat?.items).toContain(tokenFor(c.slug))
+      // and in no other category
+      const others = CATEGORIES.filter((cat) => cat.key !== c.category)
+      for (const o of others) expect(o.items).not.toContain(tokenFor(c.slug))
+    }
+  })
+
+  it('every custom emoji declares a known category', () => {
+    const keys = new Set(CATEGORIES.map((c) => c.key))
+    for (const c of CUSTOM) expect(keys.has(c.category)).toBe(true)
+  })
+
+  it('includes the moose in the Mammals category', () => {
+    const mammals = CATEGORIES.find((c) => c.key === 'mammals')
+    expect(mammals?.items).toContain('🫎')
   })
 })

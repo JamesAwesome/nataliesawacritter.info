@@ -34,6 +34,12 @@ describe('customEmoji catalogue', () => {
   it('exposes exactly the shipped slug set', () => {
     expect(CUSTOM.map((c) => c.slug)).toEqual([
       'robin', 'cardinal', 'blue-jay', 'chickadee', 'goldfinch', 'sparrow', 'seagull',
+      'groundhog', 'opossum', 'bobcat', 'loon', 'puffin', 'grouse', 'firefly',
     ])
+  })
+
+  it('every catalogue entry has one of the five category keys', () => {
+    const keys = new Set(['birds', 'mammals', 'reptiles', 'sea', 'bugs'])
+    for (const c of CUSTOM) expect(keys.has(c.category)).toBe(true)
   })
 })

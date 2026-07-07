@@ -16,17 +16,23 @@ describe('server customEmoji', () => {
     expect(isKnownCustom('🦊')).toBe(false)
   })
 
-  it('known slugs match the on-disk SVG files (drift guard)', () => {
+  it('known slugs match the on-disk SVG files exactly (drift guard, both ways)', () => {
     const dir = join(process.cwd(), 'public/custom-emoji')
-    const files = new Set(readdirSync(dir))
+    const svgs = readdirSync(dir).filter((f) => f.endsWith('.svg'))
+    const files = new Set(svgs)
     for (const slug of KNOWN_SLUGS) expect(files.has(`${slug}.svg`)).toBe(true)
+    // …and no orphan SVG without a catalogue entry.
+    expect(svgs.length).toBe(KNOWN_SLUGS.size)
   })
 
   // Same pinned list as the client catalogue test — keeps the two catalogues in
   // sync so a client-only bird can't be picked-yet-rejected by the server.
   it('knows exactly the shipped slug set', () => {
     expect([...KNOWN_SLUGS].sort()).toEqual(
-      ['blue-jay', 'cardinal', 'chickadee', 'goldfinch', 'robin', 'sparrow', 'seagull'].sort(),
+      [
+        'blue-jay', 'cardinal', 'chickadee', 'goldfinch', 'robin', 'sparrow', 'seagull',
+        'groundhog', 'opossum', 'bobcat', 'loon', 'puffin', 'grouse', 'firefly',
+      ].sort(),
     )
   })
 })
