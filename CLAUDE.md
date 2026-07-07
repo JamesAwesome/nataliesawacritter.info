@@ -22,6 +22,10 @@ sync by a drift-guard test.
 
 - Raw vitest needs the env prefix: `NODE_OPTIONS=--no-experimental-webstorage pnpm vitest run --project <client|unit|integration> <path>`.
 - Projects: `client` (jsdom), `unit` (node, server), `integration` (Testcontainers/Docker).
+- **Coverage gate:** `pnpm test:coverage` enforces thresholds in `vitest.config.ts`
+  (statements 93 / branches 90 / functions 92 / lines 94 — a ratchet floor a few
+  points under current). CI runs it, so new code without tests can fail the build;
+  raise the floor when coverage climbs, don't lower it to pass.
 - **jsdom can't measure layout or load images.** Sizing, grid, and SVG-art bugs
   pass unit tests and still ship broken. For any visual/UI change, verify the real
   render — screenshot with headless Chrome (`/Applications/Google Chrome.app/...
