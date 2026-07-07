@@ -2,6 +2,7 @@ import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import express, { type Express, type RequestHandler } from 'express'
+import sharp from 'sharp'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { requireWriteAuth } from '../auth.js'
 import { errorHandler } from '../errorHandler.js'
@@ -12,17 +13,9 @@ import type { Sighting, SightingsStore } from './store.js'
 const ID = '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa'
 const UUID_RE_SRC = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
-// A minimal but well-formed JPEG (SOI, APP0, SOS + scan bytes, EOI) with no
-// APP1/EXIF segment, so stripJpegExif() passes it through byte-for-byte —
-// keeping the "written file equals input" assertions below meaningful.
-function seg(marker: number, payload: Buffer): Buffer {
-  const len = Buffer.alloc(2)
-  len.writeUInt16BE(payload.length + 2, 0)
-  return Buffer.concat([Buffer.from([0xff, marker]), len, payload])
-}
-const app0 = seg(0xe0, Buffer.from('JFIF\0'))
-const sos = Buffer.concat([seg(0xda, Buffer.from([0x00, 0x01])), Buffer.from([0x12, 0x34])])
-const JPEG = Buffer.concat([Buffer.from([0xff, 0xd8]), app0, sos, Buffer.from([0xff, 0xd9])])
+// The upload path now re-encodes via sharp, which rejects non-images — so the
+// fixture must be a real, decodable JPEG. Built fresh per test in beforeEach.
+let JPEG: Buffer
 
 function row(overrides: Partial<Sighting> = {}): Sighting {
   return {
@@ -54,6 +47,9 @@ let photosDir: string
 
 beforeEach(async () => {
   photosDir = await mkdtemp(path.join(tmpdir(), 'photos-'))
+  JPEG = await sharp({ create: { width: 8, height: 8, channels: 3, background: { r: 10, g: 20, b: 30 } } })
+    .jpeg()
+    .toBuffer()
 })
 
 const passGate: RequestHandler = (_req, _res, next) => next()
@@ -100,7 +96,10 @@ describe('PUT /api/sightings/:id/photo', () => {
       expect(path.basename(body.photoPath)).not.toBe(`${ID}.jpg`) // random, not the sighting id
       const filename = path.basename(body.photoPath)
       expect(store.setPhotoPath).toHaveBeenCalledWith(ID, `/api/photos/${filename}`)
-      expect(await readFile(path.join(photosDir, filename))).toEqual(JPEG)
+      // The stored file is the sharp re-encode of the upload — a valid JPEG,
+      // not byte-equal to the input.
+      const written = await readFile(path.join(photosDir, filename))
+      expect((await sharp(written).metadata()).format).toBe('jpeg')
     })
   })
 

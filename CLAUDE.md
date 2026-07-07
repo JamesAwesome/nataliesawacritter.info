@@ -76,8 +76,10 @@ Reads are public by design; writes need Basic auth (`writeGate`). Controls live 
 `server/app.ts` (helmet CSP + security headers; `express-rate-limit` keyed on
 `CF-Connecting-IP` — a failed-request `authLimiter` throttles brute-force across
 all write routes, a GET-skipping `mutationLimiter` bounds public mutations),
-`server/sightings/stripJpeg.ts` (photo EXIF/GPS strip via `exif-be-gone` + an SOI
-fail-closed check), and `server/push/routes.ts` (SSRF host allowlist). The public
+`server/sightings/stripJpeg.ts` (photo re-encode via `sharp` — strips all
+metadata and validates the bytes are a real image; `limitInputPixels` guards
+against decompression bombs; the upload is auth-gated so only the credentialed
+user feeds the native decoder), and `server/push/routes.ts` (SSRF host allowlist). The public
 sightings GET coarsens `createdAt` to the minute; the origin is tunnel-only
 (compose binds `127.0.0.1`), which is what makes the `CF-Connecting-IP` key safe.
 

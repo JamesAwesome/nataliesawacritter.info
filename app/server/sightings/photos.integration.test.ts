@@ -1,6 +1,7 @@
 import { mkdtemp, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import sharp from 'sharp'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createApp } from '../app.js'
 import type { createDb } from '../db/index.js'
@@ -10,10 +11,9 @@ import { basic, fakePushStore, nullNotifier, withServer } from '../testUtils.js'
 import { createSightingsStore } from './store.js'
 
 const AUTH = basic('natalie', 'sekrit')
-// SOI, then a well-formed SOS marker (length=4: the 2 length bytes + 2 header
-// bytes) with scan data running to EOI — a minimal but well-formed JPEG that
-// stripJpegExif() accepts and passes through unchanged (no APP1).
-const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xda, 0x00, 0x04, 0x00, 0x01, 0x02, 0x03, 0xff, 0xd9])
+// A real, decodable JPEG — the upload path re-encodes via sharp, which rejects
+// non-images. Built in beforeAll.
+let JPEG: Buffer
 
 describe('photo lifecycle against real postgres + disk', () => {
   let handle: ReturnType<typeof createDb>
@@ -22,6 +22,9 @@ describe('photo lifecycle against real postgres + disk', () => {
   beforeAll(async () => {
     handle = await createTestDb()
     photosDir = await mkdtemp(path.join(tmpdir(), 'photos-'))
+    JPEG = await sharp({ create: { width: 8, height: 8, channels: 3, background: { r: 10, g: 20, b: 30 } } })
+      .jpeg()
+      .toBuffer()
   })
 
   afterAll(async () => {
