@@ -41,7 +41,7 @@ export function sightingPhotoRouter(
     }
     let clean: Buffer
     try {
-      clean = stripJpegExif(req.body)
+      clean = await stripJpegExif(req.body)
     } catch {
       sendValidation(res, { photo: 'must be a valid image/jpeg' })
       return
