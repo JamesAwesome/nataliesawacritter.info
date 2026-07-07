@@ -1,5 +1,6 @@
 import path from 'node:path'
 import express, { type Express, type RequestHandler } from 'express'
+import helmet from 'helmet'
 import { requireWriteAuth } from './auth.js'
 import { errorHandler } from './errorHandler.js'
 import { feedRouter } from './feed/routes.js'
@@ -32,6 +33,32 @@ const writesDisabled: RequestHandler = (_req, res) => {
 
 export function createApp(deps: AppDeps): Express {
   const app = express()
+  app.disable('x-powered-by')
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+          imgSrc: ["'self'", 'data:'],
+          connectSrc: ["'self'"],
+          manifestSrc: ["'self'"],
+          workerSrc: ["'self'"],
+          frameAncestors: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+          objectSrc: ["'none'"],
+        },
+      },
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    }),
+  )
+  app.use((_req, res, next) => {
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+    next()
+  })
   app.use(express.json())
 
   app.get('/api/health', async (_req, res) => {

@@ -158,3 +158,20 @@ describe('GET /api/auth/check', () => {
     })
   })
 })
+
+describe('security headers', () => {
+  it('sets CSP, HSTS, referrer/permissions policies, nosniff, and no x-powered-by', async () => {
+    await withServer(createApp(deps()), async (base) => {
+      const res = await fetch(`${base}/api/health`)
+      const csp = res.headers.get('content-security-policy') ?? ''
+      expect(csp).toContain("default-src 'self'")
+      expect(csp).toContain("frame-ancestors 'none'")
+      expect(csp).toContain('https://fonts.gstatic.com')
+      expect(res.headers.get('strict-transport-security')).toBeTruthy()
+      expect(res.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin')
+      expect(res.headers.get('permissions-policy') ?? '').toContain('geolocation=()')
+      expect(res.headers.get('x-content-type-options')).toBe('nosniff')
+      expect(res.headers.get('x-powered-by')).toBeNull()
+    })
+  })
+})
