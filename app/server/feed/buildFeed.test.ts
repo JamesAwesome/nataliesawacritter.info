@@ -78,6 +78,12 @@ describe('buildFeed', () => {
     expect(xml).toContain('<title>🦊 Natalie saw a Mr Fox — July 5, 2026 · dawn</title>')
   })
 
+  it('formats a stored 24h sighted time as a friendly clock in the title and description', () => {
+    const xml = buildFeed([sighting({ sightedOn: '2026-07-05', sightedTime: '15:08' })], SITE)
+    expect(xml).toContain('— July 5, 2026 · 3:08 PM</title>')
+    expect(xml).toContain('<p>📅 July 5, 2026 · 3:08 PM</p>')
+  })
+
   it('includes an absolute enclosure and inline img when a photo is present', () => {
     const xml = buildFeed([sighting({ photoPath: '/api/photos/abc-1.jpg' })], SITE)
     expect(xml).toContain(`<enclosure url="${SITE}/api/photos/abc-1.jpg" type="image/jpeg" length="0" />`)
