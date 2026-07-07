@@ -9,6 +9,7 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}', 'server/**/*.ts'],
       exclude: [
         'src/main.tsx',
+        'src/vite-env.d.ts', // type-only reference file, no runtime code
         'src/test/**',
         'server/index.ts',
         'server/testUtils.ts',
@@ -16,6 +17,15 @@ export default defineConfig({
         'server/testGlobalSetup.ts',
         '**/*.test.*',
       ],
+      // Ratchet floor a few points below current (~95/92/94/96) — blocks real
+      // regressions without failing on a single hard-to-test branch. CI runs
+      // `pnpm test:coverage`, so this gates every PR.
+      thresholds: {
+        statements: 93,
+        branches: 90,
+        functions: 92,
+        lines: 94,
+      },
     },
     projects: [
       {
