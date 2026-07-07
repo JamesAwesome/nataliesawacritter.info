@@ -16,10 +16,13 @@ describe('server customEmoji', () => {
     expect(isKnownCustom('🦊')).toBe(false)
   })
 
-  it('known slugs match the on-disk SVG files (drift guard)', () => {
+  it('known slugs match the on-disk SVG files exactly (drift guard, both ways)', () => {
     const dir = join(process.cwd(), 'public/custom-emoji')
-    const files = new Set(readdirSync(dir))
+    const svgs = readdirSync(dir).filter((f) => f.endsWith('.svg'))
+    const files = new Set(svgs)
     for (const slug of KNOWN_SLUGS) expect(files.has(`${slug}.svg`)).toBe(true)
+    // …and no orphan SVG without a catalogue entry.
+    expect(svgs.length).toBe(KNOWN_SLUGS.size)
   })
 
   // Same pinned list as the client catalogue test — keeps the two catalogues in
