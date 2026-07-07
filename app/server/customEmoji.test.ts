@@ -26,7 +26,10 @@ describe('server customEmoji', () => {
   // sync so a client-only bird can't be picked-yet-rejected by the server.
   it('knows exactly the shipped slug set', () => {
     expect([...KNOWN_SLUGS].sort()).toEqual(
-      ['blue-jay', 'cardinal', 'chickadee', 'goldfinch', 'robin', 'sparrow', 'seagull'].sort(),
+      [
+        'blue-jay', 'cardinal', 'chickadee', 'goldfinch', 'robin', 'sparrow', 'seagull',
+        'groundhog', 'opossum', 'bobcat', 'loon', 'puffin', 'grouse', 'firefly',
+      ].sort(),
     )
   })
 })

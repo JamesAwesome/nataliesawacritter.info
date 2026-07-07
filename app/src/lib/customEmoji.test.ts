@@ -34,6 +34,7 @@ describe('customEmoji catalogue', () => {
   it('exposes exactly the shipped slug set', () => {
     expect(CUSTOM.map((c) => c.slug)).toEqual([
       'robin', 'cardinal', 'blue-jay', 'chickadee', 'goldfinch', 'sparrow', 'seagull',
+      'groundhog', 'opossum', 'bobcat', 'loon', 'puffin', 'grouse', 'firefly',
     ])
   })
 

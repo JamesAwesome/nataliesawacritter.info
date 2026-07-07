@@ -11,6 +11,13 @@ export const CUSTOM: CustomEmoji[] = [
   { slug: 'goldfinch', name: 'Goldfinch', standIn: '🐦', category: 'birds' },
   { slug: 'sparrow', name: 'Sparrow', standIn: '🐦', category: 'birds' },
   { slug: 'seagull', name: 'Seagull', standIn: '🐦', category: 'birds' },
+  { slug: 'groundhog', name: 'Groundhog', standIn: '🦫', category: 'mammals' },
+  { slug: 'opossum', name: 'Opossum', standIn: '🐀', category: 'mammals' },
+  { slug: 'bobcat', name: 'Bobcat', standIn: '🐱', category: 'mammals' },
+  { slug: 'loon', name: 'Common Loon', standIn: '🦆', category: 'birds' },
+  { slug: 'puffin', name: 'Atlantic Puffin', standIn: '🐧', category: 'birds' },
+  { slug: 'grouse', name: 'Ruffed Grouse', standIn: '🐔', category: 'birds' },
+  { slug: 'firefly', name: 'Firefly', standIn: '🪲', category: 'bugs' },
 ]
 
 const BY_SLUG = new Map(CUSTOM.map((c) => [c.slug, c]))

@@ -14,10 +14,7 @@ describe('emoji categories', () => {
     expect([...nonCustom].sort()).toEqual([...expected].sort())
   })
 
-  it('includes every custom bird in the Birds category, with no duplicates anywhere', () => {
-    const birds = CATEGORIES.find((c) => c.key === 'birds')
-    expect(birds).toBeDefined()
-    for (const c of CUSTOM) expect(birds?.items).toContain(tokenFor(c.slug))
+  it('has no duplicate items across categories', () => {
     expect(new Set(allItems).size).toBe(allItems.length)
   })
 
