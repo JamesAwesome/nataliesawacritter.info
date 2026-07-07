@@ -56,18 +56,20 @@ New dependency-free helper `server/sightings/stripJpeg.ts`:
 
 ### 3. Correlation-metadata trim
 
-- **Public API projection:** `GET /api/sightings` returns a public DTO that omits
-  `createdAt`. The store/DB and the RSS builder keep `createdAt` internally (RSS
-  `pubDate` and any server ordering are unaffected); only the JSON response drops
-  it. Add a small `toPublicSighting(row)` projection in the sightings route.
-- **Client:** the client `Sighting` type drops `createdAt`. `useSightings`'
-  `compareSightings` currently tiebreaks on `createdAt` — retarget that final
-  tiebreak to `id` (deterministic; ties are same-date/same-time, so any stable
-  order is fine).
+- **Public API coarsening:** `GET /api/sightings` projects each row's `createdAt`
+  to **minute precision** (seconds and milliseconds zeroed) before serializing,
+  removing the sub-minute "active right now" signal and staying no finer than the
+  sighting time that is already public. The client still receives a `createdAt`
+  ISO string, so the recency ordering that depends on it — the leaderboard and
+  "recently seen" (`insights.ts`) and the sort tiebreak (`useSightings`) — is
+  unchanged. The store/DB and the RSS builder keep the full-precision `createdAt`
+  internally. Add a small `toPublicSighting(row)` projection in the sightings GET
+  route. (Chosen over omitting the field: omission would degrade leaderboard/recent
+  recency ordering, which reads `createdAt`.)
 - **Photo filename:** generate the stored filename from a random token
   (`crypto.randomUUID()`), not `Date.now()`, so the upload epoch isn't embedded in
-  the public URL. Keep the strict `PHOTO_FILENAME_RE` shape (adjust the regex to
-  the new token format; still `.jpg`, still traversal-proof).
+  the public URL. Update the strict `PHOTO_FILENAME_RE` to the new token shape
+  (still `.jpg`, still anchored/traversal-proof).
 
 ### 4. Security headers + CSP
 
@@ -124,9 +126,9 @@ into POSTing to attacker-chosen internal hosts when a sighting is logged.
 - **`stripJpegExif`:** a minimal JPEG with a synthetic APP1/EXIF (GPS) segment →
   output has no APP1, still valid SOI, decodes; a non-JPEG buffer → throws; the PUT
   route returns 400 for a non-JPEG body.
-- **Metadata trim:** the sightings GET response has no `createdAt`; `compareSightings`
-  tiebreaks on `id` (unit); the stored filename matches the random-token pattern,
-  not an epoch.
+- **Metadata trim:** the sightings GET response coarsens `createdAt` to the minute
+  (seconds/ms zeroed); the stored filename matches the random-token pattern, not an
+  epoch.
 - **SSRF allowlist:** an FCM/Mozilla/Windows/Apple endpoint is accepted; an
   arbitrary/private-host endpoint → 400.
 - **Rate limiting:** exceeding the limit returns 429 (integration or a unit test
