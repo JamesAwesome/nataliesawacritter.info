@@ -1,5 +1,8 @@
 # 🐾 Natalie Saw a Critter!
 
+[![CI](https://github.com/JamesAwesome/nataliesawacritter.info/actions/workflows/ci.yml/badge.svg)](https://github.com/JamesAwesome/nataliesawacritter.info/actions/workflows/ci.yml)
+[![RSS feed](https://img.shields.io/badge/RSS-feed-EE802F?logo=rss&logoColor=white)](https://nataliesawacritter.info/feed.xml)
+
 Natalie sees things, she sees them with her eyes. This app lets her log
 wildlife sightings — with photos, saved "critter friends," and hand-drawn
 custom emoji for local critters that Unicode forgot (robins, a groundhog, an
