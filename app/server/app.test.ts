@@ -201,4 +201,30 @@ describe('rate limiting', () => {
       for (let i = 0; i < 5; i++) expect((await fetch(`${base}/api/sightings`)).status).toBe(200)
     })
   })
+
+  it('throttles credential brute-force via a write route at the tighter auth ceiling', async () => {
+    // authPerMin low, mutationPerMin high: failed write-auth must hit the AUTH
+    // limiter, not slip through at the looser mutation ceiling.
+    const app = createApp(
+      deps({
+        writeCredentials: { user: 'natalie', password: 'sekrit' },
+        rateLimits: { authPerMin: 2, mutationPerMin: 100 },
+      }),
+    )
+    await withServer(app, async (base) => {
+      const badAuth = () =>
+        fetch(`${base}/api/sightings`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'cf-connecting-ip': '203.0.113.55',
+            authorization: basic('natalie', 'wrong'),
+          },
+          body: JSON.stringify({ emoji: '🦊', sightedOn: '2026-07-05' }),
+        })
+      expect((await badAuth()).status).toBe(401)
+      expect((await badAuth()).status).toBe(401)
+      expect((await badAuth()).status).toBe(429) // 3rd failed attempt limited despite mutationPerMin=100
+    })
+  })
 })

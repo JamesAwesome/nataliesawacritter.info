@@ -80,15 +80,22 @@ export function createApp(deps: AppDeps): Express {
     legacyHeaders: false,
     validate,
   })
+  // Counts only FAILED requests (401/4xx), so it throttles credential
+  // brute-force across every route that checks the write password — the
+  // auth-check AND the write verbs — without ever limiting a legit user's
+  // successful writes. Closes the "brute-force via POST /api/sightings at the
+  // looser mutation ceiling" lane.
   const authLimiter = rateLimit({
     windowMs: 60_000,
     limit: limits.authPerMin,
     keyGenerator: clientKey,
+    skipSuccessfulRequests: true,
     standardHeaders: true,
     legacyHeaders: false,
     validate,
   })
   app.use(mutationLimiter)
+  app.use(authLimiter)
 
   app.use(express.json())
 
@@ -108,7 +115,7 @@ export function createApp(deps: AppDeps): Express {
 
   // Entry gate for the logging flow: lets the client verify the magic word
   // before showing the picker. Semantics come entirely from writeGate.
-  app.get('/api/auth/check', authLimiter, writeGate, (_req, res) => {
+  app.get('/api/auth/check', writeGate, (_req, res) => {
     res.status(204).end()
   })
 
