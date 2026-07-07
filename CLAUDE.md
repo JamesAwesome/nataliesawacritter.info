@@ -70,6 +70,23 @@ sync by a drift-guard test.
   (`server/push/`), **PWA** (manifest + service worker). Entry is gated by basic
   auth credentials held client-side.
 
+## Security
+
+Reads are public by design; writes need Basic auth (`writeGate`). Controls live in
+`server/app.ts` (helmet CSP + security headers; `express-rate-limit` keyed on
+`CF-Connecting-IP` — a failed-request `authLimiter` throttles brute-force across
+all write routes, a GET-skipping `mutationLimiter` bounds public mutations),
+`server/sightings/stripJpeg.ts` (photo EXIF/GPS strip via `exif-be-gone` + an SOI
+fail-closed check), and `server/push/routes.ts` (SSRF host allowlist). The public
+sightings GET coarsens `createdAt` to the minute; the origin is tunnel-only
+(compose binds `127.0.0.1`), which is what makes the `CF-Connecting-IP` key safe.
+
+Principles when touching security: **fail closed** (reject on doubt, don't pass
+through); **don't hand-roll a parser** for a security control — use a maintained
+library (a hand-rolled EXIF stripper here shipped two GPS-leak bypasses before
+being replaced); and **adversarially review** security-critical changes (a
+red-team pass with real PoCs, not just a friendly read).
+
 ## Workflow
 
 This project is built with a disciplined flow — follow it unless the change is
