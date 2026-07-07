@@ -1,14 +1,13 @@
 # 🐾 Natalie Saw a Critter!
 
 Natalie sees things, she sees them with her eyes. This app lets her log
-wildlife sightings — with photos and saved "critter friends" — and view them as
-a calendar, a filterable history, and a Top Critters leaderboard. Friends can
-subscribe to push notifications (it installs as a PWA on phones) to hear about
-new sightings as they happen. Live at nataliesawacritter.info.
-
-The full UI design lives in [`docs/design/`](docs/design/README.md) — open
-`docs/design/Natalies Critter Tracker.dc.html` in a browser for the interactive
-prototype.
+wildlife sightings — with photos, saved "critter friends," and hand-drawn
+custom emoji for local critters that Unicode forgot (robins, a groundhog, an
+Atlantic puffin…) — and view them as a calendar, a filterable history, and a
+Top Critters leaderboard grouped by the names she gives them. The emoji picker
+sorts everything into categories (Birds, Mammals, Sea Life…). Friends can keep
+up with new sightings as they happen via push notifications (it installs as a
+PWA on phones) or an RSS feed. Live at nataliesawacritter.info.
 
 ## Stack
 
@@ -80,6 +79,7 @@ friends through this.
     GET    /api/push/vapid-public-key                     # public; 503 when push disabled
     POST   /api/push/subscriptions                        # public; browser push subscription JSON
     DELETE /api/push/subscriptions                        # public; body {endpoint}
+    GET    /feed.xml                                       # public; RSS 2.0 feed of recent sightings
 
 POST body: `emoji` and `sightedOn` (YYYY-MM-DD) required; `name`, `sightedTime`,
 `place`, `comment` optional. With blank write credentials the write endpoints
