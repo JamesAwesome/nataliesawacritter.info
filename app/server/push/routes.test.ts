@@ -6,7 +6,7 @@ import { pushRouter } from './routes.js'
 import type { PushStore } from './store.js'
 
 const PUBLIC_KEY = 'test-public-key'
-const VALID = { endpoint: 'https://push.example.com/send/abc', keys: { p256dh: 'pk', auth: 'ak' } }
+const VALID = { endpoint: 'https://fcm.googleapis.com/fcm/send/abc', keys: { p256dh: 'pk', auth: 'ak' } }
 
 function fakeStore(overrides: Partial<PushStore> = {}): PushStore {
   return {
@@ -25,12 +25,20 @@ function appWith(store: PushStore, key: string | null = PUBLIC_KEY): Express {
   return app
 }
 
+function appForPush(): Express {
+  return appWith(fakeStore())
+}
+
 async function send(base: string, method: 'POST' | 'DELETE', body: unknown) {
   return fetch(`${base}/api/push/subscriptions`, {
     method,
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
   })
+}
+
+async function subscribe(base: string, endpoint: string) {
+  return send(base, 'POST', { endpoint, keys: { p256dh: 'pk', auth: 'ak' } })
 }
 
 describe('GET /api/push/vapid-public-key', () => {
@@ -73,6 +81,21 @@ describe('POST /api/push/subscriptions', () => {
       expect(res.status).toBe(400)
       expect(((await res.json()) as { details: Record<string, string> }).details[field]).toBeDefined()
       expect(store.upsert).not.toHaveBeenCalled()
+    })
+  })
+
+  it('accepts real push-service endpoints and rejects others', async () => {
+    const ok = 'https://fcm.googleapis.com/fcm/send/abc123'
+    const wns = 'https://db5p.notify.windows.com/w/?token=xyz'
+    const evil = 'https://192.168.1.10/steal'
+    const other = 'https://evil.example.com/push'
+    const trailingDot = 'https://fcm.googleapis.com./fcm/send/abc' // valid FQDN form
+    await withServer(appForPush(), async (base) => {
+      expect((await subscribe(base, ok)).status).toBe(201)
+      expect((await subscribe(base, wns)).status).toBe(201)
+      expect((await subscribe(base, trailingDot)).status).toBe(201) // trailing-dot host accepted
+      expect((await subscribe(base, evil)).status).toBe(400)
+      expect((await subscribe(base, other)).status).toBe(400)
     })
   })
 })

@@ -45,4 +45,10 @@ describe('DetailsForm', () => {
     fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-08-01' } })
     expect(screen.getByRole('button', { name: /save sighting/i })).toBeDisabled()
   })
+
+  it('warns that the place field is public', () => {
+    render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={() => {}} saving={false} />)
+    expect(screen.getByText(/public/i)).toBeInTheDocument()
+    expect(screen.getByText(/home address or exact/i)).toBeInTheDocument()
+  })
 })

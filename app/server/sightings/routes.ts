@@ -6,6 +6,15 @@ import { validateEmoji } from '../emojiField.js'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
+/** Public projection: coarsen the insert timestamp to the minute so the public
+ *  API doesn't leak a sub-minute "active right now" signal (no finer than the
+ *  already-public sighting time). The DB/RSS keep full precision. */
+function toPublicSighting(s: Sighting): Sighting {
+  const createdAt = new Date(s.createdAt)
+  createdAt.setSeconds(0, 0)
+  return { ...s, createdAt }
+}
+
 function isValidDate(value: string): boolean {
   if (!DATE_RE.test(value)) return false
   const parsed = new Date(`${value}T00:00:00Z`)
@@ -87,7 +96,7 @@ export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler
       sendValidation(res, details)
       return
     }
-    res.json(await store.list({ from, to }))
+    res.json((await store.list({ from, to })).map(toPublicSighting))
   })
 
   router.post('/', writeGate, async (req, res) => {

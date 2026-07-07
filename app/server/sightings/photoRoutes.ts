@@ -1,11 +1,15 @@
+import { randomUUID } from 'node:crypto'
 import { rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import express, { Router, type RequestHandler } from 'express'
 import { UUID_RE, sendValidation } from '../httpValidation.js'
+import { stripJpegExif } from './stripJpeg.js'
 import type { SightingsStore } from './store.js'
 
+// The `-<epoch>` suffix is optional so pre-existing on-disk photos
+// (`<uuid>-<epoch>.jpg`, from before filenames were randomized) still serve.
 export const PHOTO_FILENAME_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-\d+\.jpg$/i
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(-\d+)?\.jpg$/i
 
 const rawJpeg = express.raw({ type: 'image/jpeg', limit: '6mb' })
 
@@ -35,13 +39,20 @@ export function sightingPhotoRouter(
       sendValidation(res, { photo: 'must be a non-empty image/jpeg body' })
       return
     }
+    let clean: Buffer
+    try {
+      clean = await stripJpegExif(req.body)
+    } catch {
+      sendValidation(res, { photo: 'must be a valid image/jpeg' })
+      return
+    }
     const existing = await store.getById(id)
     if (existing === null) {
       res.status(404).json({ error: 'not found' })
       return
     }
-    const filename = `${id.toLowerCase()}-${Date.now()}.jpg`
-    await writeFile(path.join(photosDir, filename), req.body)
+    const filename = `${randomUUID()}.jpg`
+    await writeFile(path.join(photosDir, filename), clean)
     const updated = await store.setPhotoPath(id, `/api/photos/${filename}`)
     if (updated === null) {
       // row vanished between getById and update (single-user app: effectively unreachable)

@@ -1,5 +1,7 @@
 import path from 'node:path'
 import express, { type Express, type RequestHandler } from 'express'
+import rateLimit from 'express-rate-limit'
+import helmet from 'helmet'
 import { requireWriteAuth } from './auth.js'
 import { errorHandler } from './errorHandler.js'
 import { feedRouter } from './feed/routes.js'
@@ -24,6 +26,8 @@ export interface AppDeps {
   /** publicKey null → push endpoints 503 and notifySighting no-ops. */
   notifier: Notifier
   siteUrl: string
+  /** Rate-limit ceilings per minute per client IP. Defaults applied in createApp. */
+  rateLimits?: { authPerMin: number; mutationPerMin: number }
 }
 
 const writesDisabled: RequestHandler = (_req, res) => {
@@ -32,6 +36,67 @@ const writesDisabled: RequestHandler = (_req, res) => {
 
 export function createApp(deps: AppDeps): Express {
   const app = express()
+  app.disable('x-powered-by')
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+          imgSrc: ["'self'", 'data:'],
+          connectSrc: ["'self'"],
+          manifestSrc: ["'self'"],
+          workerSrc: ["'self'"],
+          frameAncestors: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+          objectSrc: ["'none'"],
+        },
+      },
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    }),
+  )
+  app.use((_req, res, next) => {
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+    next()
+  })
+
+  const limits = deps.rateLimits ?? { authPerMin: 10, mutationPerMin: 30 }
+  // Origin is tunnel-only, so CF-Connecting-IP (set by Cloudflare) is trustworthy;
+  // fall back to req.ip for local/dev.
+  const clientKey = (req: express.Request): string => {
+    const cf = req.headers['cf-connecting-ip']
+    return (typeof cf === 'string' ? cf : req.ip) ?? 'unknown'
+  }
+  const validate = { trustProxy: false, xForwardedForHeader: false }
+  const mutationLimiter = rateLimit({
+    windowMs: 60_000,
+    limit: limits.mutationPerMin,
+    keyGenerator: clientKey,
+    skip: (req) => req.method === 'GET', // public reads/feed unaffected
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate,
+  })
+  // Counts only FAILED requests (401/4xx), so it throttles credential
+  // brute-force across every route that checks the write password — the
+  // auth-check AND the write verbs — without ever limiting a legit user's
+  // successful writes. Closes the "brute-force via POST /api/sightings at the
+  // looser mutation ceiling" lane.
+  const authLimiter = rateLimit({
+    windowMs: 60_000,
+    limit: limits.authPerMin,
+    keyGenerator: clientKey,
+    skipSuccessfulRequests: true,
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate,
+  })
+  app.use(mutationLimiter)
+  app.use(authLimiter)
+
   app.use(express.json())
 
   app.get('/api/health', async (_req, res) => {

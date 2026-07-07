@@ -158,3 +158,73 @@ describe('GET /api/auth/check', () => {
     })
   })
 })
+
+describe('security headers', () => {
+  it('sets CSP, HSTS, referrer/permissions policies, nosniff, and no x-powered-by', async () => {
+    await withServer(createApp(deps()), async (base) => {
+      const res = await fetch(`${base}/api/health`)
+      const csp = res.headers.get('content-security-policy') ?? ''
+      expect(csp).toContain("default-src 'self'")
+      expect(csp).toContain("frame-ancestors 'none'")
+      expect(csp).toContain('https://fonts.gstatic.com')
+      expect(res.headers.get('strict-transport-security')).toBeTruthy()
+      expect(res.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin')
+      expect(res.headers.get('permissions-policy') ?? '').toContain('geolocation=()')
+      expect(res.headers.get('x-content-type-options')).toBe('nosniff')
+      expect(res.headers.get('x-powered-by')).toBeNull()
+    })
+  })
+})
+
+describe('rate limiting', () => {
+  it('429s mutations past the limit, keyed per client IP', async () => {
+    const app = createApp(deps({ rateLimits: { authPerMin: 100, mutationPerMin: 2 } }))
+    await withServer(app, async (base) => {
+      const post = () =>
+        fetch(`${base}/api/push/subscriptions`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.9' },
+          body: JSON.stringify({}),
+        })
+      const a = await post()
+      const b = await post()
+      const c = await post()
+      expect(c.status).toBe(429) // third mutation from the same IP is limited
+      expect(a.status).not.toBe(429)
+      expect(b.status).not.toBe(429)
+    })
+  })
+
+  it('does not rate-limit GET reads', async () => {
+    const app = createApp(deps({ rateLimits: { authPerMin: 100, mutationPerMin: 2 } }))
+    await withServer(app, async (base) => {
+      for (let i = 0; i < 5; i++) expect((await fetch(`${base}/api/sightings`)).status).toBe(200)
+    })
+  })
+
+  it('throttles credential brute-force via a write route at the tighter auth ceiling', async () => {
+    // authPerMin low, mutationPerMin high: failed write-auth must hit the AUTH
+    // limiter, not slip through at the looser mutation ceiling.
+    const app = createApp(
+      deps({
+        writeCredentials: { user: 'natalie', password: 'sekrit' },
+        rateLimits: { authPerMin: 2, mutationPerMin: 100 },
+      }),
+    )
+    await withServer(app, async (base) => {
+      const badAuth = () =>
+        fetch(`${base}/api/sightings`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'cf-connecting-ip': '203.0.113.55',
+            authorization: basic('natalie', 'wrong'),
+          },
+          body: JSON.stringify({ emoji: '🦊', sightedOn: '2026-07-05' }),
+        })
+      expect((await badAuth()).status).toBe(401)
+      expect((await badAuth()).status).toBe(401)
+      expect((await badAuth()).status).toBe(429) // 3rd failed attempt limited despite mutationPerMin=100
+    })
+  })
+})

@@ -14,7 +14,7 @@ type SightingJson = Omit<Sighting, 'createdAt'> & { createdAt: string }
 type ValidationEnvelope = { error: 'validation'; details: Record<string, string> }
 
 function rowFor(fields: Parameters<SightingsStore['create']>[0]): Sighting {
-  return { ...fields, id: FIXED_ID, photoPath: null, createdAt: new Date('2026-07-03T12:00:00Z') }
+  return { ...fields, id: FIXED_ID, photoPath: null, createdAt: new Date('2026-07-03T12:00:37.512Z') }
 }
 
 function fakeStore(overrides: Partial<SightingsStore> = {}): SightingsStore {
@@ -49,7 +49,7 @@ describe('GET /api/sightings', () => {
       const body = (await res.json()) as SightingJson[]
       expect(body).toHaveLength(1)
       expect(body[0].id).toBe(FIXED_ID)
-      expect(body[0].createdAt).toBe('2026-07-03T12:00:00.000Z')
+      expect(body[0].createdAt).toBe('2026-07-03T12:00:00.000Z') // seconds/ms coarsened
       expect(store.list).toHaveBeenCalledWith({ from: undefined, to: undefined })
     })
   })
