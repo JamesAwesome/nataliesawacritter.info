@@ -50,7 +50,7 @@ describe('push delivery through the sightings API', () => {
     })
 
     await withServer(app, async (base) => {
-      for (const endpoint of ['https://push.example.com/live', 'https://push.example.com/dead']) {
+      for (const endpoint of ['https://fcm.googleapis.com/live', 'https://fcm.googleapis.com/dead']) {
         const res = await fetch(`${base}/api/push/subscriptions`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -77,7 +77,7 @@ describe('push delivery through the sightings API', () => {
         expect(sent).toHaveLength(1) // live endpoint only, fresh sighting only
         expect(await pushStore.listAll()).toHaveLength(1) // dead endpoint pruned
       })
-      expect(sent[0].target.endpoint).toBe('https://push.example.com/live')
+      expect(sent[0].target.endpoint).toBe('https://fcm.googleapis.com/live')
       expect(JSON.parse(sent[0].payload)).toEqual({ title: '🦊 Natalie saw Mr Fox!', body: '', url: '/' })
     })
   })

@@ -5,12 +5,20 @@ import type { NewSubscription, PushStore } from './store.js'
 const KNOWN_FIELDS = new Set(['endpoint', 'keys'])
 const KNOWN_KEY_FIELDS = new Set(['p256dh', 'auth'])
 
-function isHttpsUrl(value: string): boolean {
+// Known Web Push service hosts (Chrome/Android, Firefox, Edge/Windows, Safari).
+const PUSH_EXACT = new Set(['fcm.googleapis.com', 'updates.push.services.mozilla.com', 'web.push.apple.com'])
+const PUSH_SUFFIXES = ['.notify.windows.com', '.push.apple.com']
+
+function isAllowedPushEndpoint(value: string): boolean {
+  let url: URL
   try {
-    return new URL(value).protocol === 'https:'
+    url = new URL(value)
   } catch {
     return false
   }
+  if (url.protocol !== 'https:') return false
+  const host = url.hostname.toLowerCase()
+  return PUSH_EXACT.has(host) || PUSH_SUFFIXES.some((s) => host.endsWith(s))
 }
 
 function parseSubscription(body: unknown):
@@ -24,8 +32,8 @@ function parseSubscription(body: unknown):
   rejectUnknownFields(record, KNOWN_FIELDS, details)
 
   const endpoint = record.endpoint
-  if (typeof endpoint !== 'string' || endpoint.length > 1000 || !isHttpsUrl(endpoint)) {
-    details.endpoint = 'required, must be an https URL of at most 1000 characters'
+  if (typeof endpoint !== 'string' || endpoint.length > 1000 || !isAllowedPushEndpoint(endpoint)) {
+    details.endpoint = 'required, must be a supported push-service https URL of at most 1000 characters'
   }
 
   const keyValues = { p256dh: '', auth: '' }
