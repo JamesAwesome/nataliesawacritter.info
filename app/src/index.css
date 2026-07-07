@@ -494,6 +494,12 @@ body {
   color: var(--ink);
 }
 
+.field-hint {
+  font-size: 11px;
+  color: var(--ink-secondary);
+  margin-top: 4px;
+}
+
 .details-actions {
   display: flex;
   gap: 10px;
