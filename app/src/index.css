@@ -470,6 +470,17 @@ body {
   min-width: 0;
 }
 
+/* iOS WebKit (incl. Chrome on iOS) sizes native date/time inputs to their
+   content and ignores width:100%, so they overflow the flex column and overlap
+   the neighbour. Normalizing the appearance makes width/min-width apply. */
+.details-row input[type='date'],
+.time-row input[type='time'] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .field {
   display: block;
   margin-top: 10px;
