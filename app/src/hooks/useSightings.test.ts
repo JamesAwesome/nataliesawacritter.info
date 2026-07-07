@@ -71,6 +71,39 @@ describe('useSightings', () => {
     await act(() => result.current.addSighting({ emoji: '🦊', sightedOn: '2026-07-01' }, 'Basic x'))
     expect(result.current.sightings.map((s) => s.sightedOn)).toEqual(['2026-07-05', '2026-07-01'])
   })
+  it('orders same-day sightings by sighting time (latest first), not by log order', async () => {
+    const cardinal = makeSighting({
+      id: '00000000-0000-4000-8000-0000000000c1', name: 'Cardinal',
+      sightedOn: '2026-07-05', sightedTime: '19:30', createdAt: '2026-07-05T10:00:00.000Z',
+    })
+    // Seen at 3:08 PM but logged LATER than the cardinal — must still sort below it.
+    const seagull = makeSighting({
+      id: '00000000-0000-4000-8000-0000000000c2', name: 'Seagull',
+      sightedOn: '2026-07-05', sightedTime: '15:08', createdAt: '2026-07-05T23:00:00.000Z',
+    })
+    stubFetchQueue([{ status: 200, body: [seagull, cardinal] }])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    expect(result.current.sightings.map((s) => s.name)).toEqual(['Cardinal', 'Seagull'])
+  })
+  it('sinks untimed sightings below timed ones on the same day, latest-logged first', async () => {
+    const timed = makeSighting({
+      id: '00000000-0000-4000-8000-0000000000d1', name: 'Timed',
+      sightedOn: '2026-07-05', sightedTime: '09:00', createdAt: '2026-07-05T01:00:00.000Z',
+    })
+    const untimedEarly = makeSighting({
+      id: '00000000-0000-4000-8000-0000000000d2', name: 'UntimedEarly',
+      sightedOn: '2026-07-05', sightedTime: null, createdAt: '2026-07-05T02:00:00.000Z',
+    })
+    const untimedLate = makeSighting({
+      id: '00000000-0000-4000-8000-0000000000d3', name: 'UntimedLate',
+      sightedOn: '2026-07-05', sightedTime: null, createdAt: '2026-07-05T03:00:00.000Z',
+    })
+    stubFetchQueue([{ status: 200, body: [untimedEarly, timed, untimedLate] }])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    expect(result.current.sightings.map((s) => s.name)).toEqual(['Timed', 'UntimedLate', 'UntimedEarly'])
+  })
 
   it('addSighting rethrows ApiError without mutating state', async () => {
     stubFetchQueue([
