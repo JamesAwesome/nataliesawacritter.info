@@ -10,7 +10,19 @@ import { photoFileRouter, sightingPhotoRouter, PHOTO_FILENAME_RE } from './photo
 import type { Sighting, SightingsStore } from './store.js'
 
 const ID = '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa'
-const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3])
+const UUID_RE_SRC = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+
+// A minimal but well-formed JPEG (SOI, APP0, SOS + scan bytes, EOI) with no
+// APP1/EXIF segment, so stripJpegExif() passes it through byte-for-byte —
+// keeping the "written file equals input" assertions below meaningful.
+function seg(marker: number, payload: Buffer): Buffer {
+  const len = Buffer.alloc(2)
+  len.writeUInt16BE(payload.length + 2, 0)
+  return Buffer.concat([Buffer.from([0xff, marker]), len, payload])
+}
+const app0 = seg(0xe0, Buffer.from('JFIF\0'))
+const sos = Buffer.concat([seg(0xda, Buffer.from([0x00, 0x01])), Buffer.from([0x12, 0x34])])
+const JPEG = Buffer.concat([Buffer.from([0xff, 0xd8]), app0, sos, Buffer.from([0xff, 0xd9])])
 
 function row(overrides: Partial<Sighting> = {}): Sighting {
   return {
@@ -67,10 +79,13 @@ async function put(base: string, id: string, body: RequestInit['body'], contentT
 
 describe('PHOTO_FILENAME_RE', () => {
   it('accepts our generated shape and rejects traversal', () => {
-    expect(PHOTO_FILENAME_RE.test(`${ID}-1751700000000.jpg`)).toBe(true)
+    expect(PHOTO_FILENAME_RE.test(`${ID}.jpg`)).toBe(true)
     expect(PHOTO_FILENAME_RE.test('../etc/passwd')).toBe(false)
     expect(PHOTO_FILENAME_RE.test(`${ID}-1.png`)).toBe(false)
-    expect(PHOTO_FILENAME_RE.test(`${ID}.jpg`)).toBe(false)
+  })
+
+  it('still accepts pre-existing <uuid>-<epoch>.jpg names for backward compatibility', () => {
+    expect(PHOTO_FILENAME_RE.test(`${ID}-1751700000000.jpg`)).toBe(true)
   })
 })
 
@@ -81,7 +96,8 @@ describe('PUT /api/sightings/:id/photo', () => {
       const res = await put(base, ID, JPEG)
       expect(res.status).toBe(200)
       const body = (await res.json()) as { photoPath: string }
-      expect(body.photoPath).toMatch(new RegExp(`^/api/photos/${ID}-\\d+\\.jpg$`))
+      expect(body.photoPath).toMatch(new RegExp(`^/api/photos/${UUID_RE_SRC}\\.jpg$`))
+      expect(path.basename(body.photoPath)).not.toBe(`${ID}.jpg`) // random, not the sighting id
       const filename = path.basename(body.photoPath)
       expect(store.setPhotoPath).toHaveBeenCalledWith(ID, `/api/photos/${filename}`)
       expect(await readFile(path.join(photosDir, filename))).toEqual(JPEG)
@@ -106,11 +122,22 @@ describe('PUT /api/sightings/:id/photo', () => {
     ['non-uuid id', (base: string) => put(base, '42', JPEG)],
     ['wrong content-type', (base: string) => put(base, ID, JPEG, 'image/png')],
     ['empty body', (base: string) => put(base, ID, null)],
+    ['non-JPEG body', (base: string) => put(base, ID, Buffer.from('nope'))],
   ])('400s on %s without touching the store', async (_label, mk) => {
     const store = fakeStore()
     await withServer(appWith(store), async (base) => {
       expect((await mk(base)).status).toBe(400)
       expect(store.setPhotoPath).not.toHaveBeenCalled()
+    })
+  })
+
+  it('400s a non-JPEG body (bad magic bytes) with a photo validation detail', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      const res = await put(base, ID, Buffer.from('nope'))
+      expect(res.status).toBe(400)
+      const body = (await res.json()) as { error: 'validation'; details: Record<string, string> }
+      expect(body.details.photo).toBeDefined()
     })
   })
 

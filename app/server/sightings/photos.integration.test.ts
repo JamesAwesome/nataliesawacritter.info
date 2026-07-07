@@ -10,7 +10,9 @@ import { basic, fakePushStore, nullNotifier, withServer } from '../testUtils.js'
 import { createSightingsStore } from './store.js'
 
 const AUTH = basic('natalie', 'sekrit')
-const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 9, 9])
+// SOI, then an SOS marker (scan data runs to EOI) — a minimal but well-formed
+// JPEG that stripJpegExif() accepts and passes through unchanged (no APP1).
+const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xda, 0x00, 0x01, 0x02, 0x03, 0xff, 0xd9])
 
 describe('photo lifecycle against real postgres + disk', () => {
   let handle: ReturnType<typeof createDb>
