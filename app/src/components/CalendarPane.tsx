@@ -13,6 +13,9 @@ type Props = {
 
 export function CalendarPane({ sightings, onDayOpen }: Props) {
   const [visible, setVisible] = useState(currentYearMonth)
+  // Recomputed each render so it self-corrects at midnight rollover.
+  const current = currentYearMonth()
+  const onCurrentMonth = visible.year === current.year && visible.month === current.month
   // Memoized: the pane stays mounted (hidden) on other tabs; recompute the grid
   // only when the visible month or the sightings actually change.
   const cells = useMemo(
@@ -32,7 +35,18 @@ export function CalendarPane({ sightings, onDayOpen }: Props) {
         >
           ‹
         </button>
-        <h2>{monthLabel(visible.year, visible.month)}</h2>
+        <div className="calendar-title">
+          {!onCurrentMonth && (
+            <button
+              type="button"
+              className="today-jump"
+              onClick={() => setVisible(current)}
+            >
+              Today
+            </button>
+          )}
+          <h2>{monthLabel(visible.year, visible.month)}</h2>
+        </div>
         <button
           type="button"
           className="month-nav"

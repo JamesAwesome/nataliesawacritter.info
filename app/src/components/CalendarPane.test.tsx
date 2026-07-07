@@ -13,6 +13,21 @@ describe('CalendarPane', () => {
     expect(screen.getAllByText('S')).toHaveLength(2) // Sun + Sat
   })
 
+  it('hides the Today control while on the current month', () => {
+    render(<CalendarPane sightings={[]} onDayOpen={() => {}} />)
+    expect(screen.queryByRole('button', { name: 'Today' })).not.toBeInTheDocument()
+  })
+
+  it('reveals Today when paged away, and jumps back to the current month when tapped', async () => {
+    render(<CalendarPane sightings={[]} onDayOpen={() => {}} />)
+    await userEvent.click(screen.getByRole('button', { name: /next month/i }))
+    expect(screen.getByText('August 2026')).toBeInTheDocument()
+    const today = screen.getByRole('button', { name: 'Today' })
+    await userEvent.click(today)
+    expect(screen.getByText('July 2026')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Today' })).not.toBeInTheDocument()
+  })
+
   it('navigates months across year boundaries', async () => {
     render(<CalendarPane sightings={[]} onDayOpen={() => {}} />)
     for (let i = 0; i < 7; i++) await userEvent.click(screen.getByRole('button', { name: /next month/i }))
