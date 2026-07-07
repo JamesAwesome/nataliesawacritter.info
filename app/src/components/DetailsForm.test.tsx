@@ -21,13 +21,14 @@ describe('DetailsForm', () => {
     expect(screen.getByRole('button', { name: /save sighting/i })).toBeDisabled()
   })
 
-  it('Now fills the time input and the payload carries the friendly string', async () => {
+  it('Now fills the time input and the payload carries the sortable 24h time', async () => {
     const onSave = vi.fn()
     render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} />)
     await userEvent.click(screen.getByRole('button', { name: /now/i }))
     expect(screen.getByLabelText('Time')).toHaveValue('15:00')
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ sightedTime: '3:00 PM' }))
+    // Stored raw (sortable); formatted to "3:00 PM" only at display time.
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ sightedTime: '15:00' }))
   })
 
   it('omits sightedTime when the time input is blank', async () => {

@@ -35,10 +35,23 @@ function articleFor(name: string): string {
   return /^[aeiou]/i.test(name) ? 'an' : 'a'
 }
 
+const CLOCK_RE = /^([01]\d|2[0-3]):([0-5]\d)$/
+
+/** '15:08' → '3:08 PM' for the feed; free-text ('dawn') passes through. Mirrors
+ *  the client's formatClockTime — the two can't share a module. */
+function formatClock(value: string): string {
+  const m = CLOCK_RE.exec(value)
+  if (m === null) return value
+  const hour24 = Number(m[1])
+  const suffix = hour24 < 12 ? 'AM' : 'PM'
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12
+  return `${hour12}:${m[2]} ${suffix}`
+}
+
 function whenSuffix(s: Sighting): string {
   const date = formatDate(s.sightedOn)
   return s.sightedTime !== null && s.sightedTime !== ''
-    ? `${date} · ${s.sightedTime}`
+    ? `${date} · ${formatClock(s.sightedTime)}`
     : date
 }
 
@@ -58,7 +71,7 @@ function descriptionHtml(s: Sighting, siteUrl: string): string {
   if (s.place !== null && s.place !== '') lines.push(`<p>📍 ${xmlEscape(s.place)}</p>`)
   const when =
     s.sightedTime !== null && s.sightedTime !== ''
-      ? `${formatDate(s.sightedOn)} · ${xmlEscape(s.sightedTime)}`
+      ? `${formatDate(s.sightedOn)} · ${xmlEscape(formatClock(s.sightedTime))}`
       : formatDate(s.sightedOn)
   lines.push(`<p>📅 ${when}</p>`)
   if (s.comment !== null && s.comment !== '') lines.push(`<p>${xmlEscape(s.comment)}</p>`)

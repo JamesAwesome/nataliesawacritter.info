@@ -29,6 +29,13 @@
       "when": 1783273082449,
       "tag": "0003_push-subscriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783386219304,
+      "tag": "0004_normalize_sighted_time",
+      "breakpoints": true
     }
   ]
 }

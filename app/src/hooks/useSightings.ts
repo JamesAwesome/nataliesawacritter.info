@@ -11,14 +11,36 @@ export type SightingsState = {
   retry(): void
 }
 
-// Canonical order, matching the server query (sighted date desc, then logged
-// time desc). Applied after optimistic inserts so a backdated sighting lands in
-// chronological place instead of jumping to the top. sightedOn is 'YYYY-MM-DD'
-// and createdAt is an ISO string — both sort correctly as plain strings.
+// A sighting's recorded time as sortable 24h ('15:08'), normalizing any legacy
+// 'h:mm AM/PM' rows; null for no-time ("just now") or free-text values.
+function to24h(value: string | null): string | null {
+  if (value === null) return null
+  if (/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) return value
+  const m = /^(\d{1,2}):([0-5]\d) (AM|PM)$/i.exec(value)
+  if (m === null) return null
+  const hour = (Number(m[1]) % 12) + (m[3].toUpperCase() === 'PM' ? 12 : 0)
+  return `${String(hour).padStart(2, '0')}:${m[2]}`
+}
+
+// Canonical order — latest sighting first: by sighted date, then time-of-day
+// (untimed rows sink below timed ones within a day), then most-recently logged
+// as the final tiebreak. Keeps the list in the order Natalie saw things, not the
+// order she happened to log them. sightedOn/createdAt sort as plain strings.
 function compareSightings(a: Sighting, b: Sighting): number {
   if (a.sightedOn !== b.sightedOn) return a.sightedOn < b.sightedOn ? 1 : -1
+  const ta = to24h(a.sightedTime)
+  const tb = to24h(b.sightedTime)
+  if (ta !== tb) {
+    if (ta === null) return 1
+    if (tb === null) return -1
+    return ta < tb ? 1 : -1
+  }
   if (a.createdAt !== b.createdAt) return a.createdAt < b.createdAt ? 1 : -1
   return 0
+}
+
+function sorted(rows: Sighting[]): Sighting[] {
+  return [...rows].sort(compareSightings)
 }
 
 export function useSightings(): SightingsState {
@@ -31,7 +53,7 @@ export function useSightings(): SightingsState {
     listSightings()
       .then((rows) => {
         if (cancelled) return
-        setSightings(rows)
+        setSightings(sorted(rows))
         setStatus('ready')
       })
       .catch(() => {
@@ -53,7 +75,7 @@ export function useSightings(): SightingsState {
     useCallback(() => {
       listSightings()
         .then((rows) => {
-          setSightings(rows)
+          setSightings(sorted(rows))
           setStatus('ready')
         })
         .catch(() => {})
@@ -63,7 +85,7 @@ export function useSightings(): SightingsState {
   const addSighting = useCallback(async (fields: NewSightingInput, authHeader: string) => {
     const created = await createSighting(fields, authHeader)
     // Stable sort keeps `created` ahead of same-timestamp rows (newest-first).
-    setSightings((current) => [created, ...current].sort(compareSightings))
+    setSightings((current) => sorted([created, ...current]))
     return created
   }, [])
 
