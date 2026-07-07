@@ -530,6 +530,29 @@ body {
   font-size: 16px;
 }
 
+.calendar-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* Ghost "Today" pill — only rendered when paged off the current month. */
+.today-jump {
+  border: 1px solid var(--tab-calendar);
+  background: transparent;
+  color: var(--other-text);
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.today-jump:hover {
+  background: var(--surface-input);
+}
+
 .month-nav {
   width: 30px;
   height: 30px;
