@@ -131,7 +131,9 @@ export function DetailsForm({
       <label className="field">
         Where?
         <input value={place} onChange={(e) => setPlace(e.target.value)} placeholder="Where? (backyard, trail...)" />
-        <span className="field-hint">Public — skip your home address or exact current location.</span>
+        <span className="field-hint">
+          <strong>Public:</strong> don't reveal where you live or exactly where you are.
+        </span>
       </label>
       <label className="field">
         Comment

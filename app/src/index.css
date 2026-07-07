@@ -465,6 +465,9 @@ body {
 
 .details-row .field {
   flex: 1;
+  /* Let the columns shrink below the intrinsic width of the native
+     date/time inputs (iOS renders them wide) instead of overflowing/overlapping. */
+  min-width: 0;
 }
 
 .field {
@@ -495,9 +498,13 @@ body {
 }
 
 .field-hint {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-secondary);
   margin-top: 4px;
+}
+
+.field-hint strong {
+  color: var(--danger-text);
 }
 
 .details-actions {
@@ -833,6 +840,7 @@ button.day-cell {
 
 .time-row input {
   flex: 1;
+  min-width: 0;
   margin-top: 0;
 }
 
