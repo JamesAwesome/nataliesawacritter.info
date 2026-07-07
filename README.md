@@ -79,9 +79,10 @@ password). Hardening in place:
 - **Rate limiting** — failed write-auth attempts and public mutations (incl. push
   subscribe) are throttled per client IP (keyed on `CF-Connecting-IP`, so it works
   behind the Cloudflare tunnel). Public GET reads/feed are never limited.
-- **Photo GPS stripping** — uploaded photos are stripped of EXIF/GPS/XMP metadata
-  server-side (via `exif-be-gone`), on top of the client's canvas re-encode.
-  Filenames are random tokens; a non-image body is rejected.
+- **Photo metadata stripping** — uploaded photos are re-encoded server-side with
+  `sharp`, which strips all metadata (EXIF/GPS/XMP/IPTC/COM/ICC) and validates the
+  bytes are a real image (rejecting malformed/non-image uploads), on top of the
+  client's canvas re-encode. Filenames are random tokens.
 - **Push SSRF allowlist** — subscription endpoints are restricted to real
   push-service hosts (FCM/Mozilla/Apple/WNS).
 - **Privacy** — sightings are public, so the log form warns against entering a
@@ -89,8 +90,8 @@ password). Hardening in place:
   timestamp to the minute. The origin is reachable only via the tunnel (compose
   binds `127.0.0.1`).
 
-Not yet done (tracked, low severity): gating reads, IPTC/COM photo metadata
-stripping, delivery-time push re-validation, shorter photo cache TTL.
+Not yet done (tracked, low severity): gating reads, delivery-time push
+re-validation, shorter photo cache TTL.
 
 ## API
 
