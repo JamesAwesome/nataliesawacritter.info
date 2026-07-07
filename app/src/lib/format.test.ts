@@ -14,6 +14,11 @@ describe('formatWhen', () => {
     expect(formatWhen('2026-07-03', 'dusk')).toBe('Jul 3 · dusk')
   })
 
+  it('formats a stored 24h time into a friendly clock string', () => {
+    expect(formatWhen('2026-07-05', '15:08')).toBe('Jul 5 · 3:08 PM')
+    expect(formatWhen('2026-07-05', '07:30')).toBe('Jul 5 · 7:30 AM')
+  })
+
   it('uses "just now" when time is null', () => {
     expect(formatWhen('2026-12-25', null)).toBe('Dec 25 · just now')
   })

@@ -6,9 +6,11 @@ export function formatDay(sightedOn: string): string {
   return `${MONTHS[month - 1]} ${day}`
 }
 
-/** "Jul 3 · dusk" — sightedOn is YYYY-MM-DD; parsed by split (never Date parsing, which is UTC-shifted). */
+/** "Jul 3 · 3:08 PM" — sightedOn is YYYY-MM-DD; parsed by split (never Date parsing,
+ *  which is UTC-shifted). sightedTime is stored 24h ('15:08') and formatted for display;
+ *  free-text ('dusk') and null ('just now') pass through unchanged. */
 export function formatWhen(sightedOn: string, sightedTime: string | null): string {
-  return `${formatDay(sightedOn)} · ${sightedTime ?? 'just now'}`
+  return `${formatDay(sightedOn)} · ${sightedTime === null ? 'just now' : formatClockTime(sightedTime)}`
 }
 
 const CLOCK_RE = /^([01]\d|2[0-3]):([0-5]\d)$/

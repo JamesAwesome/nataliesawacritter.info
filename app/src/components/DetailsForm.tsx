@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { NewSightingInput, Profile } from '../api'
 import { normalizedName } from '../lib/critters'
-import { formatClockTime, nowClockTime } from '../lib/format'
+import { nowClockTime } from '../lib/format'
 import { CritterGlyph } from './CritterGlyph'
 import { PhotoControl } from './PhotoControl'
 
@@ -70,7 +70,7 @@ export function DetailsForm({
     const trimmedName = name.trim()
     const trimmedPlace = place.trim()
     if (trimmedName !== '') fields.name = trimmedName
-    if (sightedTime !== '') fields.sightedTime = formatClockTime(sightedTime)
+    if (sightedTime !== '') fields.sightedTime = sightedTime
     if (trimmedPlace !== '') fields.place = trimmedPlace
     if (comment !== '') fields.comment = comment
     if (friendToggle || photoControl) {
