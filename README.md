@@ -67,6 +67,21 @@ On iPhone, web push requires the app to be installed first: Share →
 Add to Home Screen, then tap the bell inside the installed app. The bell walks
 friends through this.
 
+### How many are subscribed
+
+There's no UI or endpoint for this by design — query the DB directly. Each
+subscribed browser is one row in `push_subscriptions` (upserted on its unique
+endpoint):
+
+    docker compose exec postgres psql -U critters -d critters \
+      -c "SELECT count(*) FROM push_subscriptions;"
+
+Two caveats: it counts **devices/browsers, not people** (no user identity is
+stored, so one person on a phone and a laptop counts twice), and it slightly
+over-reports because dead subscriptions are pruned only when a notification is
+actually sent (the notifier drops an endpoint on a 404/410 from the push
+service).
+
 ## Security & privacy
 
 Reads are public by design (sightings, profiles, photos, the RSS feed); writes
