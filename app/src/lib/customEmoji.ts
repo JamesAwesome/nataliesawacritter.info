@@ -21,6 +21,11 @@ export const CUSTOM: CustomEmoji[] = [
   { slug: 'gritty', name: 'Gritty', standIn: '🧡', category: 'mammals' },
   { slug: 'phanatic', name: 'Phillie Phanatic', standIn: '💚', category: 'birds' },
   { slug: 'anteater', name: 'Anteater', standIn: '🦥', category: 'mammals' },
+  { slug: 'red-panda', name: 'Red Panda', standIn: '🐼', category: 'mammals' },
+  { slug: 'meerkat', name: 'Meerkat', standIn: '🐿️', category: 'mammals' },
+  { slug: 'lemur', name: 'Lemur', standIn: '🐒', category: 'mammals' },
+  { slug: 'aardvark', name: 'Aardvark', standIn: '🐷', category: 'mammals' },
+  { slug: 'crane', name: 'Crane', standIn: '🦢', category: 'birds' },
 ]
 
 const BY_SLUG = new Map(CUSTOM.map((c) => [c.slug, c]))

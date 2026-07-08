@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Red panda">
+
+  <path d="M40 50 q16 3 16 -10 q0 -9 -8 -9 q6 1 6 9 q0 9 -14 6 Z" fill="#a94e1e"/>
+  <path d="M52 30 a6 8 0 0 1 4 6" stroke="#3a2a20" stroke-width="2.4" fill="none"/>
+  <path d="M56 38 a6 8 0 0 1 -0.5 7" stroke="#3a2a20" stroke-width="2.4" fill="none"/>
+  <circle cx="17" cy="17" r="9" fill="#b5551f"/>
+  <circle cx="47" cy="17" r="9" fill="#b5551f"/>
+  <circle cx="17" cy="18" r="4.5" fill="#f2e7da"/>
+  <circle cx="47" cy="18" r="4.5" fill="#f2e7da"/>
+  <circle cx="32" cy="31" r="19" fill="#c96a2f"/>
+  <path d="M32 22 q-13 0 -15 13 q7 8 15 8 q8 0 15 -8 q-2 -13 -15 -13 Z" fill="#f4ebdf"/>
+  <path d="M20 26 q-3 6 1 11 q5 -2 6 -8 q-3 -4 -7 -3 Z" fill="#7a3f1e"/>
+  <path d="M44 26 q3 6 -1 11 q-5 -2 -6 -8 q3 -4 7 -3 Z" fill="#7a3f1e"/>
+  <circle cx="24" cy="31" r="2.4" fill="#241a14"/>
+  <circle cx="40" cy="31" r="2.4" fill="#241a14"/>
+  <path d="M32 37 l3 3.5 -6 0 Z" fill="#241a14"/>
+
+</svg>
