@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Lemur">
+
+  <path d="M42 52 q16 0 16 -16 q0 -22 -12 -22 q9 4 9 22 q0 12 -13 12 Z" fill="#c9cdd2"/>
+  <g fill="#2a2724">
+    <path d="M50 15 q4 1 5 6 l-4 1 q-1 -4 -4 -5 Z"/>
+    <path d="M54 25 q1 5 0 9 l-4 -1 q1 -4 0 -8 Z"/>
+    <path d="M52 38 q-1 5 -4 8 l-3 -3 q3 -3 4 -6 Z"/>
+    <path d="M45 48 q-4 3 -8 3 l0 -4 q4 0 7 -2 Z"/>
+  </g>
+  <path d="M20 34 q-4 -18 12 -18 q16 0 12 18 q-2 14 -12 14 q-10 0 -12 -14 Z" fill="#aeb4ba"/>
+  <ellipse cx="24" cy="22" rx="9" ry="10" fill="#b7bcc2"/>
+  <ellipse cx="40" cy="22" rx="9" ry="10" fill="#b7bcc2"/>
+  <path d="M22 12 q-4 -3 -7 -1 q3 3 6 4 Z" fill="#7f8489"/>
+  <path d="M42 12 q4 -3 7 -1 q-3 3 -6 4 Z" fill="#7f8489"/>
+  <path d="M32 14 q-15 0 -15 13 q0 11 15 11 q15 0 15 -11 q0 -13 -15 -13 Z" fill="#f1efec"/>
+  <ellipse cx="25" cy="25" rx="5.5" ry="6.5" fill="#2a2724"/>
+  <ellipse cx="39" cy="25" rx="5.5" ry="6.5" fill="#2a2724"/>
+  <circle cx="25" cy="25" r="2.6" fill="#d99a2b"/>
+  <circle cx="39" cy="25" r="2.6" fill="#d99a2b"/>
+  <path d="M32 31 q-4 0 -4 4 q0 4 4 6 q4 -2 4 -6 q0 -4 -4 -4 Z" fill="#e9e6e2"/>
+  <path d="M32 33 l2.5 2.5 -5 0 Z" fill="#2a2724"/>
+
+</svg>

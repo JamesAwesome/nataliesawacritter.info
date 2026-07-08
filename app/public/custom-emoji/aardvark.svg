@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Aardvark">
+
+  <path d="M46 30 q10 4 12 16 q-3 3 -6 1 q-2 -10 -8 -13 Z" fill="#a1897b"/>
+  <path d="M12 46 q-2 -20 20 -21 q18 -1 22 12 q3 12 -9 16 q-18 5 -33 -7 Z" fill="#b6a094"/>
+  <path d="M24 27 q-5 -12 -1 -16 q6 2 7 15 Z" fill="#a1897b"/>
+  <path d="M30 27 q0 -13 6 -15 q3 4 -1 16 Z" fill="#a1897b"/>
+  <path d="M20 40 q-9 4 -15 14 q-2 3 1 4 q3 1 5 -2 q6 -8 14 -11 Z" fill="#98816f"/>
+  <circle cx="6" cy="55" r="2" fill="#4a3b31"/>
+  <circle cx="26" cy="34" r="1.9" fill="#3a2c24"/>
+  <path d="M18 49 h6 v8 q-3 2 -6 0 Z" fill="#6f5b4c"/>
+  <path d="M34 50 h7 v7 q-3.5 2 -7 0 Z" fill="#6f5b4c"/>
+
+</svg>

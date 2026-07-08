@@ -44,4 +44,9 @@ describe('emoji categories', () => {
     const mammals = CATEGORIES.find((c) => c.key === 'mammals')
     expect(mammals?.items).toContain('🫎')
   })
+
+  it('includes the primates in the Mammals category', () => {
+    const mammals = CATEGORIES.find((c) => c.key === 'mammals')
+    for (const primate of ['🦍', '🦧', '🐒']) expect(mammals?.items).toContain(primate)
+  })
 })

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Meerkat">
+
+  <path d="M40 40 q12 4 15 16 q-4 3 -7 0 q-3 -9 -10 -12 Z" fill="#b39468"/>
+  <path d="M26 30 q-8 4 -8 20 q0 8 6 8 h8 q6 0 6 -8 q0 -16 -8 -20 Z" fill="#cdae86"/>
+  <path d="M27 34 q-3 6 -3 16 q0 6 4 6 h4 q4 0 4 -6 q0 -10 -3 -16 Z" fill="#e9dcc8"/>
+  <path d="M23 50 v7 M35 50 v7" stroke="#6f5a3d" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="29" cy="20" rx="9" ry="10" fill="#cdae86"/>
+  <circle cx="21" cy="13" r="3.5" fill="#5a4a34"/>
+  <circle cx="37" cy="13" r="3.5" fill="#5a4a34"/>
+  <path d="M22 16 q-3 4 0 8 q4 1 6 -2 q-1 -5 -6 -6 Z" fill="#5b4a37"/>
+  <path d="M36 16 q3 4 0 8 q-4 1 -6 -2 q1 -5 6 -6 Z" fill="#5b4a37"/>
+  <circle cx="24" cy="19" r="1.9" fill="#1f1913"/>
+  <circle cx="34" cy="19" r="1.9" fill="#1f1913"/>
+  <path d="M29 24 q-3 3 0 5 q3 -2 0 -5 Z" fill="#2a221a"/>
+
+</svg>
