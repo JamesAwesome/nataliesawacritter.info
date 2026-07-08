@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Anteater">
+  <!-- bushy tail -->
+  <path d="M38 30 q12 -20 24 -15 q3 4 -2 8 q6 3 1 9 q4 5 -3 8 q0 5 -8 4 q-9 0 -13 -8 Z" fill="#6f6259"/>
+  <path d="M42 30 q9 -14 18 -12" fill="none" stroke="#5b5049" stroke-width="1.4"/>
+  <!-- body -->
+  <path d="M12 47 q-3 -19 18 -21 q17 -1 21 11 q3 11 -8 16 q-16 6 -31 -6 Z" fill="#a99c90"/>
+  <!-- snout -->
+  <path d="M22 41 q-11 5 -17 15 q-2 3 1 4 q3 1 6 -2 q6 -9 15 -11 Z" fill="#8a7d72"/>
+  <!-- nose tip -->
+  <circle cx="5.5" cy="56" r="2.1" fill="#3a332e"/>
+  <!-- iconic black shoulder wedge, cream-bordered -->
+  <path d="M20 46 L33 22 L41 25 L27 47 Z" fill="#f2ede4"/>
+  <path d="M23 46.5 L33.5 26 L38 28 L28.5 47 Z" fill="#22201d"/>
+  <!-- eye -->
+  <circle cx="24" cy="34" r="1.7" fill="#2a2521"/>
+  <!-- legs -->
+  <path d="M19 49 h6.5 v8 q-3.2 2 -6.5 0 Z" fill="#4a423b"/>
+  <path d="M35 50 h7 v7 q-3.5 2 -7 0 Z" fill="#4a423b"/>
+</svg>
