@@ -36,6 +36,13 @@
       "when": 1783386219304,
       "tag": "0004_normalize_sighted_time",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783473684377,
+      "tag": "0005_add_sighting_quantity",
+      "breakpoints": true
     }
   ]
 }

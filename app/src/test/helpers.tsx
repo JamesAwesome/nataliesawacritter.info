@@ -13,6 +13,7 @@ export function makeSighting(overrides: Partial<Sighting> = {}): Sighting {
     sightedTime: null,
     place: null,
     comment: null,
+    quantity: '1',
     photoPath: null,
     createdAt: '2026-07-02T12:00:00.000Z',
     ...overrides,

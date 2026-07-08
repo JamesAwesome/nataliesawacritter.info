@@ -51,4 +51,25 @@ describe('DetailsForm', () => {
     const hint = screen.getByText(/don't reveal where you live/i)
     expect(hint).toHaveTextContent(/public/i)
   })
+
+  it('defaults the How many? control to 1', () => {
+    render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={vi.fn()} saving={false} />)
+    expect(screen.getByRole('button', { name: '1' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Many' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('sends the chosen quantity in the payload', async () => {
+    const onSave = vi.fn()
+    render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Many' }))
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ quantity: 'many' }))
+  })
+
+  it('omits quantity from the payload when left at the default of 1', async () => {
+    const onSave = vi.fn()
+    render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} />)
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    expect(onSave).toHaveBeenCalledWith({ emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox' })
+  })
 })

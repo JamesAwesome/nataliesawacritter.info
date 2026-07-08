@@ -1,0 +1,1 @@
+ALTER TABLE "sightings" ADD COLUMN "quantity" text DEFAULT '1' NOT NULL;

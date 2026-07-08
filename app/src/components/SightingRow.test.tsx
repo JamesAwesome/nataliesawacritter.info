@@ -30,3 +30,21 @@ describe('starred', () => {
     expect(screen.queryByText('custom:robin')).not.toBeInTheDocument()
   })
 })
+
+describe('quantity badge', () => {
+  it('shows ×2 for a quantity of 2', () => {
+    render(<SightingRow sighting={makeSighting({ name: 'Deer', quantity: '2' })} onSelect={() => {}} />)
+    expect(screen.getByText('×2')).toBeInTheDocument()
+  })
+
+  it('shows Many for a quantity of many', () => {
+    render(<SightingRow sighting={makeSighting({ name: 'Firefly', quantity: 'many' })} onSelect={() => {}} />)
+    expect(screen.getByText('Many')).toBeInTheDocument()
+  })
+
+  it('shows no badge for a quantity of 1', () => {
+    render(<SightingRow sighting={makeSighting({ name: 'Fox', quantity: '1' })} onSelect={() => {}} />)
+    expect(screen.queryByText('×1')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Many/)).not.toBeInTheDocument()
+  })
+})

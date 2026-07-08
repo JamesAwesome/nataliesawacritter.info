@@ -2,6 +2,7 @@ import { and, desc, eq, gte, lte } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import * as schema from '../db/schema.js'
 import { sightings } from '../db/schema.js'
+import type { Quantity } from '../quantity.js'
 
 export type NewSighting = {
   emoji: string
@@ -10,6 +11,7 @@ export type NewSighting = {
   sightedTime: string | null
   place: string | null
   comment: string | null
+  quantity: Quantity
 }
 
 export type Sighting = typeof sightings.$inferSelect
