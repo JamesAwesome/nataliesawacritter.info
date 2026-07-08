@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { NewSightingInput, Profile } from '../api'
 import { normalizedName } from '../lib/critters'
 import { nowClockTime } from '../lib/format'
+import { QUANTITIES, type Quantity } from '../lib/quantity'
 import { CritterGlyph } from './CritterGlyph'
 import { PhotoControl } from './PhotoControl'
 
@@ -47,6 +48,7 @@ export function DetailsForm({
   photoControl,
 }: Props) {
   const [name, setName] = useState(initialName ?? '')
+  const [quantity, setQuantity] = useState<Quantity>('1')
   const [sightedOn, setSightedOn] = useState(today)
   const [sightedTime, setSightedTime] = useState('')
   const [place, setPlace] = useState(initialPlace ?? '')
@@ -73,6 +75,8 @@ export function DetailsForm({
     if (sightedTime !== '') fields.sightedTime = sightedTime
     if (trimmedPlace !== '') fields.place = trimmedPlace
     if (comment !== '') fields.comment = comment
+    // Default single-critter case sends nothing; server defaults absent → '1'.
+    if (quantity !== '1') fields.quantity = quantity
     if (friendToggle || photoControl) {
       onSave(fields, {
         saveAsFriend: friendToggle === true && saveAsFriend && trimmedName !== '' && liveFriend === null,
@@ -103,6 +107,22 @@ export function DetailsForm({
           Critter name
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Critter name" />
         </label>
+      </div>
+      <div className="field">
+        How many?
+        <div className="qty-picker" role="group" aria-label="How many?">
+          {QUANTITIES.map((q) => (
+            <button
+              key={q}
+              type="button"
+              className={q === quantity ? 'qty-option selected' : 'qty-option'}
+              aria-pressed={q === quantity}
+              onClick={() => setQuantity(q)}
+            >
+              {q === 'many' ? 'Many' : q}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="details-row">
         <label className="field">

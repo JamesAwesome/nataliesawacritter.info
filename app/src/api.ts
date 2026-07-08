@@ -1,3 +1,5 @@
+import type { Quantity } from './lib/quantity'
+
 export type Sighting = {
   id: string
   emoji: string
@@ -6,6 +8,7 @@ export type Sighting = {
   sightedTime: string | null
   place: string | null
   comment: string | null
+  quantity: Quantity
   photoPath: string | null
   createdAt: string
 }
@@ -17,6 +20,7 @@ export type NewSightingInput = {
   sightedTime?: string
   place?: string
   comment?: string
+  quantity?: Quantity
 }
 
 export class ApiError extends Error {

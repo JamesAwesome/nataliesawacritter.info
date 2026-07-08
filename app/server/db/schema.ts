@@ -1,4 +1,5 @@
 import { date, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import type { Quantity } from '../quantity.js'
 
 export const sightings = pgTable('sightings', {
   // uuid (not serial): reads are public, so IDs must not be enumerable
@@ -10,6 +11,9 @@ export const sightings = pgTable('sightings', {
   sightedTime: text('sighted_time'),
   place: text('place'),
   comment: text('comment'),
+  // Bucketed count: '1' | '2' | '3' | 'many' (see server/quantity.ts). Stored raw,
+  // formatted at the edge; '1' is the default and renders no badge.
+  quantity: text('quantity').$type<Quantity>().notNull().default('1'),
   photoPath: text('photo_path'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })

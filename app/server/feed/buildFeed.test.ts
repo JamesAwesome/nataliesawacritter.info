@@ -13,6 +13,7 @@ function sighting(overrides: Partial<Sighting> = {}): Sighting {
     sightedTime: null,
     place: null,
     comment: null,
+    quantity: '1',
     photoPath: null,
     createdAt: new Date('2026-07-05T12:00:00Z'),
     ...overrides,
@@ -71,6 +72,16 @@ describe('buildFeed', () => {
     expect(buildFeed([sighting({ name: 'Fox' })], SITE)).toContain(
       '<title>🦊 Natalie saw a Fox — July 5, 2026</title>',
     )
+  })
+
+  it('appends a count badge and drops the article in the title for a quantity of 2', () => {
+    const xml = buildFeed([sighting({ name: 'Deer', quantity: '2' })], SITE)
+    expect(xml).toContain('<title>🦊 Natalie saw Deer ×2 — July 5, 2026</title>')
+  })
+
+  it('appends · Many in the title for a quantity of many', () => {
+    const xml = buildFeed([sighting({ name: 'Firefly', quantity: 'many' })], SITE)
+    expect(xml).toContain('<title>🦊 Natalie saw Firefly · Many — July 5, 2026</title>')
   })
 
   it('appends the time after the date in the title when a time is present', () => {

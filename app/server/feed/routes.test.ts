@@ -15,6 +15,7 @@ function row(overrides: Partial<Sighting> = {}): Sighting {
     sightedTime: null,
     place: null,
     comment: null,
+    quantity: '1',
     photoPath: null,
     createdAt: new Date('2026-07-05T12:00:00Z'),
     ...overrides,

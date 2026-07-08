@@ -28,6 +28,7 @@ describe('sightings store', () => {
     sightedTime: null,
     place: null,
     comment: null,
+    quantity: '1' as const,
     ...overrides,
   })
 

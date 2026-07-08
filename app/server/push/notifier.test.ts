@@ -15,6 +15,7 @@ function sighting(overrides: Partial<Sighting> = {}): Sighting {
     sightedTime: null,
     place: null,
     comment: null,
+    quantity: '1',
     photoPath: null,
     createdAt: new Date('2026-07-05T12:00:00Z'),
     ...overrides,
@@ -56,6 +57,16 @@ describe('payloadFor', () => {
   it('body is just the present part, or empty when both are null', () => {
     expect((JSON.parse(payloadFor(sighting({ place: 'the garden' }))) as { body: string }).body).toBe('the garden')
     expect((JSON.parse(payloadFor(sighting())) as { body: string }).body).toBe('')
+  })
+
+  it('appends the count badge to the title for a quantity of 2', () => {
+    const payload = JSON.parse(payloadFor(sighting({ name: 'Deer', emoji: '🦌', quantity: '2' }))) as { title: string }
+    expect(payload.title).toBe('🦌 Natalie saw Deer ×2!')
+  })
+
+  it('appends · Many to the title for a quantity of many', () => {
+    const payload = JSON.parse(payloadFor(sighting({ name: 'Firefly', emoji: '🪲', quantity: 'many' }))) as { title: string }
+    expect(payload.title).toBe('🪲 Natalie saw Firefly · Many!')
   })
 
   it('uses the stand-in for a custom emoji in the push title', () => {

@@ -3,6 +3,7 @@ import { removePhotoFile } from './photoRoutes.js'
 import type { NewSighting, Sighting, SightingsStore } from './store.js'
 import { UUID_RE, sendValidation, rejectUnknownFields } from '../httpValidation.js'
 import { validateEmoji } from '../emojiField.js'
+import { QUANTITIES, isQuantity, type Quantity } from '../quantity.js'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -31,7 +32,7 @@ function maxAllowedDate(): string {
 
 const OPTIONAL_LIMITS = { name: 100, sightedTime: 100, place: 100, comment: 1000 } as const
 type OptionalField = keyof typeof OPTIONAL_LIMITS
-const KNOWN_FIELDS = new Set(['emoji', 'sightedOn', ...Object.keys(OPTIONAL_LIMITS)])
+const KNOWN_FIELDS = new Set(['emoji', 'sightedOn', 'quantity', ...Object.keys(OPTIONAL_LIMITS)])
 
 function parseNewSighting(body: unknown):
   | { ok: true; fields: NewSighting }
@@ -67,10 +68,19 @@ function parseNewSighting(body: unknown):
     }
   }
 
+  // Bucketed count: absent/null/'' → '1' (the single-critter default); otherwise
+  // it must be one of the known tokens (fail closed on anything else).
+  const rawQuantity = record.quantity
+  let quantity: Quantity = '1'
+  if (rawQuantity !== undefined && rawQuantity !== null && rawQuantity !== '') {
+    if (isQuantity(rawQuantity)) quantity = rawQuantity
+    else details.quantity = `must be one of ${QUANTITIES.join(', ')}`
+  }
+
   if (Object.keys(details).length > 0) return { ok: false, details }
   return {
     ok: true,
-    fields: { emoji: emoji as string, sightedOn: sightedOn as string, ...optionals },
+    fields: { emoji: emoji as string, sightedOn: sightedOn as string, ...optionals, quantity },
   }
 }
 

@@ -42,7 +42,7 @@ const VALID = { emoji: '🦊', sightedOn: '2026-07-03' }
 
 describe('GET /api/sightings', () => {
   it('returns the store list as JSON with ISO createdAt', async () => {
-    const store = fakeStore({ list: vi.fn(async () => [rowFor({ ...VALID, name: 'Fox', sightedTime: null, place: null, comment: null })]) })
+    const store = fakeStore({ list: vi.fn(async () => [rowFor({ ...VALID, name: 'Fox', sightedTime: null, place: null, comment: null, quantity: '1' })]) })
     await withServer(appWith(store), async (base) => {
       const res = await fetch(`${base}/api/sightings`)
       expect(res.status).toBe(200)
@@ -102,8 +102,26 @@ describe('POST /api/sightings', () => {
       expect(res.status).toBe(201)
       expect(((await res.json()) as SightingJson).id).toBe(FIXED_ID)
       expect(store.create).toHaveBeenCalledWith({
-        emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox', sightedTime: 'dusk', place: 'trail', comment: 'so fluffy',
+        emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox', sightedTime: 'dusk', place: 'trail', comment: 'so fluffy', quantity: '1',
       })
+    })
+  })
+
+  it('passes an explicit quantity through to the store', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      const res = await post(base, { ...VALID, quantity: 'many' })
+      expect(res.status).toBe(201)
+      expect(store.create).toHaveBeenCalledWith(expect.objectContaining({ quantity: 'many' }))
+    })
+  })
+
+  it('defaults quantity to "1" when omitted', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      const res = await post(base, VALID)
+      expect(res.status).toBe(201)
+      expect(store.create).toHaveBeenCalledWith(expect.objectContaining({ quantity: '1' }))
     })
   })
 
@@ -113,7 +131,7 @@ describe('POST /api/sightings', () => {
       const res = await post(base, { ...VALID, name: '', sightedTime: null })
       expect(res.status).toBe(201)
       expect(store.create).toHaveBeenCalledWith({
-        emoji: '🦊', sightedOn: '2026-07-03', name: null, sightedTime: null, place: null, comment: null,
+        emoji: '🦊', sightedOn: '2026-07-03', name: null, sightedTime: null, place: null, comment: null, quantity: '1',
       })
     })
   })
@@ -129,6 +147,8 @@ describe('POST /api/sightings', () => {
     ['name too long', { ...VALID, name: 'x'.repeat(101) }, 'name'],
     ['name wrong type', { ...VALID, name: 42 }, 'name'],
     ['comment too long', { ...VALID, comment: 'x'.repeat(1001) }, 'comment'],
+    ['invalid quantity', { ...VALID, quantity: '4' }, 'quantity'],
+    ['quantity wrong type', { ...VALID, quantity: 2 }, 'quantity'],
     ['unknown field photoPath', { ...VALID, photoPath: '/x.jpg' }, 'photoPath'],
     ['unknown field id', { ...VALID, id: FIXED_ID }, 'id'],
   ])('400s on %s', async (_label, body, field) => {

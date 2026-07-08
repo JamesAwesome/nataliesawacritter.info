@@ -1033,6 +1033,41 @@ button.day-cell {
   margin-left: 4px;
 }
 
+/* Segmented "How many?" picker in the log form: [1] [2] [3] [Many]. */
+.qty-picker {
+  display: flex;
+  gap: 6px;
+}
+.qty-option {
+  flex: 1;
+  padding: 9px 0;
+  border-radius: 10px;
+  border: 1px solid var(--border-hairline);
+  background: var(--surface-input);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+.qty-option.selected {
+  background: var(--tint-sky);
+  border-color: var(--other-border);
+  color: var(--other-text);
+}
+
+/* Count badge next to a critter name (quantity 2/3/Many; 1 renders nothing). */
+.qty-badge {
+  margin-left: 5px;
+  padding: 0 5px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--other-text);
+  background: var(--surface-input);
+  border: 1px solid var(--border-hairline);
+  vertical-align: middle;
+}
+
 /* Text sibling of .visually-hidden-input: present to assistive tech, invisible. */
 .visually-hidden {
   position: absolute;

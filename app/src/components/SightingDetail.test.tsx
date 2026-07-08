@@ -38,6 +38,16 @@ function renderDetail(overrides: Partial<Parameters<typeof SightingDetail>[0]> =
 describe('SightingDetail', () => {
   useFakeClock()
 
+  it('shows the count badge in the head when quantity is more than one', () => {
+    renderDetail({ sighting: makeSighting({ name: 'Deer', quantity: '2' }) })
+    expect(screen.getByText('×2')).toBeInTheDocument()
+  })
+
+  it('shows no count badge when quantity is one', () => {
+    renderDetail({ sighting: makeSighting({ name: 'Fox', quantity: '1' }) })
+    expect(screen.queryByText('×1')).not.toBeInTheDocument()
+  })
+
   it('renders emoji, name, meta, place, and comment', () => {
     renderDetail()
     expect(screen.getByText('Fox')).toBeInTheDocument()

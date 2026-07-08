@@ -1,5 +1,6 @@
 import type { Sighting } from '../sightings/store.js'
 import { standInFor } from '../customEmoji.js'
+import { quantityTextSuffix } from '../quantity.js'
 
 function xmlEscape(value: string): string {
   return value
@@ -57,10 +58,15 @@ function whenSuffix(s: Sighting): string {
 
 function titleFor(s: Sighting): string {
   const glyph = standInFor(s.emoji)
+  const qty = quantityTextSuffix(s.quantity)
+  // With a count the article reads wrong ("a Deer ×2"), so drop it and append
+  // the badge; the single-critter default keeps the natural "a/an <name>".
   const base =
     s.name === null
-      ? `${glyph} Natalie saw a critter`
-      : `${glyph} Natalie saw ${articleFor(s.name)} ${s.name}`
+      ? `${glyph} Natalie saw a critter${qty}`
+      : qty === ''
+        ? `${glyph} Natalie saw ${articleFor(s.name)} ${s.name}`
+        : `${glyph} Natalie saw ${s.name}${qty}`
   return `${base} — ${whenSuffix(s)}`
 }
 
