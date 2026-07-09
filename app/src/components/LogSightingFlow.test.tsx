@@ -74,7 +74,7 @@ describe('LogSightingFlow', () => {
     await userEvent.type(screen.getByLabelText(/where/i), 'backyard')
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
     expect(onSave).toHaveBeenCalledWith(
-      { emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox', place: 'backyard' },
+      { emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox', place: 'backyard', sightedTime: '15:00' },
       'Basic ' + btoa('natalie:sekrit'),
     )
     expect(onLogged).toHaveBeenCalledTimes(1)
@@ -134,7 +134,7 @@ describe('LogSightingFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: '🐝' }))
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
     expect(onSave).toHaveBeenCalledWith(
-      { emoji: '🐝', sightedOn: '2026-07-03' },
+      { emoji: '🐝', sightedOn: '2026-07-03', sightedTime: '15:00' },
       expect.any(String),
     )
   })
