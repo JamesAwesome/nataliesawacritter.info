@@ -30,7 +30,7 @@ describe('LogSightingFlow friends', () => {
     expect(screen.getByLabelText(/where/i)).toHaveValue('train station')
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
     expect(onSave).toHaveBeenCalledWith(
-      { emoji: '🦊', sightedOn: '2026-07-03', name: 'Mr Fox', place: 'train station' },
+      { emoji: '🦊', sightedOn: '2026-07-03', name: 'Mr Fox', place: 'train station', sightedTime: '15:00' },
       'Basic ' + btoa('natalie:sekrit'),
     )
     expect(onLogged).toHaveBeenCalledTimes(1)

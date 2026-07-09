@@ -72,7 +72,10 @@ export function DetailsForm({
     const trimmedName = name.trim()
     const trimmedPlace = place.trim()
     if (trimmedName !== '') fields.name = trimmedName
-    if (sightedTime !== '') fields.sightedTime = sightedTime
+    // Default a blank time to now, so a fresh sighting is a timed entry that
+    // sorts by when it happened (top of today) instead of the untimed "just
+    // now" that sinks below the day's timed rows.
+    fields.sightedTime = sightedTime !== '' ? sightedTime : nowClockTime()
     if (trimmedPlace !== '') fields.place = trimmedPlace
     if (comment !== '') fields.comment = comment
     // Default single-critter case sends nothing; server defaults absent → '1'.

@@ -31,11 +31,12 @@ describe('DetailsForm', () => {
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ sightedTime: '15:00' }))
   })
 
-  it('omits sightedTime when the time input is blank', async () => {
+  it('defaults the time to the current clock time when left blank', async () => {
     const onSave = vi.fn()
     render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} />)
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
-    expect(onSave).toHaveBeenCalledWith({ emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox' })
+    // Blank time → "now" (FIXED_NOW 15:00): the sighting is timed, not untimed "just now".
+    expect(onSave).toHaveBeenCalledWith({ emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox', sightedTime: '15:00' })
   })
 
   it('disables Save for a future date and sets max on the date input', () => {
@@ -70,6 +71,6 @@ describe('DetailsForm', () => {
     const onSave = vi.fn()
     render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} />)
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
-    expect(onSave).toHaveBeenCalledWith({ emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox' })
+    expect(onSave).toHaveBeenCalledWith({ emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox', sightedTime: '15:00' })
   })
 })
