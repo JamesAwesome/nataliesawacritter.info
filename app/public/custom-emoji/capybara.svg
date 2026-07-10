@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Capybara">
+  <ellipse cx="32" cy="47" rx="22" ry="14" fill="#a9764c"/>
+  <ellipse cx="16" cy="57" rx="5" ry="4" fill="#7a5636"/>
+  <ellipse cx="48" cy="57" rx="5" ry="4" fill="#7a5636"/>
+  <ellipse cx="32" cy="28" rx="16" ry="13" fill="#a9764c"/>
+  <circle cx="19" cy="18" r="4" fill="#7a5636"/>
+  <circle cx="45" cy="18" r="4" fill="#7a5636"/>
+  <circle cx="19" cy="18" r="2" fill="#5c3f28"/>
+  <circle cx="45" cy="18" r="2" fill="#5c3f28"/>
+  <ellipse cx="32" cy="35" rx="13" ry="8" fill="#c9a874"/>
+  <ellipse cx="32" cy="31" rx="5" ry="3.5" fill="#3a2a1c"/>
+  <circle cx="23" cy="25" r="1.8" fill="#2a2018"/>
+  <circle cx="41" cy="25" r="1.8" fill="#2a2018"/>
+  <path d="M29 37 q3 2 6 0" stroke="#5c3f28" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <circle cx="32" cy="11" r="7" fill="#f2921c"/>
+  <path d="M27 8.5 q5 -3.5 10 0" stroke="#d97a12" stroke-width="1" fill="none" opacity="0.6"/>
+  <path d="M32 5 q3 -3 -1 -4.5 q-4 1.5 1 4.5 Z" fill="#5b9c4a"/>
+</svg>
