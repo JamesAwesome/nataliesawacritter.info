@@ -59,6 +59,6 @@ describe('processNext', () => {
     const res = await processNext({ client, runAgent, existingNames: [] })
 
     expect(markHandled).not.toHaveBeenCalled()
-    expect(res).toEqual({ status: 'error', id: 'e', message: 'agent error' })
+    expect(res).toEqual({ status: 'error', id: 'e', message: 'timeout' })
   })
 })

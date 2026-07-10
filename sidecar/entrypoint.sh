@@ -3,6 +3,14 @@ set -euo pipefail
 
 REPO_DIR="${REPO_DIR:-/repo}"
 
+# As root: make the /repo volume writable by the non-root user, then re-exec as
+# it. The Claude CLI refuses --dangerously-skip-permissions when running as root.
+if [ "$(id -u)" = "0" ]; then
+  mkdir -p "$REPO_DIR"
+  chown -R node:node "$REPO_DIR"
+  exec gosu node "$0" "$@"
+fi
+
 # Deny by default — but fail *slowly*: restart:unless-stopped would otherwise
 # tight-loop on a misconfigured start. Sleep so the log stays readable.
 missing=""

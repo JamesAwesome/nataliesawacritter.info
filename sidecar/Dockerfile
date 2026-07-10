@@ -5,7 +5,7 @@ FROM node:26-bookworm
 # git, curl, the GitHub CLI, and chromium (for the skill's render gate) + emoji
 # fonts so rendered SVGs look right.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      git curl ca-certificates chromium fonts-noto-color-emoji fonts-liberation \
+      git curl ca-certificates gosu chromium fonts-noto-color-emoji fonts-liberation \
     && mkdir -p -m 755 /etc/apt/keyrings \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
          | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null \
@@ -18,10 +18,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # pnpm (pinned to CI's version) + the Claude Code CLI
 RUN npm i -g pnpm@11.9.0 @anthropic-ai/claude-code
 
+# The Claude CLI refuses --dangerously-skip-permissions as root, so the
+# entrypoint drops to the base image's built-in non-root `node` user (uid 1000).
+
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
 COPY . .
+RUN chown -R node:node /app
 
 ENV REPO_DIR=/repo
 COPY entrypoint.sh /entrypoint.sh
