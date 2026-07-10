@@ -35,7 +35,14 @@ export function createPrComments(deps: {
   log?: (message: string) => void
 }) {
   const { exec, repoDir, selfLogin, allowedCommenters } = deps
-  const isAllowed = (login: string) => login !== selfLogin && allowedCommenters.includes(login)
+  // GitHub logins are case-insensitive, so compare lowercased — otherwise an
+  // env of `jamesawesome` silently fails to match login `JamesAwesome`.
+  const self = selfLogin.toLowerCase()
+  const allow = new Set(allowedCommenters.map((l) => l.toLowerCase()))
+  const isAllowed = (login: string) => {
+    const l = login.toLowerCase()
+    return l !== self && allow.has(l)
+  }
 
   return {
     /** Open PRs on the sidecar's own emoji-request/* branches. */

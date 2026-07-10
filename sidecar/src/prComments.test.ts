@@ -75,6 +75,17 @@ describe('prComments', () => {
     ])
   })
 
+  it('matches allowlisted logins case-insensitively (GitHub logins are)', async () => {
+    const comments = [{ id: 200, user: { login: 'JamesAwesome' }, body: '/iterate go', html_url: 'https://x/c/200' }]
+    const exec = router((joined) => {
+      if (joined.includes('issues/9/comments')) return ok(JSON.stringify(comments))
+      return ok('[]')
+    })
+    const pc = createPrComments({ ...base, allowedCommenters: ['jamesawesome'], exec })
+    const actionable = await pc.listActionableComments({ number: 9, headRefName: 'emoji-request/x', url: 'u' })
+    expect(actionable.map((c) => c.id)).toEqual([200])
+  })
+
   it('disables iteration when the allowlist is empty (deny by default)', async () => {
     const exec = vi.fn(async () => ok('[]'))
     const pc = createPrComments({ ...base, allowedCommenters: [], exec })
