@@ -20,6 +20,8 @@ shipped**. It **never merges**; you review the PR.
 | `agentRunner` | isolate a worktree, run `claude -p`, read the `RESULT:` line |
 | `parseResult` / `classify` | agent output → `AgentResult` → DB `outcome` |
 | `dedupe` / `existingNames` | skip a request whose critter already exists |
+| `parseIterate` / `prComments` | read `/iterate <feedback>` PR comments from allowlisted people; react (👀/🚀/😕) as dedup state, reply on the PR |
+| `prState` / `reconcile` | `DELETE` a request once its PR is merged (accepted) |
 | `processNext` | one loop step; `main` schedules it every `POLL_INTERVAL_MS` |
 
 ## Running it
@@ -32,6 +34,11 @@ then:
 
 Try `SIDECAR_DRY_RUN=1` first — it logs what it would process and touches
 nothing. It **opens PRs, never merges**; each PR includes the render for review.
+
+To iterate on an open sidecar PR, comment `/iterate <feedback>` (e.g. `/iterate
+make the beak bigger`). Only logins in `SIDECAR_ALLOWED_COMMENTERS` (comma-
+separated) can trigger it — empty means the feature is off (deny by default),
+so a `/iterate` from anyone else is ignored.
 
 ## Dev
 
