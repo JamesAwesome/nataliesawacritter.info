@@ -20,6 +20,29 @@ describe('EmojiRequestForm', () => {
     expect(screen.getByText('the city kind')).toBeInTheDocument()
   })
 
+  it('shows a PR link for a handled request, a skipped tag for a skip, nothing for pending', async () => {
+    setCredentials('sekrit')
+    stubFetchByUrl({
+      '/api/emoji-requests': [
+        {
+          status: 200,
+          body: [
+            { id: 'a', name: 'Pigeon', note: null, createdAt: 'x', handledAt: 'y', prUrl: 'https://github.com/o/r/pull/9', outcome: 'pr-opened' },
+            { id: 'b', name: 'Dodo', note: null, createdAt: 'x', handledAt: 'y', prUrl: null, outcome: 'skipped-copyright' },
+            { id: 'c', name: 'Fox', note: null, createdAt: 'x', handledAt: null, prUrl: null, outcome: null },
+          ],
+        },
+      ],
+    })
+    render(<EmojiRequestForm onBack={() => {}} />)
+    const pr = await screen.findByRole('link', { name: /PR/ })
+    expect(pr).toHaveAttribute('href', 'https://github.com/o/r/pull/9')
+    expect(screen.getByText('skipped')).toBeInTheDocument()
+    // exactly one PR link + one skipped tag (the pending Fox row has neither)
+    expect(screen.getAllByRole('link')).toHaveLength(1)
+    expect(screen.getAllByText('skipped')).toHaveLength(1)
+  })
+
   it('disables Send when the name is blank', async () => {
     setCredentials('sekrit')
     stubFetchByUrl({ '/api/emoji-requests': [{ status: 200, body: [] }] })

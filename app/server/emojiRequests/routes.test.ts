@@ -10,13 +10,14 @@ type Json = Omit<EmojiRequest, 'createdAt'> & { createdAt: string }
 type ValidationEnvelope = { error: 'validation'; details: Record<string, string> }
 
 function rowFor(fields: Parameters<EmojiRequestsStore['create']>[0]): EmojiRequest {
-  return { ...fields, id: FIXED_ID, createdAt: new Date('2026-07-10T12:00:00.000Z') }
+  return { ...fields, id: FIXED_ID, createdAt: new Date('2026-07-10T12:00:00.000Z'), handledAt: null, prUrl: null, outcome: null }
 }
 
 function fakeStore(overrides: Partial<EmojiRequestsStore> = {}): EmojiRequestsStore {
   return {
     list: vi.fn(async () => []),
     create: vi.fn(async (fields) => rowFor(fields)),
+    markHandled: vi.fn(async () => ({ ...rowFor({ name: 'Pigeon', note: null }), handledAt: new Date(), outcome: 'pr-opened' as const })),
     remove: vi.fn(async () => true),
     ...overrides,
   }
@@ -113,6 +114,78 @@ describe('GET /api/emoji-requests', () => {
   it('is write-gated — owner-only, unlike public sighting reads', async () => {
     await withServer(appWith(fakeStore(), denyGate), async (base) => {
       expect((await fetch(`${base}/api/emoji-requests`)).status).toBe(401)
+    })
+  })
+
+  it('passes ?pending=1 through to the store; defaults to all', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      await fetch(`${base}/api/emoji-requests?pending=1`)
+      expect(store.list).toHaveBeenCalledWith({ pending: true })
+      await fetch(`${base}/api/emoji-requests`)
+      expect(store.list).toHaveBeenCalledWith({ pending: false })
+    })
+  })
+})
+
+describe('PATCH /api/emoji-requests/:id', () => {
+  async function patch(base: string, id: string, body: unknown) {
+    return fetch(`${base}/api/emoji-requests/${id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  }
+
+  it('marks a request handled with an outcome and pr url', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      const res = await patch(base, FIXED_ID, { outcome: 'pr-opened', pr_url: 'https://github.com/x/y/pull/1' })
+      expect(res.status).toBe(200)
+      expect(store.markHandled).toHaveBeenCalledWith(FIXED_ID, {
+        outcome: 'pr-opened',
+        prUrl: 'https://github.com/x/y/pull/1',
+      })
+    })
+  })
+
+  it('normalizes a missing pr_url to null (e.g. a skip)', async () => {
+    const store = fakeStore()
+    await withServer(appWith(store), async (base) => {
+      await patch(base, FIXED_ID, { outcome: 'skipped-copyright' })
+      expect(store.markHandled).toHaveBeenCalledWith(FIXED_ID, { outcome: 'skipped-copyright', prUrl: null })
+    })
+  })
+
+  it.each([
+    ['missing outcome', { pr_url: 'https://x' }, 'outcome'],
+    ['invalid outcome', { outcome: 'nope' }, 'outcome'],
+    ['pr_url too long', { outcome: 'pr-opened', pr_url: 'x'.repeat(501) }, 'pr_url'],
+    ['unknown field', { outcome: 'pr-opened', foo: 1 }, 'foo'],
+  ])('400s on %s', async (_label, body, field) => {
+    await withServer(appWith(fakeStore()), async (base) => {
+      const res = await patch(base, FIXED_ID, body)
+      expect(res.status).toBe(400)
+      expect(((await res.json()) as ValidationEnvelope).details[field]).toBeDefined()
+    })
+  })
+
+  it('404s a missing request', async () => {
+    const store = fakeStore({ markHandled: vi.fn(async () => null) })
+    await withServer(appWith(store), async (base) => {
+      expect((await patch(base, FIXED_ID, { outcome: 'pr-opened' })).status).toBe(404)
+    })
+  })
+
+  it('400s a non-uuid id', async () => {
+    await withServer(appWith(fakeStore()), async (base) => {
+      expect((await patch(base, 'nope', { outcome: 'pr-opened' })).status).toBe(400)
+    })
+  })
+
+  it('is write-gated', async () => {
+    await withServer(appWith(fakeStore(), denyGate), async (base) => {
+      expect((await patch(base, FIXED_ID, { outcome: 'pr-opened' })).status).toBe(401)
     })
   })
 })
