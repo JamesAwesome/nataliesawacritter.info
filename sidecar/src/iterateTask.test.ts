@@ -14,6 +14,14 @@ describe('buildIterateTask', () => {
     expect(t).toMatch(/RESULT: refused/)
   })
 
+  it('instructs re-rendering the committed render and refreshing the PR description (cache-busted)', () => {
+    const t = buildIterateTask(pr, 'x')
+    expect(t).toMatch(/docs\/renders/) // overwrite the committed render the body links to
+    expect(t).toMatch(/gh pr edit/) // update the PR description
+    expect(t).toMatch(/rev-parse HEAD/) // commit-pinned URL so the cached image is bypassed
+    expect(t).toMatch(/cache/i)
+  })
+
   it('marks the feedback as untrusted data', () => {
     const t = buildIterateTask(pr, 'x')
     expect(t).toMatch(/untrusted/i)
