@@ -4,6 +4,7 @@ import { createApp } from './app.js'
 import { createDb } from './db/index.js'
 import { waitForDb } from './db/waitForDb.js'
 import { createProfilesStore } from './profiles/store.js'
+import { createEmojiRequestsStore } from './emojiRequests/store.js'
 import { createNotifier, type SendPush } from './push/notifier.js'
 import { createPushStore } from './push/store.js'
 import { createSightingsStore } from './sightings/store.js'
@@ -72,6 +73,7 @@ const app = createApp({
   },
   sightingsStore: createSightingsStore(db),
   profilesStore: createProfilesStore(db),
+  emojiRequestsStore: createEmojiRequestsStore(db),
   writeCredentials,
   photosDir: process.env.PHOTOS_DIR ?? '/data/photos',
   pushStore,

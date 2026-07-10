@@ -10,6 +10,8 @@ type Props = {
   onCancel: () => void
   friends?: Profile[]
   onPickFriend?: (profile: Profile) => void
+  /** When provided, renders a "Request an emoji" link that opens the request form. */
+  onRequestEmoji?: () => void
 }
 
 type TileProps = {
@@ -34,7 +36,7 @@ function PickerTile({ className, ariaLabel, tint, onClick, children }: TileProps
   )
 }
 
-export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFriend }: Props) {
+export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFriend, onRequestEmoji }: Props) {
   const [showExtended, setShowExtended] = useState(false)
   return (
     <div className="emoji-picker">
@@ -107,6 +109,11 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
             </div>
           ))}
         </>
+      )}
+      {onRequestEmoji !== undefined && (
+        <button type="button" className="btn-secondary picker-request" onClick={onRequestEmoji}>
+          ✨ Don't see it? Request an emoji
+        </button>
       )}
       <button type="button" className="btn-secondary flow-cancel" onClick={onCancel}>
         Cancel

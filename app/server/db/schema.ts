@@ -26,6 +26,15 @@ export const critterProfiles = pgTable('critter_profiles', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
+export const emojiRequests = pgTable('emoji_requests', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  // The critter/emoji being asked for, plus optional details. Owner-only list
+  // (writes and reads both gated), so no public projection needed.
+  name: text('name').notNull(),
+  note: text('note'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const pushSubscriptions = pgTable('push_subscriptions', {
   id: uuid('id').primaryKey().defaultRandom(),
   // Unique: re-subscribing from the same browser upserts, never duplicates.

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../app.js'
 import type { createDb } from '../db/index.js'
 import { createProfilesStore } from '../profiles/store.js'
+import { createEmojiRequestsStore } from "../emojiRequests/store.js"
 import { createSightingsStore } from '../sightings/store.js'
 import { createTestDb } from '../testDb.js'
 import { basic, withServer } from '../testUtils.js'
@@ -42,6 +43,7 @@ describe('push delivery through the sightings API', () => {
       },
       sightingsStore: createSightingsStore(handle.db),
       profilesStore: createProfilesStore(handle.db),
+      emojiRequestsStore: createEmojiRequestsStore(handle.db),
       writeCredentials: { user: 'natalie', password: 'sekrit' },
       photosDir: '/tmp/unused-photos',
       pushStore,

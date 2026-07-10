@@ -7,6 +7,7 @@ import { PasswordPrompt } from './PasswordPrompt'
 import { Sheet } from './Sheet'
 import { DetailsForm } from './DetailsForm'
 import { EmojiPicker } from './EmojiPicker'
+import { EmojiRequestForm } from './EmojiRequestForm'
 
 type Props = {
   open: boolean
@@ -40,6 +41,7 @@ export function LogSightingFlow({
   onUploadPhoto,
 }: Props) {
   const [picked, setPicked] = useState<Picked | null>(null)
+  const [requesting, setRequesting] = useState(false)
   // Lazily seeded from stored credentials at mount: once a session has been let
   // in (whether it started with stored credentials or passed the gate), it
   // stays unlocked even if a later save-time 401 clears the stored password —
@@ -69,6 +71,7 @@ export function LogSightingFlow({
     gateSession.current += 1
     write.abandon()
     setPicked(null)
+    setRequesting(false)
     setUnlocked(false)
     setGateBusy(false)
     setGateError(null)
@@ -160,6 +163,8 @@ export function LogSightingFlow({
             onSubmit={(password) => void unlock(password)}
           />
         )
+      ) : requesting ? (
+        <EmojiRequestForm onBack={() => setRequesting(false)} />
       ) : picked === null ? (
         <EmojiPicker
           recent={recent}
@@ -167,6 +172,7 @@ export function LogSightingFlow({
           onPick={(emoji, name) => setPicked({ emoji, name, place: null, friendId: null })}
           onPickFriend={(p) => setPicked({ emoji: p.emoji, name: p.name, place: p.place, friendId: p.id })}
           onCancel={close}
+          onRequestEmoji={() => setRequesting(true)}
         />
       ) : (
         <div className="flow-details">

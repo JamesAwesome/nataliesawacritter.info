@@ -6,6 +6,8 @@ import { requireWriteAuth } from './auth.js'
 import { errorHandler } from './errorHandler.js'
 import { feedRouter } from './feed/routes.js'
 import { profilesRouter } from './profiles/routes.js'
+import { emojiRequestsRouter } from './emojiRequests/routes.js'
+import type { EmojiRequestsStore } from './emojiRequests/store.js'
 import type { ProfilesStore } from './profiles/store.js'
 import type { Notifier } from './push/notifier.js'
 import { pushRouter } from './push/routes.js'
@@ -19,6 +21,7 @@ export interface AppDeps {
   checkDb: () => Promise<void>
   sightingsStore: SightingsStore
   profilesStore: ProfilesStore
+  emojiRequestsStore: EmojiRequestsStore
   /** null → write endpoints respond 503 "writes disabled" (deny by default). */
   writeCredentials: { user: string; password: string } | null
   photosDir: string
@@ -128,6 +131,7 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/sightings', sightingPhotoRouter(deps.sightingsStore, writeGate, deps.photosDir))
   app.use('/api/photos', photoFileRouter(deps.photosDir))
   app.use('/api/profiles', profilesRouter(deps.profilesStore, writeGate))
+  app.use('/api/emoji-requests', emojiRequestsRouter(deps.emojiRequestsStore, writeGate))
   app.use('/api/push', pushRouter(deps.pushStore, deps.notifier.publicKey))
   app.use(feedRouter(deps.sightingsStore, deps.siteUrl))
 

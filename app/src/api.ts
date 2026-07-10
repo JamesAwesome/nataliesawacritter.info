@@ -93,6 +93,43 @@ export async function deleteProfile(id: string, authHeader: string): Promise<voi
   if (!res.ok) throw new ApiError(res.status)
 }
 
+export type EmojiRequest = {
+  id: string
+  name: string
+  note: string | null
+  createdAt: string
+}
+
+export type NewEmojiRequestInput = { name: string; note?: string }
+
+/** Owner-only (write-gated) — pass the auth header on reads too. */
+export async function listEmojiRequests(authHeader: string): Promise<EmojiRequest[]> {
+  const res = await fetch('/api/emoji-requests', { headers: { authorization: authHeader } })
+  if (!res.ok) throw new ApiError(res.status)
+  return (await res.json()) as EmojiRequest[]
+}
+
+export async function createEmojiRequest(
+  fields: NewEmojiRequestInput,
+  authHeader: string,
+): Promise<EmojiRequest> {
+  const res = await fetch('/api/emoji-requests', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: authHeader },
+    body: JSON.stringify(fields),
+  })
+  if (!res.ok) throw new ApiError(res.status)
+  return (await res.json()) as EmojiRequest
+}
+
+export async function deleteEmojiRequest(id: string, authHeader: string): Promise<void> {
+  const res = await fetch(`/api/emoji-requests/${id}`, {
+    method: 'DELETE',
+    headers: { authorization: authHeader },
+  })
+  if (!res.ok) throw new ApiError(res.status)
+}
+
 export async function uploadPhoto(id: string, photo: Blob, authHeader: string): Promise<Sighting> {
   const res = await fetch(`/api/sightings/${id}/photo`, {
     method: 'PUT',

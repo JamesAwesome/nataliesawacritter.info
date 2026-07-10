@@ -43,6 +43,13 @@
       "when": 1783473684377,
       "tag": "0005_add_sighting_quantity",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783697320221,
+      "tag": "0006_add_emoji_requests",
+      "breakpoints": true
     }
   ]
 }
