@@ -1,5 +1,6 @@
 import { date, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 import type { Quantity } from '../quantity.js'
+import type { Outcome } from '../emojiRequests/outcome.js'
 
 export const sightings = pgTable('sightings', {
   // uuid (not serial): reads are public, so IDs must not be enumerable
@@ -33,6 +34,10 @@ export const emojiRequests = pgTable('emoji_requests', {
   name: text('name').notNull(),
   note: text('note'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  // Set by the sidecar once it acts on the request. handledAt null = pending.
+  handledAt: timestamp('handled_at', { withTimezone: true }),
+  prUrl: text('pr_url'),
+  outcome: text('outcome').$type<Outcome>(),
 })
 
 export const pushSubscriptions = pgTable('push_subscriptions', {

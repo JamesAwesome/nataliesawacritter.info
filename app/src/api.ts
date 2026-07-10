@@ -93,11 +93,18 @@ export async function deleteProfile(id: string, authHeader: string): Promise<voi
   if (!res.ok) throw new ApiError(res.status)
 }
 
+/** How the sidecar resolved a request (mirrors server/emojiRequests/outcome.ts). */
+export type Outcome = 'pr-opened' | 'skipped-copyright' | 'skipped-unclear'
+
 export type EmojiRequest = {
   id: string
   name: string
   note: string | null
   createdAt: string
+  /** null = still pending (not yet handled by the sidecar). */
+  handledAt: string | null
+  prUrl: string | null
+  outcome: Outcome | null
 }
 
 export type NewEmojiRequestInput = { name: string; note?: string }

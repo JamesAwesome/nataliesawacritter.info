@@ -113,6 +113,14 @@ export function EmojiRequestForm({ onBack }: Props) {
                   <span className="request-name">{r.name}</span>
                   {r.note !== null && <span className="request-note">{r.note}</span>}
                 </span>
+                {r.outcome === 'pr-opened' && r.prUrl !== null && (
+                  <a className="request-status request-pr" href={r.prUrl} target="_blank" rel="noreferrer">
+                    PR ↗
+                  </a>
+                )}
+                {(r.outcome === 'skipped-copyright' || r.outcome === 'skipped-unclear') && (
+                  <span className="request-status request-skipped">skipped</span>
+                )}
                 <button
                   type="button"
                   className="request-dismiss"

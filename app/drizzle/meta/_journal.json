@@ -50,6 +50,13 @@
       "when": 1783697320221,
       "tag": "0006_add_emoji_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783703356402,
+      "tag": "0007_emoji_request_handling",
+      "breakpoints": true
     }
   ]
 }

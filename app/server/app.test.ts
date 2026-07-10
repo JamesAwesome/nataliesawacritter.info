@@ -33,7 +33,8 @@ function deps(overrides: Partial<AppDeps> = {}): AppDeps {
     profilesStore: fakeProfilesStore(),
     emojiRequestsStore: {
       list: vi.fn(async () => []),
-      create: vi.fn(async (f) => ({ id: '0', name: f.name, note: f.note, createdAt: new Date(0) })),
+      create: vi.fn(async (f) => ({ id: '0', name: f.name, note: f.note, createdAt: new Date(0), handledAt: null, prUrl: null, outcome: null })),
+      markHandled: vi.fn(async () => null),
       remove: vi.fn(async () => true),
     },
     requestAlerter: { notify: vi.fn(async () => {}) },

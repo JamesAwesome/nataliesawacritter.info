@@ -490,6 +490,22 @@ body {
   padding: 0 4px;
   cursor: pointer;
 }
+.request-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.request-pr {
+  color: var(--photo-ok-text);
+  background: var(--photo-ok-bg);
+  text-decoration: none;
+}
+.request-skipped {
+  color: var(--ink-secondary);
+  background: var(--surface-input);
+}
 
 .flow-error {
   color: var(--danger-text);
