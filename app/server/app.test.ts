@@ -36,6 +36,7 @@ function deps(overrides: Partial<AppDeps> = {}): AppDeps {
       create: vi.fn(async (f) => ({ id: '0', name: f.name, note: f.note, createdAt: new Date(0) })),
       remove: vi.fn(async () => true),
     },
+    requestAlerter: { notify: vi.fn(async () => {}) },
     writeCredentials: null,
     photosDir: '/tmp/unused-photos',
     pushStore: fakePushStore(),

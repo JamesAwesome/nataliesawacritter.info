@@ -1,5 +1,5 @@
 import { Router, type RequestHandler } from 'express'
-import type { EmojiRequestsStore, NewEmojiRequest } from './store.js'
+import type { EmojiRequest, EmojiRequestsStore, NewEmojiRequest } from './store.js'
 import { UUID_RE, sendValidation, rejectUnknownFields } from '../httpValidation.js'
 
 const KNOWN_FIELDS = new Set(['name', 'note'])
@@ -36,7 +36,11 @@ function parseNewRequest(body: unknown):
 
 /** All routes are behind writeGate — the request list is owner-only, so even
  *  the GET is gated (unlike the public sighting reads). */
-export function emojiRequestsRouter(store: EmojiRequestsStore, writeGate: RequestHandler): Router {
+export function emojiRequestsRouter(
+  store: EmojiRequestsStore,
+  writeGate: RequestHandler,
+  onCreated: (request: EmojiRequest) => void = () => {},
+): Router {
   const router = Router()
 
   router.get('/', writeGate, async (_req, res) => {
@@ -49,7 +53,9 @@ export function emojiRequestsRouter(store: EmojiRequestsStore, writeGate: Reques
       sendValidation(res, parsed.details)
       return
     }
-    res.status(201).json(await store.create(parsed.fields))
+    const created = await store.create(parsed.fields)
+    onCreated(created)
+    res.status(201).json(created)
   })
 
   router.delete('/:id', writeGate, async (req, res) => {
