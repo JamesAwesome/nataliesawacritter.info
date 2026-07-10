@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Highland Cow">
+  <path d="M22 18 Q6 10 4 22 Q12 22 18 27 Z" fill="#e8dcc8"/>
+  <path d="M42 18 Q58 10 60 22 Q52 22 46 27 Z" fill="#e8dcc8"/>
+  <ellipse cx="18" cy="30" rx="4" ry="3.4" fill="#a9683c"/>
+  <ellipse cx="46" cy="30" rx="4" ry="3.4" fill="#a9683c"/>
+  <ellipse cx="32" cy="44" rx="19" ry="14" fill="#a9683c"/>
+  <path d="M18 52 v6 M27 55 v6 M37 55 v6 M46 52 v6" stroke="#7a4a28" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="32" cy="28" r="14" fill="#a9683c"/>
+  <path d="M18 26 q3 -7 6 -1 q3 -7 6 -1 q3 -7 6 -1 q3 -7 6 -1 q3 -7 4 0 v12 h-28 Z" fill="#8a5a34"/>
+  <circle cx="24" cy="30" r="1.7" fill="#2a2320"/>
+  <circle cx="38" cy="30" r="1.7" fill="#2a2320"/>
+  <ellipse cx="31" cy="38" rx="7" ry="5" fill="#6f4429"/>
+  <circle cx="28" cy="38" r="1.1" fill="#2a2320"/>
+  <circle cx="34" cy="38" r="1.1" fill="#2a2320"/>
+</svg>
