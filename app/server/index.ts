@@ -5,6 +5,7 @@ import { createDb } from './db/index.js'
 import { waitForDb } from './db/waitForDb.js'
 import { createProfilesStore } from './profiles/store.js'
 import { createEmojiRequestsStore } from './emojiRequests/store.js'
+import { createRequestAlerter } from './emojiRequests/alerter.js'
 import { createNotifier, type SendPush } from './push/notifier.js'
 import { createPushStore } from './push/store.js'
 import { createSightingsStore } from './sightings/store.js'
@@ -67,6 +68,22 @@ const notifier = createNotifier({
 
 const siteUrl = process.env.SITE_URL ?? 'https://nataliesawacritter.info'
 
+// Emoji-request alerts: POST to a single secret ntfy topic → the owner's phone.
+// Unset → no-op. NTFY_URL is operator-configured (not user input), so no SSRF risk.
+const ntfyUrl = process.env.NTFY_URL
+console.log(ntfyUrl ? 'emoji-request alerts enabled (ntfy)' : 'emoji-request alerts disabled (NTFY_URL not set)')
+const requestAlerter = createRequestAlerter({
+  config: ntfyUrl ? { url: ntfyUrl } : null,
+  send: async (url, message) => {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { Title: message.title, Tags: message.tags },
+      body: message.body,
+    })
+    if (!res.ok) throw new Error(`ntfy responded ${res.status}`)
+  },
+})
+
 const app = createApp({
   checkDb: async () => {
     await pool.query('SELECT 1')
@@ -74,6 +91,7 @@ const app = createApp({
   sightingsStore: createSightingsStore(db),
   profilesStore: createProfilesStore(db),
   emojiRequestsStore: createEmojiRequestsStore(db),
+  requestAlerter,
   writeCredentials,
   photosDir: process.env.PHOTOS_DIR ?? '/data/photos',
   pushStore,

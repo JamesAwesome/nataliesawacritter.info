@@ -48,6 +48,7 @@ services:
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-}
       SITE_URL: ${SITE_URL:-https://nataliesawacritter.info}
+      NTFY_URL: ${NTFY_URL:-}
     volumes:
       - photos:/data/photos
     depends_on:

@@ -27,10 +27,14 @@ const denyGate: RequestHandler = (_req, res) => {
   res.status(401).json({ error: 'unauthorized' })
 }
 
-function appWith(store: EmojiRequestsStore, gate: RequestHandler = passGate): Express {
+function appWith(
+  store: EmojiRequestsStore,
+  gate: RequestHandler = passGate,
+  onCreated: (r: EmojiRequest) => void = () => {},
+): Express {
   const app = express()
   app.use(express.json())
-  app.use('/api/emoji-requests', emojiRequestsRouter(store, gate))
+  app.use('/api/emoji-requests', emojiRequestsRouter(store, gate, onCreated))
   app.use(errorHandler)
   return app
 }
@@ -51,6 +55,15 @@ describe('POST /api/emoji-requests', () => {
       expect(res.status).toBe(201)
       expect(((await res.json()) as Json).id).toBe(FIXED_ID)
       expect(store.create).toHaveBeenCalledWith({ name: 'Pigeon', note: 'the city kind' })
+    })
+  })
+
+  it('calls onCreated with the new request (for the ntfy alert)', async () => {
+    const store = fakeStore()
+    const onCreated = vi.fn()
+    await withServer(appWith(store, passGate, onCreated), async (base) => {
+      await post(base, { name: 'Pigeon' })
+      expect(onCreated).toHaveBeenCalledWith(expect.objectContaining({ id: FIXED_ID, name: 'Pigeon' }))
     })
   })
 

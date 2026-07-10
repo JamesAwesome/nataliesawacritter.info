@@ -28,6 +28,7 @@ describe('profiles API against real postgres', () => {
       sightingsStore: createSightingsStore(handle.db),
       profilesStore: createProfilesStore(handle.db),
       emojiRequestsStore: createEmojiRequestsStore(handle.db),
+      requestAlerter: { notify: async () => {} },
       writeCredentials: { user: 'natalie', password: 'sekrit' },
       photosDir: '/tmp/unused-photos',
       pushStore: fakePushStore(),
