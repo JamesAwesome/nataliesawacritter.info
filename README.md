@@ -4,13 +4,15 @@
 [![RSS feed](https://img.shields.io/badge/RSS-feed-EE802F?logo=rss&logoColor=white)](https://nataliesawacritter.info/feed.xml)
 
 Natalie sees things, she sees them with her eyes. This app lets her log
-wildlife sightings — with photos, saved "critter friends," and hand-drawn
-custom emoji for local critters that Unicode forgot (robins, a groundhog, an
-Atlantic puffin…) — and view them as a calendar, a filterable history, and a
-Top Critters leaderboard grouped by the names she gives them. The emoji picker
-sorts everything into categories (Birds, Mammals, Sea Life…). Friends can keep
-up with new sightings as they happen via push notifications (it installs as a
-PWA on phones) or an RSS feed. Live at nataliesawacritter.info.
+wildlife sightings — with photos, how many she saw (1·2·3·many), saved "critter
+friends," and hand-drawn custom emoji for local critters that Unicode forgot
+(robins, a groundhog, an Atlantic puffin…) — and view them as a calendar, a
+filterable history, and a Top Critters leaderboard grouped by the names she
+gives them. The emoji picker sorts everything into categories (Birds, Mammals,
+Sea Life…), and she can **request a new critter emoji** right from the picker —
+optionally, a coding agent turns each request into a pull request (see below).
+Friends can keep up with new sightings as they happen via push notifications (it
+installs as a PWA on phones) or an RSS feed. Live at nataliesawacritter.info.
 
 ## Stack
 
@@ -82,6 +84,35 @@ over-reports because dead subscriptions are pruned only when a notification is
 actually sent (the notifier drops an endpoint on a 404/410 from the push
 service).
 
+## Requesting new critters
+
+When a critter isn't in the picker yet, Natalie can request it (a name + optional
+note). Requests are **owner-only** — the form and the request list sit behind the
+same write credentials as logging a sighting — and each shows its status: pending,
+a link to its pull request, or why it was skipped.
+
+### Emoji-request sidecar (optional agent)
+
+An optional background service turns those requests into pull requests. It polls
+for pending requests, and for each one runs a coding agent (Claude Code, headless)
+that draws an **original** critter emoji following the repo's
+`adding-a-critter-emoji` skill, gates on a real-browser render, and **opens a PR —
+never merging**. Copyright is enforced by the skill (original or verifiably-CC0
+art only; it refuses "make it look like <copyrighted character>").
+
+Two "watch my own PRs" behaviours close the loop:
+
+- **Iterate via PR comments** — comment `/iterate <feedback>` (e.g. `/iterate make
+  the beak bigger`) on a sidecar PR and the agent updates the emoji on that branch.
+  Only GitHub logins in `SIDECAR_ALLOWED_COMMENTERS` can trigger it (empty = off,
+  deny by default); the feedback is treated as untrusted data, not instructions.
+- **Auto-remove on merge** — once a request's PR is merged (accepted), the request
+  is deleted so it drops off the list.
+
+It's off unless you start its compose profile, needs its own API key + a scoped
+GitHub PAT (Contents + PRs, **no merge**), and runs entirely outside the app image.
+See [`sidecar/README.md`](sidecar/README.md) for setup.
+
 ## Security & privacy
 
 Reads are public by design (sightings, profiles, photos, the RSS feed); writes
@@ -119,15 +150,19 @@ re-validation, shorter photo cache TTL.
     GET    /api/profiles                                  # public; saved critter friends
     POST   /api/profiles                                  # basic auth; emoji + name required
     DELETE /api/profiles/:id                              # basic auth
+    GET    /api/emoji-requests?pending=1                  # basic auth; owner-only; ?pending filters to open
+    POST   /api/emoji-requests                            # basic auth; {name, note?}
+    PATCH  /api/emoji-requests/:id                        # basic auth; mark handled {outcome, pr_url?}
+    DELETE /api/emoji-requests/:id                        # basic auth
     GET    /api/auth/check                                # basic auth; 204/401, 503 when writes disabled
     GET    /api/push/vapid-public-key                     # public; 503 when push disabled
     POST   /api/push/subscriptions                        # public; browser push subscription JSON
     DELETE /api/push/subscriptions                        # public; body {endpoint}
     GET    /feed.xml                                      # public; RSS 2.0 feed of recent sightings
 
-POST body: `emoji` and `sightedOn` (YYYY-MM-DD) required; `name`, `sightedTime`,
-`place`, `comment` optional. With blank write credentials the write endpoints
-return 503.
+Sighting POST body: `emoji` and `sightedOn` (YYYY-MM-DD) required; `name`,
+`sightedTime`, `place`, `comment`, `quantity` (`1`·`2`·`3`·`many`, default `1`)
+optional. With blank write credentials the write endpoints return 503.
 
 ## Development
 
