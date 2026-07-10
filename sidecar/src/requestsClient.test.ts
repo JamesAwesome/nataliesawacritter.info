@@ -38,4 +38,28 @@ describe('requestsClient', () => {
     const client = createRequestsClient({ baseUrl: base, authHeader: auth, fetch: fetch as unknown as typeof globalThis.fetch })
     await expect(client.listPending()).rejects.toThrow(/401/)
   })
+
+  it('lists only pr-opened requests that have a url', async () => {
+    const fetch = vi.fn(async () =>
+      jsonResponse([
+        { id: 'a', name: 'Deer', outcome: 'pr-opened', prUrl: 'https://x/pull/1' },
+        { id: 'b', name: 'Owl', outcome: 'skipped-copyright', prUrl: null },
+        { id: 'c', name: 'Fox', outcome: null, prUrl: null }, // pending
+        { id: 'd', name: 'Bat', outcome: 'pr-opened', prUrl: null }, // no url → excluded
+      ]),
+    )
+    const client = createRequestsClient({ baseUrl: base, authHeader: auth, fetch: fetch as unknown as typeof globalThis.fetch })
+    expect(await client.listPrOpened()).toEqual([{ id: 'a', name: 'Deer', prUrl: 'https://x/pull/1' }])
+    expect(fetch).toHaveBeenCalledWith(`${base}/api/emoji-requests`, { headers: { authorization: auth } })
+  })
+
+  it('DELETEs a request', async () => {
+    const fetch = vi.fn(async (_url: string, _init: RequestInit) => new Response(null, { status: 204 }))
+    const client = createRequestsClient({ baseUrl: base, authHeader: auth, fetch: fetch as unknown as typeof globalThis.fetch })
+    await client.remove('a')
+    expect(fetch).toHaveBeenCalledWith(`${base}/api/emoji-requests/a`, {
+      method: 'DELETE',
+      headers: { authorization: auth },
+    })
+  })
 })
