@@ -74,10 +74,11 @@ the job goes red.
 3. **Deploy key (forced-command)** — generate a dedicated ed25519 key; on the host
    add the public key to the deploy user's `~/.ssh/authorized_keys` prefixed with
    `restrict,command="$HOME/deploy-forced.sh"`, where `deploy-forced.sh` validates
-   a 40-hex SHA from `$SSH_ORIGINAL_COMMAND` and execs `<checkout>/scripts/deploy.sh`.
+   a 40-hex SHA from `$SSH_ORIGINAL_COMMAND`, exports `DEPLOY_PATH=<checkout>`, and
+   execs `<checkout>/scripts/deploy.sh`.
 4. **Environment secrets** — `DEPLOY_SSH_KEY` (private key), `DEPLOY_HOST`,
-   `DEPLOY_USER` (in the `docker` group), `DEPLOY_KNOWN_HOSTS` (`ssh-keyscan` line),
-   `DEPLOY_PATH` (the host checkout dir).
+   `DEPLOY_USER` (in the `docker` group), and `DEPLOY_KNOWN_HOSTS` (`ssh-keyscan`
+   line).
 5. **Host** — `chmod 600` the `.env`; ensure the checkout is clean and deploy-only,
    and that `scripts/deploy.sh` is present (pull once after this lands).
 

@@ -93,5 +93,6 @@ jobs:
           trap 'rm -f "$KEY" "$KH"' EXIT
           printf '%s\n' "$DEPLOY_SSH_KEY" > "$KEY"
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$KH"
-          ssh -i "$KEY" -o IdentitiesOnly=yes -o UserKnownHostsFile="$KH" \
+          ssh -i "$KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$KH" \
             "$DEPLOY_USER@$DEPLOY_HOST" "$SHA"
