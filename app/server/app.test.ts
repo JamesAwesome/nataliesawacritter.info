@@ -31,6 +31,11 @@ function deps(overrides: Partial<AppDeps> = {}): AppDeps {
     checkDb: async () => {},
     sightingsStore: fakeStore(),
     profilesStore: fakeProfilesStore(),
+    emojiRequestsStore: {
+      list: vi.fn(async () => []),
+      create: vi.fn(async (f) => ({ id: '0', name: f.name, note: f.note, createdAt: new Date(0) })),
+      remove: vi.fn(async () => true),
+    },
     writeCredentials: null,
     photosDir: '/tmp/unused-photos',
     pushStore: fakePushStore(),
