@@ -35,11 +35,13 @@ export async function processNext(deps: ProcessDeps): Promise<ProcessResult> {
     return { status: 'skipped-duplicate', id: request.id }
   }
 
-  const classified = outcomeOf(await deps.runAgent(request))
+  const result = await deps.runAgent(request)
+  const classified = outcomeOf(result)
   if (classified === null) {
     // Agent errored → leave unhandled so the next poll retries it.
-    log(`error on "${request.name}"`)
-    return { status: 'error', id: request.id, message: 'agent error' }
+    const message = result.kind === 'error' ? result.message : 'agent error'
+    log(`error on "${request.name}": ${message}`)
+    return { status: 'error', id: request.id, message }
   }
 
   await deps.client.markHandled(request.id, classified)
