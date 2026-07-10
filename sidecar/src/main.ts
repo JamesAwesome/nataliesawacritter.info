@@ -6,6 +6,7 @@ import { existingNames } from './existingNames'
 import { prStateOf } from './prState'
 import { processNext } from './processNext'
 import { reconcile } from './reconcile'
+import { redact } from './redact'
 import { createRequestsClient } from './requestsClient'
 
 const pexec = promisify(execFile)
@@ -25,7 +26,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 async function main(): Promise<void> {
   const config = parseConfig(process.env)
-  const log = (message: string) => console.log(`[sidecar] ${message}`)
+  const log = (message: string) => console.log(`[sidecar] ${redact(message)}`)
   log(`up — app ${config.appBaseUrl}, model ${config.model}, poll ${config.pollIntervalMs}ms${config.dryRun ? ' (DRY RUN)' : ''}`)
 
   const client = createRequestsClient({ baseUrl: config.appBaseUrl, authHeader: config.authHeader, fetch: globalThis.fetch })
@@ -59,6 +60,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error(`[sidecar] fatal: ${err instanceof Error ? err.message : String(err)}`)
+  console.error(`[sidecar] fatal: ${redact(err instanceof Error ? err.message : String(err))}`)
   process.exit(1)
 })

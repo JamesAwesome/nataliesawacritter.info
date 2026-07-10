@@ -40,6 +40,23 @@ make the beak bigger`). Only logins in `SIDECAR_ALLOWED_COMMENTERS` (comma-
 separated) can trigger it — empty means the feature is off (deny by default),
 so a `/iterate` from anyone else is ignored.
 
+## Recommended GitHub guardrails
+
+The agent runs autonomously (`--dangerously-skip-permissions`) with the PAT in
+its environment, so "never merge" is enforced at GitHub's edge, not just by the
+prompt. Two one-time settings turn that instruction into a real boundary and cap
+the blast radius if the token ever leaks:
+
+- **Branch protection on `main`** — require a pull-request review before merge
+  (and block direct pushes). The sidecar can open PRs but cannot merge or push to
+  `main`, no matter what a prompt-injected run tries.
+- **Scope the PAT to this one repo** — a fine-grained token limited to this
+  repository, Contents + Pull requests **write** only (no admin, no other repos).
+  A leak is then confined to this repo, and branch protection still blocks a merge.
+
+Comment/request text is treated as untrusted **data** (data-fenced into the agent
+prompt), and the sidecar redacts credentials from anything it logs.
+
 ## Dev
 
     pnpm install && pnpm test && pnpm typecheck
