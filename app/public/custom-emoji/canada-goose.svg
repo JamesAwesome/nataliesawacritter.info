@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Canada goose">
+  <!-- legs + webbed feet -->
+  <path d="M31 45 v9 M39 45 v9" stroke="#3a2f28" stroke-width="3" stroke-linecap="round"/>
+  <path d="M27 55 h8 M35 55 h8" stroke="#3a2f28" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- tail -->
+  <path d="M52 33 l9 2 -9 6 Z" fill="#2a2724"/>
+  <!-- body -->
+  <ellipse cx="35" cy="38" rx="19" ry="12" fill="#9c8a66"/>
+  <!-- lighter breast -->
+  <path d="M18 39 q1 -11 14 -12 q-7 6 -7 13 q-4 4 -7 -1 Z" fill="#cabfa2"/>
+  <!-- black neck -->
+  <path d="M24 42 q-11 -9 -11 -24 q0 -4 5 -4 q4 0 4 4 q0 12 9 21 Z" fill="#23262b"/>
+  <!-- head -->
+  <circle cx="15.5" cy="14" r="6.6" fill="#23262b"/>
+  <!-- beak -->
+  <path d="M10 14 l-8 1.5 8 3 Z" fill="#23262b"/>
+  <!-- white chin strap -->
+  <path d="M12 18.5 q4 2.5 8 1 q-1.5 -4.5 -5.5 -4.5 q-3 0.5 -2.5 3.5 Z" fill="#f4f2ee"/>
+  <!-- eye glint -->
+  <circle cx="17.5" cy="12.6" r="1" fill="#e7e3da"/>
+</svg>
