@@ -1,0 +1,16 @@
+{
+  "name": "nataliesawacritter-sidecar",
+  "private": true,
+  "type": "module",
+  "description": "Optional agent that turns emoji requests into pull requests. Not shipped in the app image.",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.4",
+    "tsx": "^4.23.0",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.9"
+  }
+}
