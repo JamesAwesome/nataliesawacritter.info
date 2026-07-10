@@ -21,10 +21,14 @@ Two related "watch my own PRs" capabilities, both a new poll path alongside
   from anyone else (a random collaborator, a compromised account, a bot) is
   ignored — its text never becomes agent instructions. **Deny by default:** if
   the allowlist is empty the comment-iteration path is disabled entirely (logged
-  once). The sidecar's own token login is always excluded (loop guard).
+  once). **The sidecar's own login is NOT excluded** — it usually runs with the
+  operator's own PAT, so the reviewer commenting `/iterate` is the same account
+  it authenticates as; excluding self would drop the very comments to act on. The
+  loop guard is instead the `/iterate` prefix (the sidecar's own replies never
+  start with it) plus reaction dedup below.
 - **Discover.** List open PRs the sidecar authored (head branch
   `emoji-request/*`) via `gh`; for each, list issue comments; keep `/iterate`
-  comments whose author is **allowlisted** (and not the sidecar itself).
+  comments whose author is **allowlisted**.
 - **Dedup/state — a GitHub reaction, no new DB.** Add 👀 when a comment is
   picked up, then ✅ (done) or ❌ (refused/failed). Skip any comment that
   already carries the sidecar's reaction. Status is visible right on the comment.
@@ -34,8 +38,9 @@ Two related "watch my own PRs" capabilities, both a new poll path alongside
   The skill loads as always — **Rule 1 still refuses** "make it look exactly
   like <copyrighted character>." On success: push (PR updates in place) + reply
   with the new render + react ✅. On refuse/error: react ❌ + reply why.
-- **Guards.** Ignore the sidecar's own comments (else it reacts to itself
-  forever); **cap iterations per PR** (e.g. 5) to bound cost; single-flight.
+- **Guards.** The `/iterate`-prefix trigger + reaction dedup are the loop guard
+  (the sidecar's own replies never start with `/iterate`, and a 👀'd comment is
+  skipped); **cap iterations per PR** (e.g. 5) to bound cost; single-flight.
 
 ## B. Reconcile merged requests ("remove accepted")
 

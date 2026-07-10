@@ -75,6 +75,20 @@ describe('prComments', () => {
     ])
   })
 
+  it('acts on /iterate from the operator even when that is the sidecar login (single-operator setup)', async () => {
+    // The sidecar runs with the operator's own PAT, so the reviewer commenting
+    // is the same GitHub account the sidecar authenticates as. The loop guard is
+    // the /iterate prefix + reaction dedup, NOT login identity — so this fires.
+    const comments = [{ id: 300, user: { login: 'JamesAwesome' }, body: '/iterate fix the nose', html_url: 'https://x/c/300' }]
+    const exec = router((joined) => {
+      if (joined.includes('issues/1/comments')) return ok(JSON.stringify(comments))
+      return ok('[]')
+    })
+    const pc = createPrComments({ exec, repoDir: '/repo', selfLogin: 'JamesAwesome', allowedCommenters: ['jamesawesome'] })
+    const actionable = await pc.listActionableComments({ number: 1, headRefName: 'emoji-request/x', url: 'u' })
+    expect(actionable.map((c) => c.id)).toEqual([300])
+  })
+
   it('matches allowlisted logins case-insensitively (GitHub logins are)', async () => {
     const comments = [{ id: 200, user: { login: 'JamesAwesome' }, body: '/iterate go', html_url: 'https://x/c/200' }]
     const exec = router((joined) => {
