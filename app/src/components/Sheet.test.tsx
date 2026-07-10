@@ -10,6 +10,21 @@ describe('Sheet', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
+  it('locks the page (body) scroll while open and restores it when closed', () => {
+    vi.stubGlobal('scrollTo', vi.fn()) // jsdom doesn't implement window.scrollTo
+    const { rerender } = render(<Sheet open={false} onClose={() => {}}>hi</Sheet>)
+    expect(document.body.style.position).toBe('')
+
+    rerender(<Sheet open onClose={() => {}}>hi</Sheet>)
+    // position:fixed (not just overflow:hidden) — iOS Safari ignores overflow.
+    expect(document.body.style.position).toBe('fixed')
+    expect(document.body.style.overflow).toBe('hidden')
+
+    rerender(<Sheet open={false} onClose={() => {}}>hi</Sheet>)
+    expect(document.body.style.position).toBe('')
+    expect(document.body.style.overflow).toBe('')
+  })
+
   it('renders children in a dialog when open', () => {
     render(<Sheet open onClose={() => {}}><p>content</p></Sheet>)
     expect(screen.getByRole('dialog')).toBeInTheDocument()

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useIsDesktop } from '../hooks/useIsDesktop'
+import { useScrollLock } from '../hooks/useScrollLock'
 
 type Props = { open: boolean; onClose: () => void; children: ReactNode }
 
@@ -15,6 +16,10 @@ export function Sheet({ open, onClose, children }: Props) {
   const isDragging = useRef(false)
   const [dragOffset, setDragOffset] = useState(0)
   const isDesktop = useIsDesktop()
+
+  // Freeze the page behind the sheet so scrolling/dragging on the scrim doesn't
+  // bleed through to the body underneath (notably on iOS).
+  useScrollLock(open)
 
   // Latest-ref so the touch effect calls the current onClose without
   // re-subscribing its native listeners whenever onClose identity changes.
