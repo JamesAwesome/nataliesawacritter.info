@@ -66,6 +66,31 @@ services:
     depends_on:
       - app
 
+  # Optional: turns emoji requests into PRs. Off by default; enable with
+  # `docker compose --profile sidecar up -d`. Opens PRs, never merges.
+  sidecar:
+    build:
+      context: ./sidecar
+    container_name: critter-sidecar
+    restart: unless-stopped
+    profiles: ["sidecar"]
+    environment:
+      # Empty → the sidecar refuses to start (deny by default).
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GH_TOKEN: ${GH_TOKEN:-}
+      REPO_SLUG: ${REPO_SLUG:-JamesAwesome/nataliesawacritter.info}
+      APP_BASE_URL: ${SIDECAR_APP_BASE_URL:-http://app:8080}
+      WRITE_USER: ${WRITE_USER:-}
+      WRITE_PASSWORD: ${WRITE_PASSWORD:-}
+      SIDECAR_MODEL: ${SIDECAR_MODEL:-sonnet}
+      POLL_INTERVAL_MS: ${SIDECAR_POLL_INTERVAL_MS:-60000}
+      SIDECAR_DRY_RUN: ${SIDECAR_DRY_RUN:-}
+    volumes:
+      - sidecar-repo:/repo
+    depends_on:
+      - app
+
 volumes:
   pgdata:
   photos:
+  sidecar-repo:

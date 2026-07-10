@@ -4,6 +4,8 @@
   "type": "module",
   "description": "Optional agent that turns emoji requests into pull requests. Not shipped in the app image.",
   "scripts": {
+    "start": "tsx src/main.ts",
+    "dev": "tsx watch src/main.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
