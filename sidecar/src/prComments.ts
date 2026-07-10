@@ -39,10 +39,12 @@ export function createPrComments(deps: {
   // env of `jamesawesome` silently fails to match login `JamesAwesome`.
   const self = selfLogin.toLowerCase()
   const allow = new Set(allowedCommenters.map((l) => l.toLowerCase()))
-  const isAllowed = (login: string) => {
-    const l = login.toLowerCase()
-    return l !== self && allow.has(l)
-  }
+  // NB: we deliberately do NOT exclude the sidecar's own login here. The sidecar
+  // usually runs with the operator's own PAT, so the reviewer commenting `/iterate`
+  // is the same account it authenticates as — excluding self would drop the very
+  // comments we want to act on. The loop guard is the `/iterate` prefix (the
+  // sidecar's own replies never start with it) plus reaction dedup (alreadyHandled).
+  const isAllowed = (login: string) => allow.has(login.toLowerCase())
 
   return {
     /** Open PRs on the sidecar's own emoji-request/* branches. */
@@ -77,7 +79,7 @@ export function createPrComments(deps: {
       const reactions = JSON.parse(
         await gh(exec, repoDir, ['api', '--paginate', `repos/{owner}/{repo}/issues/comments/${commentId}/reactions`]),
       ) as RawReaction[]
-      return reactions.some((r) => r.user.login === selfLogin)
+      return reactions.some((r) => r.user.login.toLowerCase() === self)
     },
 
     async react(commentId: number, kind: ReactionKind): Promise<void> {
