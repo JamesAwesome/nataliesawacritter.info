@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${GH_TOKEN:?GH_TOKEN required}"
-: "${REPO_SLUG:?REPO_SLUG required (owner/name)}"
 REPO_DIR="${REPO_DIR:-/repo}"
+
+# Deny by default — but fail *slowly*: restart:unless-stopped would otherwise
+# tight-loop on a misconfigured start. Sleep so the log stays readable.
+missing=""
+for v in ANTHROPIC_API_KEY GH_TOKEN REPO_SLUG WRITE_USER WRITE_PASSWORD; do
+  [ -z "${!v:-}" ] && missing="$missing $v"
+done
+if [ -n "$missing" ]; then
+  echo "[sidecar] not configured — set:${missing} (see .env.example). Sleeping 60s."
+  sleep 60
+  exit 1
+fi
 
 git config --global user.name "emoji-request sidecar"
 git config --global user.email "sidecar@nataliesawacritter.info"
