@@ -3,7 +3,9 @@ import { promisify } from 'node:util'
 import { createAgentRunner, type Exec } from './agentRunner'
 import { parseConfig } from './config'
 import { existingNames } from './existingNames'
+import { prStateOf } from './prState'
 import { processNext } from './processNext'
+import { reconcile } from './reconcile'
 import { createRequestsClient } from './requestsClient'
 
 const pexec = promisify(execFile)
@@ -45,6 +47,9 @@ async function main(): Promise<void> {
       } else {
         const result = await processNext({ client, runAgent, existingNames: existingNames(config.repoDir), log })
         if (result.status !== 'idle') log(`→ ${JSON.stringify(result)}`)
+        // Remove requests whose PR has been merged (accepted).
+        const { removed } = await reconcile({ client, prState: (url) => prStateOf(exec, url), log })
+        if (removed.length > 0) log(`reconciled ${removed.length} merged`)
       }
     } catch (err) {
       log(`loop error: ${err instanceof Error ? err.message : String(err)}`)
