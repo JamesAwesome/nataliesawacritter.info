@@ -1,0 +1,29 @@
+# Optional emoji-request sidecar. Heavy image (node + git + gh + chromium +
+# claude CLI) — built only when you opt in: `docker compose --profile sidecar up`.
+FROM node:26-bookworm
+
+# git, curl, the GitHub CLI, and chromium (for the skill's render gate) + emoji
+# fonts so rendered SVGs look right.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      git curl ca-certificates chromium fonts-noto-color-emoji fonts-liberation \
+    && mkdir -p -m 755 /etc/apt/keyrings \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+         | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null \
+    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+         > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update && apt-get install -y --no-install-recommends gh \
+    && rm -rf /var/lib/apt/lists/*
+
+# pnpm (pinned to CI's version) + the Claude Code CLI
+RUN npm i -g pnpm@11.9.0 @anthropic-ai/claude-code
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile
+COPY . .
+
+ENV REPO_DIR=/repo
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
