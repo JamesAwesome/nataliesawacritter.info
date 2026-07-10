@@ -128,7 +128,8 @@ Create `scripts/deploy.sh`:
 # previously-deployed commit. Invoked (via the forced-command wrapper) as:
 #   deploy.sh <40-hex-sha>     with DEPLOY_PATH pointing at the host checkout.
 # COMPOSE_PROFILES comes from the host .env — do not pass profile flags here.
-set -euo pipefail
+# `-E` (errtrace) is required so the ERR trap fires for failures INSIDE up().
+set -Eeuo pipefail
 
 SHA="${1:-}"
 [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "deploy: refusing — not a 40-hex commit sha: '$SHA'" >&2; exit 2; }
