@@ -61,7 +61,12 @@ wiring it in.
   through it, and it caught a floating-head bug that all tests missed.
 - **Automated (sidecar/agent):** you can't get a human OK mid-run, so render it,
   confirm it parses and is non-empty, and **attach the render to the PR** so a
-  human approves at review time. Never auto-merge emoji art.
+  human approves at review time. Never auto-merge emoji art. Commit the render
+  (e.g. `docs/renders/<slug>-emoji-render.png`) and embed it in the PR body by a
+  **commit-pinned** raw URL — `https://raw.githubusercontent.com/<owner>/<repo>/<sha>/<path>`
+  using the pushed commit's `git rev-parse HEAD`, **not** a branch-pinned URL.
+  GitHub caches PR images by URL, so a branch-pinned link goes stale after a
+  later push (e.g. an `/iterate`); a commit-pinned one changes every push.
 
 **Art style:** flat vector, `viewBox="0 0 64 64"`, self-contained (no external
 refs/fonts), `role="img"` + `aria-label="<Name>"`. Match the existing set (see
