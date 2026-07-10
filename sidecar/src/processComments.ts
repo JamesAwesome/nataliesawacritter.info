@@ -46,7 +46,7 @@ export async function processComments(deps: {
       const res = await deps.runIterate(pr, c.feedback)
       if (res.kind === 'updated') {
         await deps.prComments.react(c.id, 'done')
-        await deps.prComments.reply(pr.number, `🚀 Updated per your feedback — pushed to \`${pr.headRefName}\`. Take a look at the new render.`)
+        await deps.prComments.reply(pr.number, `🚀 Updated per your feedback — pushed to \`${pr.headRefName}\` and refreshed the render in the PR description.`)
         log(`updated PR #${pr.number}`)
       } else if (res.kind === 'refused') {
         await deps.prComments.react(c.id, 'failed')
