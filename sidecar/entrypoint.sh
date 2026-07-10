@@ -9,9 +9,12 @@ git config --global user.name "emoji-request sidecar"
 git config --global user.email "sidecar@nataliesawacritter.info"
 git config --global --add safe.directory "$REPO_DIR"
 
-# Authenticate gh (and git-over-https) with the scoped token.
-echo "$GH_TOKEN" | gh auth login --with-token
-gh auth setup-git
+# gh authenticates from GH_TOKEN in the environment automatically — do NOT run
+# `gh auth login` here (it errors/aborts when GH_TOKEN is already set). Make
+# plain git-over-https use the same token so the agent can push branches.
+git config --global credential.helper store
+printf 'https://x-access-token:%s@github.com\n' "$GH_TOKEN" > "$HOME/.git-credentials"
+chmod 600 "$HOME/.git-credentials"
 
 # Fresh clone on first boot; the repo lives on a named volume across restarts.
 if [ ! -d "$REPO_DIR/.git" ]; then
