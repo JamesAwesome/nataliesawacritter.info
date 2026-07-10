@@ -21,6 +21,8 @@ shipped**. It **never merges**; you review the PR.
 | `parseResult` / `classify` | agent output → `AgentResult` → DB `outcome` |
 | `dedupe` / `existingNames` | skip a request whose critter already exists |
 | `parseIterate` / `prComments` | read `/iterate <feedback>` PR comments from allowlisted people; react (👀/🚀/😕) as dedup state, reply on the PR |
+| `iterateTask` / `iterateRunner` | build the resume task (feedback **data-fenced** + length-capped); check out the PR branch, run `claude -p`, push in place |
+| `processComments` | one loop step: 👀-ack each actionable comment **before** running, then 🚀/😕 + reply; capped per PR/cycle |
 | `prState` / `reconcile` | `DELETE` a request once its PR is merged (accepted) |
 | `processNext` | one loop step; `main` schedules it every `POLL_INTERVAL_MS` |
 
@@ -39,6 +41,12 @@ To iterate on an open sidecar PR, comment `/iterate <feedback>` (e.g. `/iterate
 make the beak bigger`). Only logins in `SIDECAR_ALLOWED_COMMENTERS` (comma-
 separated) can trigger it — empty means the feature is off (deny by default),
 so a `/iterate` from anyone else is ignored.
+
+When it picks a comment up it reacts **👀** (that reaction is also how it avoids
+re-running the same comment), then updates the emoji on the PR's branch and
+reacts **🚀** with a reply, or **😕** with the reason if it refused / errored.
+The feedback is data-fenced + length-capped, and at most five `/iterate`
+comments per PR run per poll cycle.
 
 ## Recommended GitHub guardrails
 
