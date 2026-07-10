@@ -28,6 +28,15 @@ describe('parseConfig', () => {
     expect(c.dryRun).toBe(true)
   })
 
+  it('defaults allowedCommenters to empty (comment-iteration off)', () => {
+    expect(parseConfig(full).allowedCommenters).toEqual([])
+  })
+
+  it('parses SIDECAR_ALLOWED_COMMENTERS into trimmed, non-empty logins', () => {
+    const c = parseConfig({ ...full, SIDECAR_ALLOWED_COMMENTERS: ' JamesAwesome , natalie ,, ' })
+    expect(c.allowedCommenters).toEqual(['JamesAwesome', 'natalie'])
+  })
+
   it('throws (deny by default) when a required key is missing, naming it', () => {
     const { GH_TOKEN: _omit, ...rest } = full
     expect(() => parseConfig(rest)).toThrow(/GH_TOKEN/)

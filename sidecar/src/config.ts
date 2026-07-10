@@ -5,6 +5,9 @@ export type SidecarConfig = {
   model: string
   pollIntervalMs: number
   dryRun: boolean
+  /** GitHub logins allowed to trigger `/iterate` on a sidecar PR. Empty ==
+   *  comment-iteration disabled (deny by default). */
+  allowedCommenters: string[]
 }
 
 /** Secrets consumed by child processes (claude, gh) — required so the sidecar
@@ -24,5 +27,9 @@ export function parseConfig(env: Record<string, string | undefined>): SidecarCon
     model: env.SIDECAR_MODEL ?? 'sonnet',
     pollIntervalMs: Number(env.POLL_INTERVAL_MS) || 60_000,
     dryRun: env.SIDECAR_DRY_RUN === '1' || env.SIDECAR_DRY_RUN === 'true',
+    allowedCommenters: (env.SIDECAR_ALLOWED_COMMENTERS ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s !== ''),
   }
 }
