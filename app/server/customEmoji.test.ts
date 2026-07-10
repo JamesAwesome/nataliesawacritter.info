@@ -32,7 +32,7 @@ describe('server customEmoji', () => {
       [
         'blue-jay', 'cardinal', 'chickadee', 'goldfinch', 'robin', 'sparrow', 'seagull',
         'groundhog', 'opossum', 'bobcat', 'loon', 'puffin', 'grouse', 'firefly',
-        'gritty', 'phanatic', 'anteater', 'red-panda', 'meerkat', 'lemur', 'aardvark', 'crane', 'canada-goose',
+        'gritty', 'phanatic', 'anteater', 'red-panda', 'meerkat', 'lemur', 'aardvark', 'crane', 'canada-goose', 'pigeon',
       ].sort(),
     )
   })
