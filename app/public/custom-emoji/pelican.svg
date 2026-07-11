@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Pelican">
+  <path d="M18 40 L2 48 L15 53 Z" fill="#b9c2cc"/>
+  <ellipse cx="28" cy="40" rx="16" ry="13" fill="#f4f1ea"/>
+  <path d="M20 30 q12 3 16 15 q-12 2 -18 -6 Z" fill="#b9c2cc"/>
+  <circle cx="43" cy="27" r="11" fill="#f4f1ea"/>
+  <path d="M52 22 Q64 19 62 26 Q60 31 52 29 Z" fill="#e3d7bd"/>
+  <path d="M52 29 Q64 29 59 40 Q52 44 48 35 Z" fill="#f2b33a"/>
+  <path d="M60 25 q2 3 0 6" stroke="#c99a2e" stroke-width="1.2" fill="none"/>
+  <circle cx="46" cy="24" r="1.7" fill="#2a2320"/>
+  <path d="M26 50 v6 M32 50 v6" stroke="#f2b33a" stroke-width="2" stroke-linecap="round"/>
+</svg>
