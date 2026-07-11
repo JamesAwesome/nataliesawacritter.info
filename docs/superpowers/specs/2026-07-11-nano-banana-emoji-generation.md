@@ -20,9 +20,11 @@ falling back to hand-drawing when generation isn't available.
 - **Fallback:** no `GEMINI_API_KEY`, or generation fails / can't pass the safety
   check after the retries → the agent **hand-draws the original SVG** (today's
   path). The sidecar works with or without the key.
-- **Retries:** ~3 generation attempts per request before falling back.
-- **Model/key:** Gemini 2.5 Flash Image via the Gemini API, key supplied as
-  `GEMINI_API_KEY` (owner to confirm on spec review).
+- **Retries:** exactly **3** generation attempts per request before falling back.
+- **Model/key:** model `gemini-2.5-flash-image`, key `GEMINI_API_KEY` (already set
+  in `.env` for testing).
+- **Provenance:** **keep the generated source PNG**, committed alongside the emoji
+  (e.g. `docs/renders/<slug>-source.png`) and linked in the PR.
 
 ## Architecture — agent-orchestrated
 
@@ -132,14 +134,16 @@ critter's own colors are interior (protected).
 - **Manual e2e:** a real request → sidecar generates, mattes, opens a PR with the
   render; a "Pikachu" request → `skipped-copyright` (pre-screen or vision check).
 
+## Resolved (from spec review)
+
+- Model `gemini-2.5-flash-image`; `GEMINI_API_KEY` already in `.env` for testing.
+- Retry budget: **3**, then hand-draw fallback.
+- **Keep** the generated source PNG: `matte-emoji` also writes the raw generated
+  image to `docs/renders/<slug>-source.png` (committed), and the PR links it next
+  to the rendered emoji.
+
 ## Out of scope / future
 
 - Matting model (rembg) instead of flood-fill.
 - Regenerating the existing emoji set for uniform style (accepting the mix for now).
 - Multi-image pick-the-best (generate several, choose) — v1 is one image + retries.
-
-## Open questions
-
-1. Exact Gemini model id + whether the key is a standard AI Studio key.
-2. Retry budget (default 3).
-3. Whether to keep generated PNGs (e.g. `docs/renders/`) for provenance beyond the PR.
