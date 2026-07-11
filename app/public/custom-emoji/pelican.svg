@@ -1,11 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Pelican">
-  <path d="M18 40 L2 48 L15 53 Z" fill="#b9c2cc"/>
-  <ellipse cx="28" cy="40" rx="16" ry="13" fill="#f4f1ea"/>
-  <path d="M20 30 q12 3 16 15 q-12 2 -18 -6 Z" fill="#b9c2cc"/>
-  <circle cx="43" cy="27" r="11" fill="#f4f1ea"/>
-  <path d="M41 21 Q56 17 63 22 Q66 25.5 62 28 Q58.5 30.5 60 26 Q50 24 41 25.5 Z" fill="#e3d7bd"/>
-  <path d="M60 25.5 Q65 26.5 61.5 31 Q58.5 29.5 60 25.5 Z" fill="#c9ad6e"/>
-  <path d="M43 27 Q40 39 48 44 Q56 41.5 55 30 Q49 32.5 43 27 Z" fill="#f2b33a"/>
-  <circle cx="46" cy="23" r="1.7" fill="#2a2320"/>
-  <path d="M26 50 v6 M32 50 v6" stroke="#f2b33a" stroke-width="2" stroke-linecap="round"/>
+  <path d="M18 45 Q6 40 0 43 Q4 51 12 55 Q17 52 18 45 Z" fill="#b9c2cc"/>
+  <ellipse cx="27" cy="41" rx="17" ry="12" fill="#f4f1ea"/>
+  <path d="M16 34 Q28 29 38 38 Q28 47 16 42 Z" fill="#dcd6c6"/>
+  <circle cx="44" cy="27" r="11" fill="#f4f1ea"/>
+  <path d="M35 33 Q40 22 47 20" fill="none" stroke="#f4f1ea" stroke-width="8" stroke-linecap="round"/>
+  <path d="M41 22 Q56 18 62 23 Q65 26 61 28.5 Q57 30.5 58.5 26.5 Q49 25 41 27 Z" fill="#e3d7bd"/>
+  <path d="M58.5 26.5 Q63.5 27.5 60.5 31.5 Q57.5 30 58.5 26.5 Z" fill="#c9ad6e"/>
+  <path d="M41 27 Q39 38 47 43 Q55 40 54 30 Q47.5 32 41 27 Z" fill="#f2b33a"/>
+  <circle cx="47" cy="24" r="1.7" fill="#2a2320"/>
+  <path d="M24 51 Q22 55 18 57 Q23 58 27 55 Z" fill="#f2b33a"/>
+  <path d="M31 51 Q31 55 28 58 Q33 58 35 54 Z" fill="#f2b33a"/>
 </svg>
