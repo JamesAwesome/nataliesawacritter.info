@@ -3,6 +3,7 @@ import { createAgentRunner, type Exec } from './agentRunner'
 import { parseConfig } from './config'
 import { existingNames } from './existingNames'
 import { createIterateRunner } from './iterateRunner'
+import { createNotifier } from './notify'
 import { createPrComments, ghLogin, type PrComments } from './prComments'
 import { processComments } from './processComments'
 import { prStateOf } from './prState'
@@ -41,6 +42,8 @@ async function main(): Promise<void> {
   log(`up — app ${config.appBaseUrl}, model ${config.model}, poll ${config.pollIntervalMs}ms${config.dryRun ? ' (DRY RUN)' : ''}`)
 
   const client = createRequestsClient({ baseUrl: config.appBaseUrl, authHeader: config.authHeader, fetch: globalThis.fetch })
+  const notifier = createNotifier({ url: config.ntfyUrl, fetch: globalThis.fetch, log })
+  if (config.ntfyUrl) log('ntfy on — pushing on PR open')
   const runAgent = createAgentRunner({
     repoDir: config.repoDir,
     worktreesDir: '/tmp/sidecar-worktrees',
@@ -86,7 +89,13 @@ async function main(): Promise<void> {
           }
         }
       } else {
-        const result = await processNext({ client, runAgent, existingNames: existingNames(config.repoDir), log })
+        const result = await processNext({
+          client,
+          runAgent,
+          existingNames: existingNames(config.repoDir),
+          log,
+          notifyPrOpened: (name, url) => notifier.prOpened(name, url),
+        })
         if (result.status !== 'idle') log(`→ ${JSON.stringify(result)}`)
         // Apply /iterate PR comments (👀 ack → run → 🚀/😕 + reply).
         if (prComments) {

@@ -97,6 +97,7 @@ services:
       SIDECAR_ALLOWED_COMMENTERS: ${SIDECAR_ALLOWED_COMMENTERS:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       SIDECAR_MAX_TURNS: ${SIDECAR_MAX_TURNS:-}
+      NTFY_URL: ${NTFY_URL:-}
     volumes:
       - sidecar-repo:/repo
     depends_on:

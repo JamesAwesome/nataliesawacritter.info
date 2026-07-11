@@ -37,6 +37,11 @@ describe('parseConfig', () => {
     expect(parseConfig(full).allowedCommenters).toEqual([])
   })
 
+  it('reads NTFY_URL when present, undefined when absent', () => {
+    expect(parseConfig({ ...full, NTFY_URL: 'https://ntfy.sh/t' }).ntfyUrl).toBe('https://ntfy.sh/t')
+    expect(parseConfig(full).ntfyUrl).toBeUndefined()
+  })
+
   it('parses SIDECAR_ALLOWED_COMMENTERS into trimmed, non-empty logins', () => {
     const c = parseConfig({ ...full, SIDECAR_ALLOWED_COMMENTERS: ' JamesAwesome , natalie ,, ' })
     expect(c.allowedCommenters).toEqual(['JamesAwesome', 'natalie'])
