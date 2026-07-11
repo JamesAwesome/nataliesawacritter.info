@@ -125,10 +125,13 @@ a link to its pull request, or why it was skipped.
 
 An optional background service turns those requests into pull requests. It polls
 for pending requests, and for each one runs a coding agent (Claude Code, headless)
-that draws an **original** critter emoji following the repo's
-`adding-a-critter-emoji` skill, gates on a real-browser render, and **opens a PR —
-never merging**. Copyright is enforced by the skill (original or verifiably-CC0
-art only; it refuses "make it look like <copyrighted character>").
+following the repo's `adding-a-critter-emoji` skill: it **generates** an original
+critter with an image model (Gemini 2.5 Flash Image, "nano banana"), **vision-checks**
+it for recognizable characters/logos, mattes it to a transparent SVG, gates on a
+real-browser render, and **opens a PR — never merging**. With no Gemini key it
+falls back to **hand-drawing** the SVG. Copyright is enforced at three layers
+(pre-screen → constrained prompt → post-generation vision check); anything unsafe
+or too vague is skipped, not shipped.
 
 Two "watch my own PRs" behaviours close the loop:
 
@@ -139,9 +142,10 @@ Two "watch my own PRs" behaviours close the loop:
 - **Auto-remove on merge** — once a request's PR is merged (accepted), the request
   is deleted so it drops off the list.
 
-It's off unless you start its compose profile, needs its own API key + a scoped
-GitHub PAT (Contents + PRs, **no merge**), and runs entirely outside the app image.
-See [`sidecar/README.md`](sidecar/README.md) for setup.
+It's off unless you start its compose profile, needs an Anthropic API key + a
+scoped GitHub PAT (Contents + PRs, **no merge**) — plus an optional `GEMINI_API_KEY`
+for image generation (without it, it hand-draws) — and runs entirely outside the
+app image. See [`sidecar/README.md`](sidecar/README.md) for setup.
 
 ## Security & privacy
 
