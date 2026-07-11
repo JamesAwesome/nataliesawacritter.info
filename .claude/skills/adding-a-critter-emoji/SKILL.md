@@ -45,6 +45,51 @@ attribution required** (Wikimedia Commons and openclipart.org host CC0 art; most
 "free" icon sites require attribution and do NOT qualify). Record the source URL
 + license in the commit message.
 
+## Art source: generate if available, else draw
+
+Two ways to produce the art. **Rule 1's screening always happens first** — before
+generation or drawing — because screening is about the *request*, not the
+pixels a model or a hand might produce from it.
+
+- **Preferred — generate.** If `gen-emoji-art` is on your PATH, use it (it calls
+  Gemini 2.5 Flash Image and needs `GEMINI_API_KEY` set in the environment).
+- **Fallback — hand-draw.** If the command is missing, or it **exits 3** (no key
+  configured), skip straight to drawing the SVG by hand per Rule 2's art-style
+  guidance below — that's the deploy's deny-by-default fallback, not an error
+  worth reporting.
+
+**The generate loop:**
+
+1. Run `gen-emoji-art "<animal>" gen.png`. It writes a flat-style PNG on a
+   solid mint-green background, or exits non-zero: `3` = no key → hand-draw
+   instead; `1` = a generation error → retry (counts toward the budget below).
+2. **Look at `gen.png`** — Read the file; this is a vision check, not a
+   file-exists check. Judge it against the same bar as Rule 1: is it a clear,
+   original critter, and **not** a recognizable character, mascot, brand, or
+   logo?
+   - **Unsafe** (recognizable IP, even loosely) → stop, don't regenerate hoping
+     for a safer roll — `RESULT: skipped-copyright`, same as a pre-screen
+     refusal.
+   - **Safe but poor** (malformed, off-model, wrong animal, illegible at small
+     size) → regenerate. **Up to 3 attempts total** across the request. Still
+     no good-and-safe image after 3 → fall back to hand-drawing instead of
+     shipping weak art.
+   - **Good** → continue.
+3. Run `matte-emoji gen.png <slug> "<Name>"`. It flood-fills the background
+   transparent, trims/squares/downscales, and writes
+   `app/public/custom-emoji/<slug>.svg` directly — plus keeps the raw
+   generation at `docs/renders/<slug>-source.png` for provenance. Pick up the
+   recipe below at the catalogue-wiring step; the SVG is already in place, so
+   there's nothing to hand-draw.
+4. When you open the PR, attach **both** images: the rendered `<slug>.svg`
+   (Rule 2's render gate, unchanged — a generated SVG needs the same real-browser
+   check as a hand-drawn one) and `docs/renders/<slug>-source.png`.
+
+The vision check is a real safety layer, not a formality: the generation
+prompt pushes originality, but an image model will still draw a recognizable
+character if the request nudges it there. Default to refusing on doubt, same
+as Rule 1.
+
 ## Rule 2: Gate on a real render. jsdom can't draw.
 
 The test suite (jsdom) cannot render SVG, so a broken or unrecognizable glyph
@@ -84,13 +129,16 @@ real emoji, e.g. `🦔` for a hedgehog — needn't be unique).
    - `src/lib/customEmoji.test.ts` — append the slug to the **ordered** list.
    - `server/customEmoji.test.ts` — add the slug to the **sorted** list.
 2. **GREEN — add the three pieces:**
-   - `public/custom-emoji/<slug>.svg` — the art (Rules 1 & 2).
+   - `public/custom-emoji/<slug>.svg` — the art: generate + matte (see above)
+     if available, else hand-draw per Rule 2's style guidance.
    - `src/lib/customEmoji.ts` — a `CUSTOM` entry `{ slug, name, standIn, category }` (append **in the same order** as the client test).
    - `server/customEmoji.ts` — a `STAND_INS` entry `<slug>: '<standIn>'`.
 3. **Verify:** `pnpm test` (or `test:coverage`), `pnpm lint`, `pnpm typecheck`.
    Drift-guard tests assert client ⇔ server ⇔ on-disk agree; `emojiCategories`
    auto-derives the picker group and is coverage-checked — no edit needed there.
-4. **Ship:** squash-merged PR with the render attached; wait for CI green.
+4. **Ship:** squash-merged PR with the render attached (plus the kept source
+   PNG, `docs/renders/<slug>-source.png`, when the art was generated); wait for
+   CI green.
 
 Nothing else references the catalogue — no README/count to bump, no
 `CritterGlyph` change (it renders `custom:<slug>` as `/custom-emoji/<slug>.svg`
@@ -100,7 +148,8 @@ automatically once the entry exists).
 
 | File | Change |
 |---|---|
-| `public/custom-emoji/<slug>.svg` | new art (original / CC0) |
+| `public/custom-emoji/<slug>.svg` | new art — generated (`gen-emoji-art` + `matte-emoji`) or hand-drawn |
+| `docs/renders/<slug>-source.png` | kept source PNG (generated art only) |
 | `src/lib/customEmoji.ts` | `CUSTOM` entry (ordered) |
 | `server/customEmoji.ts` | `STAND_INS` entry |
 | `src/lib/customEmoji.test.ts` | pinned **ordered** slug list |
@@ -116,3 +165,7 @@ automatically once the entry exists).
   drawn SVG.
 - Trusting green jsdom tests for the art. They can't render it (Rule 2).
 - Embedding found/character art (Rule 1).
+- Skipping the vision check on generated art, or regenerating past the
+  3-attempt budget instead of falling back to hand-drawing.
+- Treating `gen-emoji-art` exit 3 (no key) as an error to report instead of the
+  fallback signal it is — just hand-draw.
