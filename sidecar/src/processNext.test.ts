@@ -4,7 +4,7 @@ import type { RequestsClient } from './requestsClient'
 import type { AgentResult, PendingRequest } from './types'
 
 function fakeClient(pending: PendingRequest[], markHandled = vi.fn(async () => {})): RequestsClient {
-  return { listPending: vi.fn(async () => pending), markHandled }
+  return { listPending: vi.fn(async () => pending), markHandled, listPrOpened: vi.fn(async () => []), remove: vi.fn(async () => {}) }
 }
 
 describe('processNext', () => {
