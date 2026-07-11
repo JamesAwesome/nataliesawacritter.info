@@ -39,4 +39,9 @@ describe('buildTask', () => {
     const t = buildTask({ id: 'x', name: 'Otter', note: null })
     expect(t).toMatch(/gen-emoji-art/)
   })
+  it('tells the agent to skip Docker/integration tests', () => {
+    const t = buildTask({ id: 'x', name: 'Otter', note: null })
+    expect(t).toMatch(/--project client/)
+    expect(t).toMatch(/no docker/i)
+  })
 })

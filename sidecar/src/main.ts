@@ -45,7 +45,7 @@ async function main(): Promise<void> {
     repoDir: config.repoDir,
     worktreesDir: '/tmp/sidecar-worktrees',
     model: config.model,
-    maxTurns: 40,
+    maxTurns: config.maxTurns,
     exec,
     log,
   })
@@ -53,7 +53,7 @@ async function main(): Promise<void> {
     repoDir: config.repoDir,
     worktreesDir: '/tmp/sidecar-worktrees',
     model: config.model,
-    maxTurns: 40,
+    maxTurns: config.maxTurns,
     exec,
     log,
   })
