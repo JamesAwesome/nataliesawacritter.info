@@ -10,6 +10,9 @@ export type SidecarConfig = {
   allowedCommenters: string[]
   /** Gemini image API key ("nano banana"). Absent → the sidecar hand-draws. */
   geminiApiKey?: string
+  /** Max agent turns per run. The emoji job is multi-step (generate → vision →
+   *  matte → wire → test → PR); 40 hit error_max_turns, so default higher. */
+  maxTurns: number
 }
 
 /** Secrets consumed by child processes (claude, gh) — required so the sidecar
@@ -34,5 +37,6 @@ export function parseConfig(env: Record<string, string | undefined>): SidecarCon
       .map((s) => s.trim())
       .filter((s) => s !== ''),
     geminiApiKey: (env.GEMINI_API_KEY ?? '') === '' ? undefined : env.GEMINI_API_KEY,
+    maxTurns: Number(env.SIDECAR_MAX_TURNS) || 80,
   }
 }
