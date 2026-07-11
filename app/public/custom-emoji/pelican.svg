@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Pelican">
+  <path d="M16 40 L2 48 L14 52 Z" fill="#c7cdd4"/>
+  <ellipse cx="28" cy="40" rx="17" ry="13" fill="#f4f1ea"/>
+  <path d="M18 30 q13 3 17 17 q-13 2 -19 -6 Z" fill="#c7cdd4"/>
+  <circle cx="44" cy="25" r="10" fill="#f4f1ea"/>
+  <path d="M47 28 Q58 32 53 45 Q45 46 42 33 Z" fill="#f6da8f"/>
+  <path d="M48 22 L63 24 L48 28 Z" fill="#e8935c"/>
+  <circle cx="47" cy="23" r="1.7" fill="#2a2320"/>
+  <path d="M24 53 v6 M32 53 v6" stroke="#e8935c" stroke-width="2" stroke-linecap="round"/>
+</svg>
