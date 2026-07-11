@@ -58,3 +58,41 @@ jobs:
         with:
           context: ./app
           push: false
+
+  deploy-script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Lint + test the deploy script
+        run: |
+          bash -n scripts/deploy.sh
+          bash scripts/deploy.test.sh
+
+  deploy:
+    needs: [app, sidecar, docker, deploy-script]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: self-hosted
+    environment: production
+    permissions:
+      contents: read
+    timeout-minutes: 20
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    steps:
+      - name: Deploy over SSH
+        env:
+          SHA: ${{ github.sha }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          umask 077
+          KEY="$(mktemp)"; KH="$(mktemp)"
+          trap 'rm -f "$KEY" "$KH"' EXIT
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$KEY"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$KH"
+          ssh -i "$KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$KH" \
+            "$DEPLOY_USER@$DEPLOY_HOST" "$SHA"

@@ -4,13 +4,15 @@
 [![RSS feed](https://img.shields.io/badge/RSS-feed-EE802F?logo=rss&logoColor=white)](https://nataliesawacritter.info/feed.xml)
 
 Natalie sees things, she sees them with her eyes. This app lets her log
-wildlife sightings — with photos, saved "critter friends," and hand-drawn
-custom emoji for local critters that Unicode forgot (robins, a groundhog, an
-Atlantic puffin…) — and view them as a calendar, a filterable history, and a
-Top Critters leaderboard grouped by the names she gives them. The emoji picker
-sorts everything into categories (Birds, Mammals, Sea Life…). Friends can keep
-up with new sightings as they happen via push notifications (it installs as a
-PWA on phones) or an RSS feed. Live at nataliesawacritter.info.
+wildlife sightings — with photos, how many she saw (1·2·3·many), saved "critter
+friends," and hand-drawn custom emoji for local critters that Unicode forgot
+(robins, a groundhog, an Atlantic puffin…) — and view them as a calendar, a
+filterable history, and a Top Critters leaderboard grouped by the names she
+gives them. The emoji picker sorts everything into categories (Birds, Mammals,
+Sea Life…), and she can **request a new critter emoji** right from the picker —
+optionally, a coding agent turns each request into a pull request (see below).
+Friends can keep up with new sightings as they happen via push notifications (it
+installs as a PWA on phones) or an RSS feed. Live at nataliesawacritter.info.
 
 ## Stack
 
@@ -54,6 +56,36 @@ app container directly, so the tunnel works even when the host port is bound to 
 or not published at all. Using `localhost`, `127.0.0.1`, the LAN IP, or `APP_PORT` here is
 the usual cause of `dial tcp ...: connection refused` in the cloudflared logs.
 
+## Deploying (on merge)
+
+Merges to `main` are deployed to the LAN host by a GitHub Actions job on a
+**self-hosted runner**, behind a manual approval. Flow: merge → CI passes → the
+`deploy` job waits in the `production` environment for approval → on approve it
+SSHes to the host and runs `scripts/deploy.sh <commit>`, which checks out that
+exact commit and `docker compose up -d --build --wait` (respecting the host's
+`COMPOSE_PROFILES`). An unhealthy build auto-rolls back to the previous commit and
+the job goes red.
+
+**One-time setup:**
+1. **Branch-protect `main`** — require a PR, the CI checks (`app`, `sidecar`,
+   `docker`, `deploy-script`) as required status checks, and block force-push.
+2. **`production` environment** — Settings → Environments → `production`, add
+   yourself as a required reviewer.
+3. **Deploy key (forced-command)** — generate a dedicated ed25519 key; on the host
+   add the public key to the deploy user's `~/.ssh/authorized_keys` prefixed with
+   `restrict,command="$HOME/deploy-forced.sh"`, where `deploy-forced.sh` validates
+   a 40-hex SHA from `$SSH_ORIGINAL_COMMAND`, exports `DEPLOY_PATH=<checkout>`, and
+   execs `<checkout>/scripts/deploy.sh`.
+4. **Environment secrets** — `DEPLOY_SSH_KEY` (private key), `DEPLOY_HOST`,
+   `DEPLOY_USER` (in the `docker` group), and `DEPLOY_KNOWN_HOSTS` (`ssh-keyscan`
+   line).
+5. **Host** — `chmod 600` the `.env`; ensure the checkout is clean and deploy-only,
+   and that `scripts/deploy.sh` is present (pull once after this lands).
+
+The runner should be **deploy-only**, ideally ephemeral, with egress limited to the
+host's SSH port. Do not make this repo public without Actions → "Require approval
+for all outside collaborators".
+
 ## Push notifications
 
 Friends can tap the 🔔 in the header to get a push notification whenever Natalie
@@ -81,6 +113,35 @@ stored, so one person on a phone and a laptop counts twice), and it slightly
 over-reports because dead subscriptions are pruned only when a notification is
 actually sent (the notifier drops an endpoint on a 404/410 from the push
 service).
+
+## Requesting new critters
+
+When a critter isn't in the picker yet, Natalie can request it (a name + optional
+note). Requests are **owner-only** — the form and the request list sit behind the
+same write credentials as logging a sighting — and each shows its status: pending,
+a link to its pull request, or why it was skipped.
+
+### Emoji-request sidecar (optional agent)
+
+An optional background service turns those requests into pull requests. It polls
+for pending requests, and for each one runs a coding agent (Claude Code, headless)
+that draws an **original** critter emoji following the repo's
+`adding-a-critter-emoji` skill, gates on a real-browser render, and **opens a PR —
+never merging**. Copyright is enforced by the skill (original or verifiably-CC0
+art only; it refuses "make it look like <copyrighted character>").
+
+Two "watch my own PRs" behaviours close the loop:
+
+- **Iterate via PR comments** — comment `/iterate <feedback>` (e.g. `/iterate make
+  the beak bigger`) on a sidecar PR and the agent updates the emoji on that branch.
+  Only GitHub logins in `SIDECAR_ALLOWED_COMMENTERS` can trigger it (empty = off,
+  deny by default); the feedback is treated as untrusted data, not instructions.
+- **Auto-remove on merge** — once a request's PR is merged (accepted), the request
+  is deleted so it drops off the list.
+
+It's off unless you start its compose profile, needs its own API key + a scoped
+GitHub PAT (Contents + PRs, **no merge**), and runs entirely outside the app image.
+See [`sidecar/README.md`](sidecar/README.md) for setup.
 
 ## Security & privacy
 
@@ -119,15 +180,19 @@ re-validation, shorter photo cache TTL.
     GET    /api/profiles                                  # public; saved critter friends
     POST   /api/profiles                                  # basic auth; emoji + name required
     DELETE /api/profiles/:id                              # basic auth
+    GET    /api/emoji-requests?pending=1                  # basic auth; owner-only; ?pending filters to open
+    POST   /api/emoji-requests                            # basic auth; {name, note?}
+    PATCH  /api/emoji-requests/:id                        # basic auth; mark handled {outcome, pr_url?}
+    DELETE /api/emoji-requests/:id                        # basic auth
     GET    /api/auth/check                                # basic auth; 204/401, 503 when writes disabled
     GET    /api/push/vapid-public-key                     # public; 503 when push disabled
     POST   /api/push/subscriptions                        # public; browser push subscription JSON
     DELETE /api/push/subscriptions                        # public; body {endpoint}
     GET    /feed.xml                                      # public; RSS 2.0 feed of recent sightings
 
-POST body: `emoji` and `sightedOn` (YYYY-MM-DD) required; `name`, `sightedTime`,
-`place`, `comment` optional. With blank write credentials the write endpoints
-return 503.
+Sighting POST body: `emoji` and `sightedOn` (YYYY-MM-DD) required; `name`,
+`sightedTime`, `place`, `comment`, `quantity` (`1`·`2`·`3`·`many`, default `1`)
+optional. With blank write credentials the write endpoints return 503.
 
 ## Development
 
