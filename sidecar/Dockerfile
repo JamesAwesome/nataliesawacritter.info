@@ -5,7 +5,7 @@ FROM node:26-bookworm
 # git, curl, the GitHub CLI, and chromium (for the skill's render gate) + emoji
 # fonts so rendered SVGs look right.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      git curl ca-certificates gosu chromium fonts-noto-color-emoji fonts-liberation \
+      git curl ca-certificates gosu chromium imagemagick fonts-noto-color-emoji fonts-liberation \
     && mkdir -p -m 755 /etc/apt/keyrings \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
          | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null \
@@ -25,6 +25,13 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
 COPY . .
+
+# Emoji-art tools on PATH so the agent (running in the app-repo worktree) can
+# call them. They run the sidecar's own TS via tsx (installed as a devDep above).
+RUN printf '#!/bin/sh\nexec /app/node_modules/.bin/tsx /app/src/tools/gen-emoji-art.ts "$@"\n' > /usr/local/bin/gen-emoji-art \
+ && printf '#!/bin/sh\nexec /app/node_modules/.bin/tsx /app/src/tools/matte-emoji.ts "$@"\n' > /usr/local/bin/matte-emoji \
+ && chmod +x /usr/local/bin/gen-emoji-art /usr/local/bin/matte-emoji
+
 RUN chown -R node:node /app
 
 ENV REPO_DIR=/repo
