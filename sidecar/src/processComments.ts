@@ -23,9 +23,14 @@ export async function processComments(deps: {
   prComments: CommentsPort
   runIterate: IterateRunner
   perPrCap: number
+  /** Recorded in the PR reply so reviewers see which model ran the iteration. */
+  model?: string
+  /** Fire-and-forget push when an iteration updates a PR. */
+  notifyUpdated?: (prNumber: number, prUrl: string) => void | Promise<void>
   log?: (message: string) => void
 }): Promise<{ ran: number }> {
   const log = deps.log ?? (() => {})
+  const footer = deps.model ? `\n\n_Model: ${deps.model} · art: nano banana._` : ''
   let ran = 0
 
   for (const pr of await deps.prComments.listOpenPrs()) {
@@ -46,15 +51,16 @@ export async function processComments(deps: {
       const res = await deps.runIterate(pr, c.feedback)
       if (res.kind === 'updated') {
         await deps.prComments.react(c.id, 'done')
-        await deps.prComments.reply(pr.number, `🚀 Updated per your feedback — pushed to \`${pr.headRefName}\` and refreshed the render in the PR description.`)
+        await deps.prComments.reply(pr.number, `🚀 Updated per your feedback — pushed to \`${pr.headRefName}\` and refreshed the render in the PR description.${footer}`)
+        await deps.notifyUpdated?.(pr.number, pr.url)
         log(`updated PR #${pr.number}`)
       } else if (res.kind === 'refused') {
         await deps.prComments.react(c.id, 'failed')
-        await deps.prComments.reply(pr.number, `😕 I couldn't apply that: ${res.reason}`)
+        await deps.prComments.reply(pr.number, `😕 I couldn't apply that: ${res.reason}${footer}`)
         log(`refused PR #${pr.number}: ${res.reason}`)
       } else {
         await deps.prComments.react(c.id, 'failed')
-        await deps.prComments.reply(pr.number, `😕 I hit an error applying that feedback — please try rephrasing.`)
+        await deps.prComments.reply(pr.number, `😕 I hit an error applying that feedback — please try rephrasing.${footer}`)
         log(`error on PR #${pr.number}: ${res.message}`)
       }
       ran += 1
