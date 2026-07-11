@@ -84,7 +84,8 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
         <button
           type="button"
           className="picker-tile picker-other"
-          onClick={() => setShowExtended(true)}
+          aria-expanded={showExtended}
+          onClick={() => setShowExtended((v) => !v)}
         >
           Other
         </button>
