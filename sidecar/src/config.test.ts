@@ -28,6 +28,11 @@ describe('parseConfig', () => {
     expect(c.dryRun).toBe(true)
   })
 
+  it('defaults maxTurns to 80 and honors SIDECAR_MAX_TURNS', () => {
+    expect(parseConfig(full).maxTurns).toBe(80)
+    expect(parseConfig({ ...full, SIDECAR_MAX_TURNS: '120' }).maxTurns).toBe(120)
+  })
+
   it('defaults allowedCommenters to empty (comment-iteration off)', () => {
     expect(parseConfig(full).allowedCommenters).toEqual([])
   })

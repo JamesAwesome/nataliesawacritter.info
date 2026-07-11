@@ -96,6 +96,7 @@ services:
       SIDECAR_DRY_RUN: ${SIDECAR_DRY_RUN:-}
       SIDECAR_ALLOWED_COMMENTERS: ${SIDECAR_ALLOWED_COMMENTERS:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      SIDECAR_MAX_TURNS: ${SIDECAR_MAX_TURNS:-}
     volumes:
       - sidecar-repo:/repo
     depends_on:
