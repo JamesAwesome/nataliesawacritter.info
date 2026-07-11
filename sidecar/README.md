@@ -6,11 +6,15 @@ in `docs/superpowers/plans/2026-07-10-emoji-request-sidecar.md`.
 
 ## What it does
 
-Polls the app's owner-only request queue and, for each unhandled request, runs
-a headless `claude -p` in a throwaway git worktree (with the
-`adding-a-critter-emoji` skill auto-loaded) that draws an **original** emoji,
-tests it, and opens a **PR** — copyright-unsafe/vague requests are **skipped, not
-shipped**. It **never merges**; you review the PR.
+Polls the app's owner-only request queue and, for each unhandled request, runs a
+headless `claude -p` in a throwaway git worktree (with the
+`adding-a-critter-emoji` skill auto-loaded). The agent **screens** the request
+(copyright), **generates** the critter with Gemini 2.5 Flash Image ("nano
+banana"), **looks at** the result (a vision check for recognizable characters /
+logos), **mattes** it to a transparent data-URI SVG, wires the catalogues, tests,
+and opens a **PR**. Without a `GEMINI_API_KEY` (or if generation keeps failing) it
+falls back to **hand-drawing** the SVG. Copyright-unsafe / too-vague requests are
+**skipped, not shipped**. It **never merges**; you review the PR.
 
 | Module | Responsibility |
 |---|---|
@@ -18,6 +22,7 @@ shipped**. It **never merges**; you review the PR.
 | `requestsClient` | read `?pending` requests / `PATCH` them handled (app API) |
 | `task` | build the `claude -p` task, request **data-fenced** (injection-resistant) |
 | `agentRunner` | isolate a worktree, run `claude -p`, read the `RESULT:` line |
+| `genArt` / `matte` | the two CLIs the agent calls: `gen-emoji-art` (Gemini "nano banana" image) and `matte-emoji` (key out the bg → 64×64 data-URI SVG, keep the source PNG) |
 | `parseResult` / `classify` | agent output → `AgentResult` → DB `outcome` |
 | `dedupe` / `existingNames` | skip a request whose critter already exists |
 | `parseIterate` / `prComments` | read `/iterate <feedback>` PR comments from allowlisted people; react (👀/🚀/😕) as dedup state, reply on the PR |
@@ -34,8 +39,15 @@ then:
 
     docker compose --profile sidecar up -d --build
 
+Optional: `GEMINI_API_KEY` enables image generation ("nano banana"); without it
+the sidecar hand-draws SVGs instead (needs billing enabled on the Google project —
+image generation isn't in the free tier). `SIDECAR_MAX_TURNS` (default 80) caps
+agent turns per run; `SIDECAR_MODEL` (default `sonnet`) and `POLL_INTERVAL_MS`
+(default 60000) are the other knobs.
+
 Try `SIDECAR_DRY_RUN=1` first — it logs what it would process and touches
-nothing. It **opens PRs, never merges**; each PR includes the render for review.
+nothing. It **opens PRs, never merges**; each PR includes the render (and, for
+generated art, the kept source PNG) for review.
 
 To iterate on an open sidecar PR, comment `/iterate <feedback>` (e.g. `/iterate
 make the beak bigger`). Only logins in `SIDECAR_ALLOWED_COMMENTERS` (comma-
