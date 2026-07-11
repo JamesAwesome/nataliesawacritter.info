@@ -33,6 +33,33 @@ describe('processComments', () => {
     expect(runIterate).toHaveBeenCalledWith(pr, 'fb100')
   })
 
+  it('notes the model in the reply and pushes an ntfy on a successful update', async () => {
+    const pc = port({ comments: [comment(100)] })
+    const notifyUpdated = vi.fn()
+    await processComments({
+      prComments: pc,
+      runIterate: vi.fn(async (): Promise<IterateResult> => ({ kind: 'updated' })),
+      perPrCap: 5,
+      model: 'sonnet',
+      notifyUpdated,
+    })
+    const body = (pc.reply as ReturnType<typeof vi.fn>).mock.calls[0][1] as string
+    expect(body).toMatch(/Model: sonnet/)
+    expect(notifyUpdated).toHaveBeenCalledWith(12, 'https://x/pull/12')
+  })
+
+  it('does not push on a refusal', async () => {
+    const pc = port({ comments: [comment(101)] })
+    const notifyUpdated = vi.fn()
+    await processComments({
+      prComments: pc,
+      runIterate: vi.fn(async (): Promise<IterateResult> => ({ kind: 'refused', reason: 'nope' })),
+      perPrCap: 5,
+      notifyUpdated,
+    })
+    expect(notifyUpdated).not.toHaveBeenCalled()
+  })
+
   it('reacts failed + replies with the reason on refusal', async () => {
     const events: string[] = []
     const pc = port({ comments: [comment(101)], events })

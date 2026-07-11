@@ -8,7 +8,7 @@ const DEFAULT_MODEL = 'gemini-2.5-flash-image'
  *  guards; the originality clause here is defense-in-depth. */
 export function buildEmojiPrompt(subject: string): string {
   const s = subject.replace(/\s+/g, ' ').trim().slice(0, 80)
-  return `A flat vector emoji sticker of ${s}, centered and filling the frame, bold simple shapes, minimal shading, no outline, no border, limited flat color palette, friendly and cute. Plain solid mint-green (#7bd88f) background filling the frame. No text, no watermark, no signature. Must be an original design that does not resemble any existing cartoon character, mascot, brand, or logo.`
+  return `A flat vector emoji sticker of ${s}, centered and filling the frame, bold simple shapes, minimal shading, no outline, no border, limited flat color palette, clean and appealing. Depict the animal naturally: only show a face, eyes, or mouth if they are actually visible in the described view — do NOT add a cartoon smiley face, grin, or googly eyes to a body, shell, back, or top-down view (for example a horseshoe crab seen from above). Plain solid mint-green (#7bd88f) background filling the frame. No text, no watermark, no signature. Must be an original design that does not resemble any existing cartoon character, mascot, brand, or logo.`
 }
 
 /** Calls the Gemini image model and writes the PNG. Throws on HTTP error or a
