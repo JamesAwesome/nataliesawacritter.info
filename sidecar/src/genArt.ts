@@ -1,11 +1,14 @@
 const DEFAULT_MODEL = 'gemini-2.5-flash-image'
 
-/** Flat-house-style prompt. The animal is sanitized (single line, length-capped)
- *  — the pre-screen + vision check are the real copyright guards; this is
- *  defense-in-depth. */
-export function buildEmojiPrompt(animal: string): string {
-  const a = animal.replace(/\s+/g, ' ').trim().slice(0, 60)
-  return `A flat vector emoji sticker of a ${a}, front-facing face, centered, bold simple shapes, minimal shading, no outline, no border, limited flat color palette, friendly and cute. Plain solid mint-green (#7bd88f) background filling the frame. No text, no watermark, no signature. Must be an original design that does not resemble any existing cartoon character, mascot, brand, or logo.`
+/** Flat-house-style prompt. `subject` is the caller's short description of what to
+ *  draw INCLUDING the composition — e.g. "a full-body pelican, side view" or
+ *  "a red panda's face" — so the agent picks full-body vs. face per critter (a
+ *  horseshoe crab or pelican needs its whole body, not a face). Sanitized (single
+ *  line, length-capped). The pre-screen + vision check are the real copyright
+ *  guards; the originality clause here is defense-in-depth. */
+export function buildEmojiPrompt(subject: string): string {
+  const s = subject.replace(/\s+/g, ' ').trim().slice(0, 80)
+  return `A flat vector emoji sticker of ${s}, centered and filling the frame, bold simple shapes, minimal shading, no outline, no border, limited flat color palette, friendly and cute. Plain solid mint-green (#7bd88f) background filling the frame. No text, no watermark, no signature. Must be an original design that does not resemble any existing cartoon character, mascot, brand, or logo.`
 }
 
 /** Calls the Gemini image model and writes the PNG. Throws on HTTP error or a
@@ -13,7 +16,7 @@ export function buildEmojiPrompt(animal: string): string {
  *  `fetch`/`writeFile` injected for testability. Verify the request/response
  *  shape against current Gemini API docs. */
 export async function generateEmojiArt(opts: {
-  animal: string
+  subject: string
   outPath: string
   apiKey: string
   model?: string
@@ -24,7 +27,7 @@ export async function generateEmojiArt(opts: {
   const res = await opts.fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: 'POST',
     headers: { 'x-goog-api-key': opts.apiKey, 'content-type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ text: buildEmojiPrompt(opts.animal) }] }] }),
+    body: JSON.stringify({ contents: [{ parts: [{ text: buildEmojiPrompt(opts.subject) }] }] }),
   })
   if (!res.ok) throw new Error(`gemini ${res.status}: ${(await res.text()).slice(0, 200)}`)
   const json = (await res.json()) as {

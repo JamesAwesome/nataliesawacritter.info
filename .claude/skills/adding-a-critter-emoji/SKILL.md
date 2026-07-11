@@ -60,9 +60,17 @@ pixels a model or a hand might produce from it.
 
 **The generate loop:**
 
-1. Run `gen-emoji-art "<animal>" gen.png`. It writes a flat-style PNG on a
-   solid mint-green background, or exits non-zero: `3` = no key → hand-draw
-   instead; `1` = a generation error → retry (counts toward the budget below).
+1. **Choose the composition, then run `gen-emoji-art "<subject>" gen.png`.** The
+   argument is a short *subject description that includes the composition* — the
+   generator no longer assumes a face. **Prefer the whole critter (full body)**;
+   use a face/head only for critters whose face is the iconic, recognizable part
+   (many mammals — a fox, a bear). Anything whose body is the recognizable form —
+   birds, sea life, bugs, reptiles, crustaceans — should be **full body**. So:
+   `gen-emoji-art "a full-body pelican, side view" gen.png`, `gen-emoji-art "a
+   horseshoe crab seen from above" gen.png`, `gen-emoji-art "a red panda's face"
+   gen.png`. It writes a flat-style PNG on a solid mint-green background, or exits
+   non-zero: `3` = no key → hand-draw instead; `1` = a generation error → retry
+   (counts toward the budget below).
 2. **Look at `gen.png`** — Read the file; this is a vision check, not a
    file-exists check. Judge it against the same bar as Rule 1: is it a clear,
    original critter, and **not** a recognizable character, mascot, brand, or
@@ -75,8 +83,8 @@ pixels a model or a hand might produce from it.
      no good-and-safe image after 3 → fall back to hand-drawing instead of
      shipping weak art.
    - **Good** → continue.
-3. Run `matte-emoji gen.png <slug> "<Name>"`. It flood-fills the background
-   transparent, trims/squares/downscales, and writes
+3. Run `matte-emoji gen.png <slug> "<Name>"`. It keys out the solid background
+   to transparent, trims/squares/downscales, and writes
    `app/public/custom-emoji/<slug>.svg` directly — plus keeps the raw
    generation at `docs/renders/<slug>-source.png` for provenance. Pick up the
    recipe below at the catalogue-wiring step; the SVG is already in place, so

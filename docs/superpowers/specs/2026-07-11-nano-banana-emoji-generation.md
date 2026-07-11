@@ -55,16 +55,21 @@ Updated agent flow (via the `adding-a-critter-emoji` skill):
 
 ## The generation prompt (flat house style)
 
-`gen-emoji-art` builds the prompt from the (fenced, untrusted) animal name:
+`gen-emoji-art "<subject>"` builds the prompt from a **subject description that
+includes the composition** (agent-chosen, sanitized) — *not* a hardcoded face, so
+a pelican or horseshoe crab gets a full body:
 
-> "A flat vector emoji sticker of a **{animal}**, front-facing face, centered,
+> "A flat vector emoji sticker of **{subject}**, centered and filling the frame,
 > bold simple shapes, minimal shading, **no outline, no border**, limited flat
 > color palette, friendly and cute. Plain solid **mint-green (#7bd88f)**
 > background, filling the frame. No text, no watermark, no signature. Must be an
 > **original** design that does **not** resemble any existing cartoon character,
 > mascot, brand, or logo."
 
-- Solid mint-green (a color absent from typical critters) → clean flood-fill.
+- `{subject}` is e.g. `a full-body pelican, side view` or `a red panda's face`.
+  **Prefer full body**; face only for critters whose face is the iconic form
+  (some mammals). The skill picks per critter.
+- Solid mint-green (a color absent from typical critters) → clean color-key matte.
 - "no outline/border/text/watermark" → closer to the flat set + easier matting.
 - The originality clause is defense-in-depth alongside the pre-screen + vision check.
 
@@ -80,21 +85,24 @@ any of which routes to `skipped-copyright`:
 3. **Post-generation vision check** — the agent inspects the output and refuses
    anything recognizable as a character/logo/trademark, defaulting to refuse on doubt.
 
-## Post-process (matte) — the proven recipe
+## Post-process (matte) — validated on the real container
 
-`matte-emoji <in.png> <slug>` (ImageMagick), same steps validated on the red panda:
+`matte-emoji <in.png> <slug> "<label>"` (ImageMagick). Sample the background color
+from a corner (the model's actual mint drifts from the requested `#7bd88f`), then
+key it out — portable across ImageMagick 6 (the container ships IM6) and 7:
 
-    magick in.png -alpha set -fuzz 10% -fill none \   # 10%: validated — 22% ate pale, outline-less subjects
-      -draw "alpha 0,0 floodfill"  -draw "alpha %[fx:w-1],0 floodfill" \
-      -draw "alpha 0,%[fx:h-1] floodfill" -draw "alpha %[fx:w-1],%[fx:h-1] floodfill" \
+    BG=$(magick in.png -format '%[pixel:p{0,0}]' info:)     # e.g. srgb(166,211,181)
+    magick in.png -fuzz 12% -transparent "$BG" \
       -trim +repage -resize 500x500 -background none -gravity center -extent 512x512 \
       -resize 256x256 -strip out256.png
 
-Then base64-embed into `<svg viewBox="0 0 64 64" …><image href="data:image/png;base64,…" width="64" height="64"/></svg>` at `app/public/custom-emoji/<slug>.svg` (~100KB, verified to render through the pipeline).
+Then base64-embed into `<svg viewBox="0 0 64 64" …><image href="data:image/png;base64,…" width="64" height="64"/></svg>` at `app/public/custom-emoji/<slug>.svg` (~65–100KB, verified to render through the pipeline). The label is XML-escaped and the slug is validated `^[a-z0-9-]+$` (untrusted).
 
-Flood-fill seeds from the four corners with fuzz, so it adapts to whatever solid
-background the model produced (doesn't need an exact color match), and the flat
-critter's own colors are interior (protected).
+Rationale: the IM7-only `-draw "alpha … floodfill"` doesn't exist in the container's
+IM6, and at high fuzz it ate pale, outline-less subjects. `-fuzz 12% -transparent
+<sampled-bg>` keys out only the (solid) background color and keeps a non-mint
+subject — validated end-to-end in the IM6 container. A green critter (near mint)
+is the known edge case; the agent's render gate catches a bad matte.
 
 ## Components / files
 

@@ -13,7 +13,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
          > /etc/apt/sources.list.d/github-cli.list \
     && apt-get update && apt-get install -y --no-install-recommends gh \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    # Debian ships ImageMagick 6 (command `convert`, no unified `magick`). The
+    # matte tool calls `magick`; add a shim so the same command works on the
+    # container (IM6) and on dev machines (IM7). The pipeline uses only IM6/IM7-
+    # portable ops (-fuzz/-transparent/-trim/-resize/-extent).
+    && ln -sf "$(command -v convert)" /usr/local/bin/magick
 
 # pnpm (pinned to CI's version) + the Claude Code CLI
 RUN npm i -g pnpm@11.9.0 @anthropic-ai/claude-code

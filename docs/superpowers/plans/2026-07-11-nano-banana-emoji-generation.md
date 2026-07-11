@@ -501,3 +501,23 @@ git commit -m "skill: generate emoji art with nano banana (vision-checked), hand
 **Placeholder scan:** none — concrete code/commands throughout. The Gemini request/response shape carries an explicit "verify against docs" note (image APIs evolve), not a placeholder.
 
 **Type/name consistency:** `generateEmojiArt`/`buildEmojiPrompt` (Task 2) and `matteEmoji` signature + `Exec` type (Task 3) match their tests and CLIs; CLI names `gen-emoji-art`/`matte-emoji` match the Dockerfile (Task 4), the skill, and the `task.ts` hint (Task 5); paths `app/public/custom-emoji/<slug>.svg` + `docs/renders/<slug>-source.png` are identical across Task 3 and Task 5.
+
+---
+
+## Corrections applied during execution (validated against the live API + IM6 container)
+
+The build surfaced things the plan's code got wrong; the shipped code differs as follows (spec updated to match):
+
+- **Matte is `-transparent`, not `-draw "alpha … floodfill"`.** The container ships
+  ImageMagick 6, where the `alpha`/`matte` draw primitives don't exist (validated:
+  both error). Rewrote `matteEmoji` to sample the corner bg (`magick in -format
+  '%[pixel:p{0,0}]' info:`) then `-fuzz 12% -transparent <bg>` — portable across
+  IM6/IM7, keeps pale subjects, and validated end-to-end running the real
+  `matte-emoji` CLI in the rebuilt container.
+- **Dockerfile symlinks `magick`→`convert`** (IM6 has only `convert`).
+- **Prompt is subject-based, not face-hardcoded.** `buildEmojiPrompt(subject)` takes
+  an agent-chosen composition (`generateEmojiArt({subject})`, CLI arg is a subject) so
+  full-body critters (pelican, horseshoe crab) render as whole bodies; the skill's
+  generate loop documents "prefer full body; face only when iconic."
+- **Hardening:** `matteEmoji` XML-escapes the untrusted `label` and rejects a `slug`
+  not matching `^[a-z0-9-]+$`.
