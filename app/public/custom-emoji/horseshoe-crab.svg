@@ -1,13 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Horseshoe Crab">
-  <path d="M8 30 q-6 2 -8 8" stroke="#6b4226" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <path d="M6 24 q-7 1 -9 7" stroke="#6b4226" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <path d="M7 18 q-6 3 -7 9" stroke="#6b4226" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <path d="M56 30 q6 2 8 8" stroke="#6b4226" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <path d="M58 24 q7 1 9 7" stroke="#6b4226" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <path d="M57 18 q6 3 7 9" stroke="#6b4226" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <path d="M29 40 L32 60 L35 40 Z" fill="#8a5a34"/>
-  <path d="M32 6 C48 6 59 18 59 29 C59 38 50 43 41 43 L23 43 C14 43 5 38 5 29 C5 18 16 6 32 6 Z" fill="#b0784a"/>
-  <path d="M32 6 C48 6 59 18 59 29 C59 38 50 43 41 43 L32 43 Z" fill="#a06c40" opacity="0.55"/>
-  <path d="M20 16 A24 24 0 0 1 44 16" stroke="#8a5a34" stroke-width="1.4" fill="none" opacity="0.5"/>
-  <path d="M14 30 A19 19 0 0 1 50 30" stroke="#8a5a34" stroke-width="1.4" fill="none" opacity="0.4"/>
+  <path d="M28 50 L36 50 L32 62 Z" fill="#7a4f2d"/>
+  <path d="M24 38 L40 38 L52 44 L38 50 L26 50 L12 44 Z" fill="#93602f"/>
+  <path d="M32 6 C44 6 54 12 54 18 L60 32 L48 36 L40 38 L24 38 L16 36 L4 32 L10 18 C10 12 20 6 32 6 Z" fill="#c08850"/>
+  <path d="M18 15 A18 18 0 0 1 46 15" stroke="#a2703f" stroke-width="1.6" fill="none" opacity="0.5"/>
 </svg>
