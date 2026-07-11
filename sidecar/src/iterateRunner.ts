@@ -36,7 +36,7 @@ export function createIterateRunner(deps: {
         { cwd: worktree },
       )
       if (run.code !== 0) {
-        return { kind: 'error', message: `claude exited ${run.code}: ${run.stderr.slice(0, 300)}` }
+        return { kind: 'error', message: `claude exited ${run.code}: ${(run.stderr.trim() || run.stdout).slice(-1500).trim()}` }
       }
 
       let finalMessage: string

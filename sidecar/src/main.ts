@@ -1,5 +1,4 @@
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
+import { spawn } from 'node:child_process'
 import { createAgentRunner, type Exec } from './agentRunner'
 import { parseConfig } from './config'
 import { existingNames } from './existingNames'
@@ -15,18 +14,24 @@ import { createRequestsClient } from './requestsClient'
 /** How many `/iterate` comments the sidecar will act on per PR per poll cycle. */
 const PER_PR_ITERATION_CAP = 5
 
-const pexec = promisify(execFile)
-
-/** Real process exec — never throws; returns the child's code + output. */
-const exec: Exec = async (cmd, args, opts) => {
-  try {
-    const { stdout, stderr } = await pexec(cmd, args, { cwd: opts.cwd, maxBuffer: 32 * 1024 * 1024, env: process.env })
-    return { code: 0, stdout, stderr }
-  } catch (err) {
-    const e = err as { code?: number; stdout?: string; stderr?: string }
-    return { code: typeof e.code === 'number' ? e.code : 1, stdout: e.stdout ?? '', stderr: e.stderr ?? String(err) }
-  }
-}
+/** Real process exec — never throws; returns the child's code + output.
+ *  stdin is /dev/null (`stdio[0] = 'ignore'`) so `claude -p` doesn't block on an
+ *  empty pipe: execFile's default left stdin open, causing claude's "no stdin
+ *  data received in 3s" stall and a spurious exit 1. */
+const exec: Exec = (cmd, args, opts) =>
+  new Promise((resolve) => {
+    const child = spawn(cmd, args, { cwd: opts.cwd, env: process.env, stdio: ['ignore', 'pipe', 'pipe'] })
+    let stdout = ''
+    let stderr = ''
+    child.stdout.on('data', (d: Buffer) => {
+      stdout += d
+    })
+    child.stderr.on('data', (d: Buffer) => {
+      stderr += d
+    })
+    child.on('error', (err) => resolve({ code: 1, stdout, stderr: stderr + String(err) }))
+    child.on('close', (code) => resolve({ code: code ?? 1, stdout, stderr }))
+  })
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 

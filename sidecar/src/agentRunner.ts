@@ -39,7 +39,7 @@ export function createAgentRunner(deps: {
         cwd: worktree,
       })
       if (run.code !== 0) {
-        return { kind: 'error', message: `claude exited ${run.code}: ${run.stderr.slice(0, 300)}` }
+        return { kind: 'error', message: `claude exited ${run.code}: ${(run.stderr.trim() || run.stdout).slice(-1500).trim()}` }
       }
 
       // `--output-format json` → the final assistant message is `.result`.
