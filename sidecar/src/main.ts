@@ -99,7 +99,14 @@ async function main(): Promise<void> {
         if (result.status !== 'idle') log(`→ ${JSON.stringify(result)}`)
         // Apply /iterate PR comments (👀 ack → run → 🚀/😕 + reply).
         if (prComments) {
-          const { ran } = await processComments({ prComments, runIterate, perPrCap: PER_PR_ITERATION_CAP, log })
+          const { ran } = await processComments({
+            prComments,
+            runIterate,
+            perPrCap: PER_PR_ITERATION_CAP,
+            model: config.model,
+            notifyUpdated: (n, u) => notifier.prUpdated(n, u),
+            log,
+          })
           if (ran > 0) log(`ran ${ran} iteration(s)`)
         }
         // Remove requests whose PR has been merged (accepted).
