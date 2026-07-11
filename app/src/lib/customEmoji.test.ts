@@ -36,7 +36,7 @@ describe('customEmoji catalogue', () => {
       'robin', 'cardinal', 'blue-jay', 'chickadee', 'goldfinch', 'sparrow', 'seagull',
       'groundhog', 'opossum', 'bobcat', 'loon', 'puffin', 'grouse', 'firefly',
       'gritty', 'phanatic', 'anteater', 'red-panda', 'meerkat', 'lemur', 'aardvark', 'crane', 'canada-goose', 'pigeon',
-      'highland-cow', 'capybara', 'monarch-butterfly', 'pelican', 'horseshoe-crab',
+      'highland-cow', 'capybara', 'monarch-butterfly', 'pelican', 'horseshoe-crab', 'stingray',
     ])
   })
 
