@@ -13,6 +13,8 @@ export type SidecarConfig = {
   /** Max agent turns per run. The emoji job is multi-step (generate → vision →
    *  matte → wire → test → PR); 40 hit error_max_turns, so default higher. */
   maxTurns: number
+  /** ntfy topic URL for a "PR opened" push (reuse the app's NTFY_URL). Absent → off. */
+  ntfyUrl?: string
 }
 
 /** Secrets consumed by child processes (claude, gh) — required so the sidecar
@@ -38,5 +40,6 @@ export function parseConfig(env: Record<string, string | undefined>): SidecarCon
       .filter((s) => s !== ''),
     geminiApiKey: (env.GEMINI_API_KEY ?? '') === '' ? undefined : env.GEMINI_API_KEY,
     maxTurns: Number(env.SIDECAR_MAX_TURNS) || 80,
+    ntfyUrl: (env.NTFY_URL ?? '') === '' ? undefined : env.NTFY_URL,
   }
 }

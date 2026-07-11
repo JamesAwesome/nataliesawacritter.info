@@ -31,6 +31,22 @@ describe('processNext', () => {
     expect(res).toEqual({ status: 'handled', id: 'old', outcome: 'pr-opened' })
   })
 
+  it('fires notifyPrOpened with the name + url on a pr-opened result', async () => {
+    const notifyPrOpened = vi.fn()
+    const client = fakeClient([{ id: 'p', name: 'Pelican', note: null }])
+    const runAgent = vi.fn(async (): Promise<AgentResult> => ({ kind: 'pr-opened', prUrl: 'https://x/pull/9' }))
+    await processNext({ client, runAgent, existingNames: [], notifyPrOpened })
+    expect(notifyPrOpened).toHaveBeenCalledWith('Pelican', 'https://x/pull/9')
+  })
+
+  it('does not notify on a skip or an error', async () => {
+    const notifyPrOpened = vi.fn()
+    const client = fakeClient([{ id: 'c', name: 'Newt', note: null }])
+    const runAgent = vi.fn(async (): Promise<AgentResult> => ({ kind: 'skipped-copyright' }))
+    await processNext({ client, runAgent, existingNames: [], notifyPrOpened })
+    expect(notifyPrOpened).not.toHaveBeenCalled()
+  })
+
   it('skips a duplicate without running the agent', async () => {
     const markHandled = vi.fn(async () => {})
     const client = fakeClient([{ id: 'd', name: 'Pigeon', note: null }], markHandled)

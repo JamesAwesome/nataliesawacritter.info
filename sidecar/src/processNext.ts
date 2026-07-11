@@ -9,6 +9,8 @@ export type ProcessDeps = {
   /** Names of critters that already exist, for dedupe. */
   existingNames: readonly string[]
   log?: (message: string) => void
+  /** Fire-and-forget push when a request results in an opened PR. */
+  notifyPrOpened?: (name: string, prUrl: string) => void | Promise<void>
 }
 
 export type ProcessResult =
@@ -46,5 +48,8 @@ export async function processNext(deps: ProcessDeps): Promise<ProcessResult> {
 
   await deps.client.markHandled(request.id, classified)
   log(`handled "${request.name}" → ${classified.outcome}`)
+  if (classified.outcome === 'pr-opened' && classified.prUrl !== null) {
+    await deps.notifyPrOpened?.(request.name, classified.prUrl)
+  }
   return { status: 'handled', id: request.id, outcome: classified.outcome }
 }

@@ -41,8 +41,9 @@ then:
 
 Optional: `GEMINI_API_KEY` enables image generation ("nano banana"); without it
 the sidecar hand-draws SVGs instead (needs billing enabled on the Google project —
-image generation isn't in the free tier). `SIDECAR_MAX_TURNS` (default 80) caps
-agent turns per run; `SIDECAR_MODEL` (default `sonnet`) and `POLL_INTERVAL_MS`
+image generation isn't in the free tier). `NTFY_URL` (reuse the app's) sends a
+tappable phone push when the sidecar opens a PR. `SIDECAR_MAX_TURNS` (default 80)
+caps agent turns per run; `SIDECAR_MODEL` (default `sonnet`) and `POLL_INTERVAL_MS`
 (default 60000) are the other knobs.
 
 Try `SIDECAR_DRY_RUN=1` first — it logs what it would process and touches
