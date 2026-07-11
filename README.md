@@ -56,6 +56,36 @@ app container directly, so the tunnel works even when the host port is bound to 
 or not published at all. Using `localhost`, `127.0.0.1`, the LAN IP, or `APP_PORT` here is
 the usual cause of `dial tcp ...: connection refused` in the cloudflared logs.
 
+## Deploying (on merge)
+
+Merges to `main` are deployed to the LAN host by a GitHub Actions job on a
+**self-hosted runner**, behind a manual approval. Flow: merge → CI passes → the
+`deploy` job waits in the `production` environment for approval → on approve it
+SSHes to the host and runs `scripts/deploy.sh <commit>`, which checks out that
+exact commit and `docker compose up -d --build --wait` (respecting the host's
+`COMPOSE_PROFILES`). An unhealthy build auto-rolls back to the previous commit and
+the job goes red.
+
+**One-time setup:**
+1. **Branch-protect `main`** — require a PR, the CI checks (`app`, `sidecar`,
+   `docker`, `deploy-script`) as required status checks, and block force-push.
+2. **`production` environment** — Settings → Environments → `production`, add
+   yourself as a required reviewer.
+3. **Deploy key (forced-command)** — generate a dedicated ed25519 key; on the host
+   add the public key to the deploy user's `~/.ssh/authorized_keys` prefixed with
+   `restrict,command="$HOME/deploy-forced.sh"`, where `deploy-forced.sh` validates
+   a 40-hex SHA from `$SSH_ORIGINAL_COMMAND`, exports `DEPLOY_PATH=<checkout>`, and
+   execs `<checkout>/scripts/deploy.sh`.
+4. **Environment secrets** — `DEPLOY_SSH_KEY` (private key), `DEPLOY_HOST`,
+   `DEPLOY_USER` (in the `docker` group), and `DEPLOY_KNOWN_HOSTS` (`ssh-keyscan`
+   line).
+5. **Host** — `chmod 600` the `.env`; ensure the checkout is clean and deploy-only,
+   and that `scripts/deploy.sh` is present (pull once after this lands).
+
+The runner should be **deploy-only**, ideally ephemeral, with egress limited to the
+host's SSH port. Do not make this repo public without Actions → "Require approval
+for all outside collaborators".
+
 ## Push notifications
 
 Friends can tap the 🔔 in the header to get a push notification whenever Natalie
