@@ -1,4 +1,4 @@
-FROM node:26.4.0-slim AS build
+FROM node:26.5.0-slim AS build
 
 # Node 25+ images no longer bundle corepack; install pnpm directly.
 RUN npm install -g pnpm@11.9.0
@@ -11,7 +11,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
-FROM node:26.4.0-slim
+FROM node:26.5.0-slim
 
 RUN npm install -g pnpm@11.9.0
 
