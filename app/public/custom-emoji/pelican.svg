@@ -3,9 +3,9 @@
   <ellipse cx="28" cy="40" rx="16" ry="13" fill="#f4f1ea"/>
   <path d="M20 30 q12 3 16 15 q-12 2 -18 -6 Z" fill="#b9c2cc"/>
   <circle cx="43" cy="27" r="11" fill="#f4f1ea"/>
-  <path d="M52 22 Q64 19 62 26 Q60 31 52 29 Z" fill="#e3d7bd"/>
-  <path d="M52 29 Q64 29 59 40 Q52 44 48 35 Z" fill="#f2b33a"/>
-  <path d="M60 25 q2 3 0 6" stroke="#c99a2e" stroke-width="1.2" fill="none"/>
-  <circle cx="46" cy="24" r="1.7" fill="#2a2320"/>
+  <path d="M41 21 Q56 17 63 22 Q66 25.5 62 28 Q58.5 30.5 60 26 Q50 24 41 25.5 Z" fill="#e3d7bd"/>
+  <path d="M60 25.5 Q65 26.5 61.5 31 Q58.5 29.5 60 25.5 Z" fill="#c9ad6e"/>
+  <path d="M43 27 Q40 39 48 44 Q56 41.5 55 30 Q49 32.5 43 27 Z" fill="#f2b33a"/>
+  <circle cx="46" cy="23" r="1.7" fill="#2a2320"/>
   <path d="M26 50 v6 M32 50 v6" stroke="#f2b33a" stroke-width="2" stroke-linecap="round"/>
 </svg>
