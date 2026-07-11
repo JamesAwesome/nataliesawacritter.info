@@ -265,6 +265,7 @@ describe('matteEmoji', () => {
     const args = d.exec.mock.calls[0]![1].join(' ')
     expect(d.exec.mock.calls[0]![0]).toBe('magick')
     expect(args).toContain('floodfill')
+    expect(args).toContain('-fuzz 10%') // validated: 22% ate pale/outline-less subjects
     expect(args).toContain('-trim')
     expect(args).toContain('256x256')
     // SVG wrapper: viewBox, aria-label, base64 data URI of the read bytes
@@ -318,7 +319,10 @@ export async function matteEmoji(opts: {
   const r = await opts.exec(
     'magick',
     [
-      opts.inPath, '-alpha', 'set', '-fuzz', '22%', '-fill', 'none',
+      // fuzz 10%: validated on a real pale, outline-less generation — 22% flood-
+      // filled through the anti-aliased edge and ate the light subject; 10%
+      // removes the flat mint background cleanly while keeping the body.
+      opts.inPath, '-alpha', 'set', '-fuzz', '10%', '-fill', 'none',
       '-draw', 'alpha 0,0 floodfill',
       '-draw', 'alpha %[fx:w-1],0 floodfill',
       '-draw', 'alpha 0,%[fx:h-1] floodfill',

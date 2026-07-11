@@ -84,7 +84,7 @@ any of which routes to `skipped-copyright`:
 
 `matte-emoji <in.png> <slug>` (ImageMagick), same steps validated on the red panda:
 
-    magick in.png -alpha set -fuzz 22% -fill none \
+    magick in.png -alpha set -fuzz 10% -fill none \   # 10%: validated — 22% ate pale, outline-less subjects
       -draw "alpha 0,0 floodfill"  -draw "alpha %[fx:w-1],0 floodfill" \
       -draw "alpha 0,%[fx:h-1] floodfill" -draw "alpha %[fx:w-1],%[fx:h-1] floodfill" \
       -trim +repage -resize 500x500 -background none -gravity center -extent 512x512 \
