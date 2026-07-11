@@ -34,6 +34,19 @@ describe('EmojiPicker recently-seen row', () => {
   })
 })
 
+describe('EmojiPicker "Other" toggle', () => {
+  it('opens the extended grid, then closes it when "Other" is pressed again', async () => {
+    render(<EmojiPicker recent={[]} onPick={() => {}} onCancel={() => {}} />)
+    const other = screen.getByRole('button', { name: 'Other' })
+
+    expect(screen.queryByText('Birds')).not.toBeInTheDocument()
+    await userEvent.click(other)
+    expect(screen.getByText('Birds')).toBeInTheDocument() // opened
+    await userEvent.click(other)
+    expect(screen.queryByText('Birds')).not.toBeInTheDocument() // toggled closed
+  })
+})
+
 const MR_FOX = makeProfile()
 
 describe('EmojiPicker friends row', () => {
