@@ -8,6 +8,8 @@ export type SidecarConfig = {
   /** GitHub logins allowed to trigger `/iterate` on a sidecar PR. Empty ==
    *  comment-iteration disabled (deny by default). */
   allowedCommenters: string[]
+  /** Gemini image API key ("nano banana"). Absent → the sidecar hand-draws. */
+  geminiApiKey?: string
 }
 
 /** Secrets consumed by child processes (claude, gh) — required so the sidecar
@@ -31,5 +33,6 @@ export function parseConfig(env: Record<string, string | undefined>): SidecarCon
       .split(',')
       .map((s) => s.trim())
       .filter((s) => s !== ''),
+    geminiApiKey: (env.GEMINI_API_KEY ?? '') === '' ? undefined : env.GEMINI_API_KEY,
   }
 }

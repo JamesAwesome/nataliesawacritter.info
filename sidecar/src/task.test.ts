@@ -34,4 +34,9 @@ describe('buildTask', () => {
     expect(task).toContain('RESULT: skipped-copyright')
     expect(task).toContain('RESULT: skipped-unclear')
   })
+
+  it('points the agent at the generate-or-draw choice', () => {
+    const t = buildTask({ id: 'x', name: 'Otter', note: null })
+    expect(t).toMatch(/gen-emoji-art/)
+  })
 })

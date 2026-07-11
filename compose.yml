@@ -95,6 +95,7 @@ services:
       POLL_INTERVAL_MS: ${SIDECAR_POLL_INTERVAL_MS:-60000}
       SIDECAR_DRY_RUN: ${SIDECAR_DRY_RUN:-}
       SIDECAR_ALLOWED_COMMENTERS: ${SIDECAR_ALLOWED_COMMENTERS:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     volumes:
       - sidecar-repo:/repo
     depends_on:

@@ -45,4 +45,13 @@ describe('parseConfig', () => {
   it('treats a blank required value as missing', () => {
     expect(() => parseConfig({ ...full, ANTHROPIC_API_KEY: '' })).toThrow(/ANTHROPIC_API_KEY/)
   })
+
+  it('reads GEMINI_API_KEY when present', () => {
+    expect(parseConfig({ ...full, GEMINI_API_KEY: 'g-123' }).geminiApiKey).toBe('g-123')
+  })
+
+  it('leaves geminiApiKey undefined when absent or blank (fallback mode)', () => {
+    expect(parseConfig(full).geminiApiKey).toBeUndefined()
+    expect(parseConfig({ ...full, GEMINI_API_KEY: '' }).geminiApiKey).toBeUndefined()
+  })
 })
