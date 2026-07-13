@@ -32,6 +32,7 @@ const STAND_INS: Record<string, string> = {
   pelican: '🦆',
   'horseshoe-crab': '🦀',
   stingray: '🐠',
+  axolotl: '🦎',
 }
 
 export const KNOWN_SLUGS = new Set(Object.keys(STAND_INS))
