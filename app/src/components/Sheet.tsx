@@ -48,9 +48,17 @@ export function Sheet({ open, onClose, children }: Props) {
     const vv = window.visualViewport
     const scrim = scrimRef.current
     if (!open || vv == null || scrim == null) return
+    // Largest viewport height seen while open = the keyboard-closed baseline. A
+    // meaningful shrink from it means the keyboard is up (the Safari toolbar
+    // toggling is <120px and is anyway baked into the baseline, so it won't
+    // false-trigger). When up, a white backdrop fills behind the iOS input
+    // accessory bar so the sheet reads as docked to the keyboard, not floating.
+    let baseline = vv.height
     const apply = () => {
+      baseline = Math.max(baseline, vv.height)
       scrim.style.height = `${vv.height}px`
       scrim.style.top = `${vv.offsetTop}px`
+      scrim.dataset.keyboard = baseline - vv.height > 120 ? 'open' : ''
     }
     apply()
     vv.addEventListener('resize', apply)
@@ -60,6 +68,7 @@ export function Sheet({ open, onClose, children }: Props) {
       vv.removeEventListener('scroll', apply)
       scrim.style.height = ''
       scrim.style.top = ''
+      delete scrim.dataset.keyboard
     }
   }, [open])
 
