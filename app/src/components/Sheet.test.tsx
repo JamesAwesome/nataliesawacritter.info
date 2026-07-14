@@ -99,4 +99,52 @@ describe('Sheet', () => {
     fireEvent.touchEnd(strip, touch(150))
     expect(onClose).not.toHaveBeenCalled()
   })
+
+  describe('visual-viewport sizing (mobile keyboard)', () => {
+    // A minimal stand-in for window.visualViewport, which jsdom doesn't provide.
+    function fakeViewport(height: number, offsetTop = 0) {
+      const listeners: Record<string, Set<() => void>> = { resize: new Set(), scroll: new Set() }
+      return {
+        height,
+        offsetTop,
+        addEventListener: (type: string, fn: () => void) => listeners[type]?.add(fn),
+        removeEventListener: (type: string, fn: () => void) => listeners[type]?.delete(fn),
+        emit(type: 'resize' | 'scroll') {
+          listeners[type].forEach((fn) => fn())
+        },
+        set(height: number, offsetTop: number) {
+          this.height = height
+          this.offsetTop = offsetTop
+        },
+      }
+    }
+
+    it('sizes the scrim to the visual viewport and tracks keyboard changes', () => {
+      const vv = fakeViewport(900)
+      vi.stubGlobal('visualViewport', vv)
+      render(<Sheet open onClose={() => {}}><p>content</p></Sheet>)
+      const scrim = screen.getByTestId('sheet-scrim')
+      // Initial size = full visible viewport.
+      expect(scrim.style.height).toBe('900px')
+      expect(scrim.style.top).toBe('0px')
+
+      // Keyboard opens: visual viewport shrinks and shifts down.
+      vv.set(520, 40)
+      vv.emit('resize')
+      expect(scrim.style.height).toBe('520px')
+      expect(scrim.style.top).toBe('40px')
+    })
+
+    it('clears its inline sizing and detaches listeners when closed', () => {
+      const vv = fakeViewport(900)
+      vi.stubGlobal('visualViewport', vv)
+      const { rerender } = render(<Sheet open onClose={() => {}}><p>content</p></Sheet>)
+      expect(screen.getByTestId('sheet-scrim').style.height).toBe('900px')
+
+      rerender(<Sheet open={false} onClose={() => {}}><p>content</p></Sheet>)
+      // No more listeners left subscribed after unmount.
+      vv.set(400, 0)
+      expect(() => vv.emit('resize')).not.toThrow()
+    })
+  })
 })
