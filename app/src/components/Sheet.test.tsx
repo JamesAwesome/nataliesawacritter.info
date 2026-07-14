@@ -135,6 +135,30 @@ describe('Sheet', () => {
       expect(scrim.style.top).toBe('40px')
     })
 
+    it('flags the keyboard as open only on a meaningful shrink (backdrop gate)', () => {
+      const vv = fakeViewport(900)
+      vi.stubGlobal('visualViewport', vv)
+      render(<Sheet open onClose={() => {}}><p>content</p></Sheet>)
+      const scrim = screen.getByTestId('sheet-scrim')
+      // No keyboard: no flag.
+      expect(scrim.dataset.keyboard).toBe('')
+
+      // A small shrink (e.g. Safari toolbar) must not count as the keyboard.
+      vv.set(830, 0)
+      vv.emit('resize')
+      expect(scrim.dataset.keyboard).toBe('')
+
+      // A big shrink is the keyboard: flag on so the CSS backdrop shows.
+      vv.set(500, 0)
+      vv.emit('resize')
+      expect(scrim.dataset.keyboard).toBe('open')
+
+      // Keyboard closes again: flag off.
+      vv.set(900, 0)
+      vv.emit('resize')
+      expect(scrim.dataset.keyboard).toBe('')
+    })
+
     it('clears its inline sizing and detaches listeners when closed', () => {
       const vv = fakeViewport(900)
       vi.stubGlobal('visualViewport', vv)
