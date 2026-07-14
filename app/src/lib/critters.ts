@@ -35,10 +35,33 @@ export const EXTENDED: string[] = [
   '🦗', '🪳', '🕷️', '🦂', '🦟', '🪰', '🪱',
 ]
 
+// Names for the EXTENDED unicode critters so the picker filter can match them by
+// name (and so their tiles get real accessibility labels). Coverage over EXTENDED
+// is enforced by critters.test.ts. Names lean toward the common search term.
+export const EMOJI_NAMES: Record<string, string> = {
+  '🐶': 'Dog', '🐕': 'Dog', '🦮': 'Guide dog', '🐕‍🦺': 'Service dog', '🐩': 'Poodle', '🐺': 'Wolf',
+  '🐱': 'Cat', '🐈': 'Cat', '🐈‍⬛': 'Black cat', '🦁': 'Lion', '🐯': 'Tiger', '🐅': 'Tiger', '🐆': 'Leopard',
+  '🐴': 'Horse', '🐎': 'Horse', '🦄': 'Unicorn', '🦓': 'Zebra', '🦬': 'Bison',
+  '🐮': 'Cow', '🐂': 'Ox', '🐃': 'Water buffalo', '🐄': 'Cow', '🐷': 'Pig', '🐖': 'Pig', '🐗': 'Boar', '🐽': 'Pig nose',
+  '🐏': 'Ram', '🐑': 'Sheep', '🐐': 'Goat', '🐪': 'Camel', '🐫': 'Two-hump camel', '🦙': 'Llama', '🦒': 'Giraffe',
+  '🐘': 'Elephant', '🦣': 'Mammoth', '🦏': 'Rhino', '🦛': 'Hippo',
+  '🐁': 'Mouse', '🐀': 'Rat', '🐹': 'Hamster', '🦔': 'Hedgehog', '🐻‍❄️': 'Polar bear', '🐨': 'Koala',
+  '🐼': 'Panda', '🦥': 'Sloth', '🦦': 'Otter', '🦘': 'Kangaroo', '🦡': 'Badger', '🫎': 'Moose',
+  '🦍': 'Gorilla', '🦧': 'Orangutan', '🐒': 'Monkey',
+  '🐔': 'Chicken', '🐓': 'Rooster', '🐣': 'Hatching chick', '🐤': 'Baby chick', '🐥': 'Chick', '🐧': 'Penguin',
+  '🕊️': 'Dove', '🦢': 'Swan', '🪿': 'Goose', '🦤': 'Dodo', '🦩': 'Flamingo', '🦚': 'Peacock', '🦜': 'Parrot', '🐦‍⬛': 'Blackbird',
+  '🐊': 'Crocodile', '🦎': 'Lizard', '🐉': 'Dragon', '🐲': 'Dragon', '🦕': 'Dinosaur', '🦖': 'T-Rex',
+  '🐳': 'Whale', '🐋': 'Whale', '🐬': 'Dolphin', '🦭': 'Seal',
+  '🐟': 'Fish', '🐠': 'Tropical fish', '🐡': 'Pufferfish', '🦈': 'Shark', '🐙': 'Octopus', '🦀': 'Crab',
+  '🦞': 'Lobster', '🦐': 'Shrimp', '🦑': 'Squid', '🦪': 'Oyster',
+  '🐌': 'Snail', '🦋': 'Butterfly', '🐛': 'Caterpillar', '🐜': 'Ant', '🐝': 'Bee', '🪲': 'Beetle', '🐞': 'Ladybug',
+  '🦗': 'Cricket', '🪳': 'Cockroach', '🕷️': 'Spider', '🦂': 'Scorpion', '🦟': 'Mosquito', '🪰': 'Fly', '🪱': 'Worm',
+}
+
 export function nameFor(emoji: string): string | null {
   const custom = customFor(emoji)
   if (custom !== null) return custom.name
-  return CURATED.find((c) => c.emoji === emoji)?.name ?? null
+  return CURATED.find((c) => c.emoji === emoji)?.name ?? EMOJI_NAMES[emoji] ?? null
 }
 
 /** Friend identity comparisons ignore case and surrounding whitespace

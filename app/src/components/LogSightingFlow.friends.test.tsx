@@ -99,7 +99,8 @@ describe('LogSightingFlow friends', () => {
       <LogSightingFlow open onClose={() => {}} onSave={vi.fn(async () => {})} onLogged={vi.fn()} onSaveFriend={vi.fn(async () => {})} />,
     )
     await userEvent.click(screen.getByRole('button', { name: /other/i }))
-    await userEvent.click(screen.getByRole('button', { name: '🐝' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Bee' }))
+    await userEvent.clear(screen.getByLabelText(/critter name/i)) // Bee pre-fills; empty it to test the disabled state
     expect(screen.getByRole('checkbox', { name: /save as a friend/i })).toBeDisabled()
     await userEvent.type(screen.getByLabelText(/critter name/i), 'Buzz')
     expect(screen.getByRole('checkbox', { name: /save as a friend/i })).toBeEnabled()

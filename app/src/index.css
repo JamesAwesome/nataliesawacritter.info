@@ -397,6 +397,20 @@ body {
   margin: 4px 0 12px;
 }
 
+.picker-filter {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--border-hairline);
+  border-radius: 12px;
+  background: var(--surface-input);
+  color: var(--ink);
+  /* >=16px so iOS Safari doesn't auto-zoom on focus (see the .field inputs). */
+  font-size: 16px;
+}
+
 .picker-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
