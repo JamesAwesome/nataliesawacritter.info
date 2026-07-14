@@ -39,9 +39,9 @@ describe('LogSightingFlow', () => {
 
   it('Other expands the extended grid inline', async () => {
     renderFlow()
-    expect(screen.queryByRole('button', { name: '🐝' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Bee' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /other/i }))
-    expect(screen.getByRole('button', { name: '🐝' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Bee' })).toBeInTheDocument()
     // still on the picker step
     expect(screen.getByText('What did Natalie see?')).toBeInTheDocument()
   })
@@ -53,11 +53,11 @@ describe('LogSightingFlow', () => {
     expect(screen.getByLabelText(/date/i)).toHaveValue('2026-07-03')
   })
 
-  it('picking an extended emoji leaves the name blank', async () => {
+  it('picking an extended emoji pre-fills its name', async () => {
     renderFlow()
     await userEvent.click(screen.getByRole('button', { name: /other/i }))
-    await userEvent.click(screen.getByRole('button', { name: '🐝' }))
-    expect(screen.getByLabelText(/critter name/i)).toHaveValue('')
+    await userEvent.click(screen.getByRole('button', { name: 'Bee' }))
+    expect(screen.getByLabelText(/critter name/i)).toHaveValue('Bee')
   })
 
   it('Back returns to the picker', async () => {
@@ -131,7 +131,8 @@ describe('LogSightingFlow', () => {
     setCredentials('sekrit')
     const { onSave } = renderFlow()
     await userEvent.click(screen.getByRole('button', { name: /other/i }))
-    await userEvent.click(screen.getByRole('button', { name: '🐝' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Bee' }))
+    await userEvent.clear(screen.getByLabelText(/critter name/i)) // Bee pre-fills; clear to test empty-field omission
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
     expect(onSave).toHaveBeenCalledWith(
       { emoji: '🐝', sightedOn: '2026-07-03', sightedTime: '15:00' },

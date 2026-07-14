@@ -31,15 +31,22 @@ describe('critter sets', () => {
       expect(emoji.length).toBeLessThanOrEqual(16)
     }
   })
+
+  it('names every extended emoji (so the picker filter can match it)', () => {
+    for (const emoji of EXTENDED) {
+      expect(nameFor(emoji), `missing name for ${emoji}`).not.toBeNull()
+    }
+  })
 })
 
 describe('nameFor', () => {
-  it('returns the curated name for a curated emoji, null otherwise', () => {
-    expect(nameFor('🦊')).toBe('Fox')
+  it('names curated, custom, and extended emoji; null for unknown', () => {
+    expect(nameFor('🦊')).toBe('Fox') // curated
     expect(nameFor('🦨')).toBe('Skunk')
-    expect(nameFor('🐻')).toBe('Bear')
-    expect(nameFor('🐙')).toBeNull()
-    expect(nameFor('🦔')).toBeNull() // demoted out of CURATED
+    expect(nameFor('🐙')).toBe('Octopus') // extended
+    expect(nameFor('🦔')).toBe('Hedgehog')
+    expect(nameFor('🦁')).toBe('Lion')
+    expect(nameFor('🍎')).toBeNull() // not a critter
   })
 
   it('resolves custom-emoji names from their token', () => {

@@ -20,11 +20,15 @@ describe('EmojiPicker recently-seen row', () => {
     expect(onPick).toHaveBeenCalledWith('🦊', 'Fox')
   })
 
-  it('leaves the name blank when a recent non-curated emoji is picked', async () => {
+  it('pre-fills a known extended name, and leaves it blank for a truly unknown recent emoji', async () => {
     const onPick = vi.fn()
-    render(<EmojiPicker recent={['🐙']} onPick={onPick} onCancel={() => {}} />)
-    await userEvent.click(screen.getByRole('button', { name: 'Recently seen 🐙' }))
-    expect(onPick).toHaveBeenCalledWith('🐙', null)
+    render(<EmojiPicker recent={['🐙', '🍎']} onPick={onPick} onCancel={() => {}} />)
+    // extended emoji are named now, so a recent octopus pre-fills "Octopus"
+    await userEvent.click(screen.getByRole('button', { name: 'Recently seen Octopus' }))
+    expect(onPick).toHaveBeenCalledWith('🐙', 'Octopus')
+    // a non-critter emoji we don't name still leaves the name blank
+    await userEvent.click(screen.getByRole('button', { name: 'Recently seen 🍎' }))
+    expect(onPick).toHaveBeenCalledWith('🍎', null)
   })
 
   it('still shows the curated Fox tile distinctly from the recent Fox', () => {
@@ -44,6 +48,41 @@ describe('EmojiPicker "Other" toggle', () => {
     expect(screen.getByText('Birds')).toBeInTheDocument() // opened
     await userEvent.click(other)
     expect(screen.queryByText('Birds')).not.toBeInTheDocument() // toggled closed
+  })
+})
+
+describe('EmojiPicker filter', () => {
+  it('filters to matching critters by name and hides the normal sections', async () => {
+    const onPick = vi.fn()
+    render(<EmojiPicker recent={['🦊']} onPick={onPick} onCancel={() => {}} />)
+    // normal layout is present first
+    expect(screen.getByText('Recently seen')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Deer' })).toBeInTheDocument()
+
+    await userEvent.type(screen.getByLabelText('Filter critters'), 'octopus')
+
+    expect(screen.getByRole('button', { name: 'Octopus' })).toBeInTheDocument() // extended match
+    expect(screen.queryByText('Recently seen')).not.toBeInTheDocument() // sections hidden
+    expect(screen.queryByRole('button', { name: 'Deer' })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Octopus' }))
+    expect(onPick).toHaveBeenCalledWith('🐙', 'Octopus')
+  })
+
+  it('shows a no-match message and keeps the request link', async () => {
+    render(<EmojiPicker recent={[]} onPick={() => {}} onCancel={() => {}} onRequestEmoji={() => {}} />)
+    await userEvent.type(screen.getByLabelText('Filter critters'), 'zzzznope')
+    expect(screen.getByText(/No critters match/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Request an emoji/i })).toBeInTheDocument()
+  })
+
+  it('restores the normal layout when the filter is cleared', async () => {
+    render(<EmojiPicker recent={[]} onPick={() => {}} onCancel={() => {}} />)
+    const input = screen.getByLabelText('Filter critters')
+    await userEvent.type(input, 'fox')
+    expect(screen.queryByRole('button', { name: 'Deer' })).not.toBeInTheDocument()
+    await userEvent.clear(input)
+    expect(screen.getByRole('button', { name: 'Deer' })).toBeInTheDocument()
   })
 })
 

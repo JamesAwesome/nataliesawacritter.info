@@ -4,6 +4,11 @@ import { CURATED, nameFor } from '../lib/critters'
 import { CATEGORIES } from '../lib/emojiCategories'
 import { CritterGlyph } from './CritterGlyph'
 
+// Every emoji the picker offers (curated ∪ extended ∪ custom), deduped, for the
+// name filter. CATEGORIES already covers CURATED ∪ EXTENDED ∪ custom.
+const ALL_EMOJI = [...new Set(CATEGORIES.flatMap((c) => c.items))]
+const TINT = new Map(CURATED.map((c) => [c.emoji, c.tint]))
+
 type Props = {
   recent: string[]
   onPick: (emoji: string, name: string | null) => void
@@ -38,79 +43,115 @@ function PickerTile({ className, ariaLabel, tint, onClick, children }: TileProps
 
 export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFriend, onRequestEmoji }: Props) {
   const [showExtended, setShowExtended] = useState(false)
+  const [query, setQuery] = useState('')
+
+  const q = query.trim().toLowerCase()
+  const matches = q === '' ? [] : ALL_EMOJI.filter((e) => nameFor(e)?.toLowerCase().includes(q))
+
   return (
     <div className="emoji-picker">
       <h2 className="sheet-heading">What did Natalie see?</h2>
-      {friends.length > 0 && (
-        <>
-          <h3 className="picker-recent-heading">Friends</h3>
-          <div className="picker-grid picker-grid-recent">
-            {friends.map((profile) => (
-              <PickerTile
-                key={profile.id}
-                className="friend-tile"
-                ariaLabel={`Friend ${profile.name}`}
-                onClick={() => onPickFriend?.(profile)}
-              >
-                <CritterGlyph emoji={profile.emoji} />
-                <span className="friend-name">{profile.name}</span>
-              </PickerTile>
-            ))}
-          </div>
-        </>
-      )}
-      {recent.length > 0 && (
-        <>
-          <h3 className="picker-recent-heading">Recently seen</h3>
-          <div className="picker-grid picker-grid-recent">
-            {recent.map((emoji) => (
+      <input
+        type="search"
+        className="picker-filter"
+        placeholder="Filter critters…"
+        aria-label="Filter critters"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+
+      {q !== '' ? (
+        matches.length > 0 ? (
+          <div className="picker-grid picker-grid-extended">
+            {matches.map((emoji) => (
               <PickerTile
                 key={emoji}
-                ariaLabel={`Recently seen ${nameFor(emoji) ?? emoji}`}
+                tint={TINT.get(emoji)}
+                ariaLabel={nameFor(emoji) ?? emoji}
                 onClick={() => onPick(emoji, nameFor(emoji))}
               >
                 <CritterGlyph emoji={emoji} />
               </PickerTile>
             ))}
           </div>
-        </>
-      )}
-      <div className="picker-grid">
-        {CURATED.map((c) => (
-          <PickerTile key={c.emoji} tint={c.tint} ariaLabel={c.name} onClick={() => onPick(c.emoji, c.name)}>
-            <CritterGlyph emoji={c.emoji} />
-          </PickerTile>
-        ))}
-        <button
-          type="button"
-          className="picker-tile picker-other"
-          aria-expanded={showExtended}
-          onClick={() => setShowExtended((v) => !v)}
-        >
-          Other
-        </button>
-      </div>
-      {showExtended && (
+        ) : (
+          <p className="muted">No critters match “{query.trim()}”.</p>
+        )
+      ) : (
         <>
-          <hr className="picker-divider" />
-          {CATEGORIES.map((cat) => (
-            <div key={cat.key} className="picker-category">
-              <h3 className="picker-recent-heading">{cat.label}</h3>
-              <div className="picker-grid picker-grid-extended">
-                {cat.items.map((item) => (
+          {friends.length > 0 && (
+            <>
+              <h3 className="picker-recent-heading">Friends</h3>
+              <div className="picker-grid picker-grid-recent">
+                {friends.map((profile) => (
                   <PickerTile
-                    key={item}
-                    ariaLabel={nameFor(item) ?? item}
-                    onClick={() => onPick(item, nameFor(item))}
+                    key={profile.id}
+                    className="friend-tile"
+                    ariaLabel={`Friend ${profile.name}`}
+                    onClick={() => onPickFriend?.(profile)}
                   >
-                    <CritterGlyph emoji={item} />
+                    <CritterGlyph emoji={profile.emoji} />
+                    <span className="friend-name">{profile.name}</span>
                   </PickerTile>
                 ))}
               </div>
-            </div>
-          ))}
+            </>
+          )}
+          {recent.length > 0 && (
+            <>
+              <h3 className="picker-recent-heading">Recently seen</h3>
+              <div className="picker-grid picker-grid-recent">
+                {recent.map((emoji) => (
+                  <PickerTile
+                    key={emoji}
+                    ariaLabel={`Recently seen ${nameFor(emoji) ?? emoji}`}
+                    onClick={() => onPick(emoji, nameFor(emoji))}
+                  >
+                    <CritterGlyph emoji={emoji} />
+                  </PickerTile>
+                ))}
+              </div>
+            </>
+          )}
+          <div className="picker-grid">
+            {CURATED.map((c) => (
+              <PickerTile key={c.emoji} tint={c.tint} ariaLabel={c.name} onClick={() => onPick(c.emoji, c.name)}>
+                <CritterGlyph emoji={c.emoji} />
+              </PickerTile>
+            ))}
+            <button
+              type="button"
+              className="picker-tile picker-other"
+              aria-expanded={showExtended}
+              onClick={() => setShowExtended((v) => !v)}
+            >
+              Other
+            </button>
+          </div>
+          {showExtended && (
+            <>
+              <hr className="picker-divider" />
+              {CATEGORIES.map((cat) => (
+                <div key={cat.key} className="picker-category">
+                  <h3 className="picker-recent-heading">{cat.label}</h3>
+                  <div className="picker-grid picker-grid-extended">
+                    {cat.items.map((item) => (
+                      <PickerTile
+                        key={item}
+                        ariaLabel={nameFor(item) ?? item}
+                        onClick={() => onPick(item, nameFor(item))}
+                      >
+                        <CritterGlyph emoji={item} />
+                      </PickerTile>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </>
       )}
+
       {onRequestEmoji !== undefined && (
         <button type="button" className="btn-secondary picker-request" onClick={onRequestEmoji}>
           ✨ Don't see it? Request an emoji
