@@ -10,6 +10,7 @@ const DISMISS_THRESHOLD = 100
  *  On touch devices it can be dragged down by its handle to dismiss. */
 export function Sheet({ open, onClose, children }: Props) {
   const pressStartedOnScrim = useRef(false)
+  const scrimRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
   const dragStartY = useRef(0)
@@ -36,6 +37,31 @@ export function Sheet({ open, onClose, children }: Props) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
+
+  // On mobile the on-screen keyboard shrinks the *visual* viewport but not the
+  // layout viewport, so a `position: fixed; inset: 0` scrim keeps its full layout
+  // height and iOS shifts fixed elements to reveal the (scroll-locked) page behind
+  // it — the bottom sheet vanishes behind the keyboard. Size the scrim to the
+  // visual viewport so the sheet always sits within the visible area, above the
+  // keyboard, and its content scrolls internally. See docs/design/README.md §Sheet.
+  useEffect(() => {
+    const vv = window.visualViewport
+    const scrim = scrimRef.current
+    if (!open || vv == null || scrim == null) return
+    const apply = () => {
+      scrim.style.height = `${vv.height}px`
+      scrim.style.top = `${vv.offsetTop}px`
+    }
+    apply()
+    vv.addEventListener('resize', apply)
+    vv.addEventListener('scroll', apply)
+    return () => {
+      vv.removeEventListener('resize', apply)
+      vv.removeEventListener('scroll', apply)
+      scrim.style.height = ''
+      scrim.style.top = ''
+    }
+  }, [open])
 
   // Reset any residual displacement when the sheet closes. Adjusted during
   // render (rather than in an effect) per the React-documented pattern for
@@ -93,6 +119,7 @@ export function Sheet({ open, onClose, children }: Props) {
 
   return (
     <div
+      ref={scrimRef}
       className="sheet-scrim"
       data-testid="sheet-scrim"
       style={scrimStyle}

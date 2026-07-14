@@ -235,7 +235,15 @@ body {
 /* Sheet / modal — mobile bottom sheet, desktop centered (design §Sheet) */
 .sheet-scrim {
   position: fixed;
-  inset: 0;
+  /* top + height (not inset:0) so Sheet.tsx can shrink the scrim to the visual
+     viewport when the mobile keyboard opens — otherwise a fixed full-height scrim
+     keeps the bottom sheet behind the keyboard. Falls back to the full visible
+     viewport (dvh) before/without the JS sizing. */
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  height: 100dvh;
   background: var(--scrim);
   display: flex;
   align-items: flex-end;
@@ -262,7 +270,11 @@ body {
      disappears under it. dvh tracks the visible viewport. vh stays as a fallback
      for browsers without dvh. */
   max-height: 85vh;
-  max-height: 85dvh;
+  /* min(85dvh, 100%): 85% of the visible viewport normally, but never taller than
+     the scrim itself — when the keyboard shrinks the scrim (JS above), 100% caps
+     the sheet to the visible area so it scrolls internally instead of overflowing
+     up off-screen. */
+  max-height: min(85dvh, 100%);
   overflow-y: auto;
   animation: sheet-up 0.25s ease-out;
   transition: transform 0.22s ease-out;
