@@ -76,6 +76,15 @@ describe('EmojiPicker filter', () => {
     expect(screen.getByRole('button', { name: /Request an emoji/i })).toBeInTheDocument()
   })
 
+  it('renders filter-result tiles with no tint, so the grid is uniform', async () => {
+    render(<EmojiPicker recent={[]} onPick={() => {}} onCancel={() => {}} />)
+    // Fox is curated (tint-sky) in the main grid, but the flat filter grid mixes
+    // curated + extended, so tints there read as arbitrary — the filter grid must
+    // be uniform (no inline background) regardless of an emoji's curated tint.
+    await userEvent.type(screen.getByLabelText('Filter critters'), 'fox')
+    expect(screen.getByRole('button', { name: 'Fox' }).style.background).toBe('')
+  })
+
   it('restores the normal layout when the filter is cleared', async () => {
     render(<EmojiPicker recent={[]} onPick={() => {}} onCancel={() => {}} />)
     const input = screen.getByLabelText('Filter critters')

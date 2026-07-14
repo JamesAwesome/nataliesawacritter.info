@@ -7,7 +7,6 @@ import { CritterGlyph } from './CritterGlyph'
 // Every emoji the picker offers (curated ∪ extended ∪ custom), deduped, for the
 // name filter. CATEGORIES already covers CURATED ∪ EXTENDED ∪ custom.
 const ALL_EMOJI = [...new Set(CATEGORIES.flatMap((c) => c.items))]
-const TINT = new Map(CURATED.map((c) => [c.emoji, c.tint]))
 
 type Props = {
   recent: string[]
@@ -66,7 +65,6 @@ export function EmojiPicker({ recent, onPick, onCancel, friends = [], onPickFrie
             {matches.map((emoji) => (
               <PickerTile
                 key={emoji}
-                tint={TINT.get(emoji)}
                 ariaLabel={nameFor(emoji) ?? emoji}
                 onClick={() => onPick(emoji, nameFor(emoji))}
               >
