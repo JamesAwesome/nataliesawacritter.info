@@ -644,6 +644,11 @@ body {
   color: var(--danger-text);
 }
 
+.field-hint.field-error {
+  color: var(--danger-text);
+  font-weight: 600;
+}
+
 .details-actions {
   display: flex;
   gap: 10px;

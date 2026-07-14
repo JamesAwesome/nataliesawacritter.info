@@ -47,6 +47,24 @@ describe('DetailsForm', () => {
     expect(screen.getByRole('button', { name: /save sighting/i })).toBeDisabled()
   })
 
+  it('rejects emoji in the name: shows an error, disables Save, and does not call onSave', async () => {
+    const onSave = vi.fn()
+    render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} />)
+    const name = screen.getByLabelText(/critter name/i)
+    await userEvent.clear(name)
+    await userEvent.type(name, 'Buzzy 🐝')
+
+    expect(screen.getByText(/can't include emoji/i)).toBeInTheDocument()
+    const save = screen.getByRole('button', { name: /save sighting/i })
+    expect(save).toBeDisabled()
+
+    // Fixing the name clears the error and re-enables Save.
+    await userEvent.clear(name)
+    await userEvent.type(name, 'Buzzy')
+    expect(screen.queryByText(/can't include emoji/i)).not.toBeInTheDocument()
+    expect(save).not.toBeDisabled()
+  })
+
   it('warns that the place field is public', () => {
     render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={() => {}} saving={false} />)
     const hint = screen.getByText(/don't reveal where you live/i)

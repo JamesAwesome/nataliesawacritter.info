@@ -95,6 +95,7 @@ describe('POST /api/profiles', () => {
     ['missing name', { emoji: '🦊' }, 'name'],
     ['empty name', { emoji: '🦊', name: '' }, 'name'],
     ['name too long', { emoji: '🦊', name: 'x'.repeat(101) }, 'name'],
+    ['emoji in name', { emoji: '🦊', name: 'Mr Fox 🦊' }, 'name'],
     ['missing emoji', { name: 'Mr Fox' }, 'emoji'],
     ['emoji too long', { emoji: 'x'.repeat(41), name: 'Mr Fox' }, 'emoji'],
     ['place too long', { emoji: '🦊', name: 'Mr Fox', place: 'x'.repeat(101) }, 'place'],

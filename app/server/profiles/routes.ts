@@ -2,6 +2,7 @@ import { Router, type RequestHandler } from 'express'
 import type { NewProfile, ProfilesStore } from './store.js'
 import { UUID_RE, sendValidation, rejectUnknownFields } from '../httpValidation.js'
 import { validateEmoji } from '../emojiField.js'
+import { hasEmoji } from '../nameField.js'
 
 const KNOWN_FIELDS = new Set(['emoji', 'name', 'place'])
 
@@ -25,6 +26,8 @@ function parseNewProfile(body: unknown):
   const name = typeof record.name === 'string' ? record.name.trim() : record.name
   if (typeof name !== 'string' || name.length === 0 || name.length > 100) {
     details.name = 'required, 1-100 characters'
+  } else if (hasEmoji(name)) {
+    details.name = 'must not contain emoji'
   }
 
   let place: string | null = null

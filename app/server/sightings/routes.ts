@@ -3,6 +3,7 @@ import { removePhotoFile } from './photoRoutes.js'
 import type { NewSighting, Sighting, SightingsStore } from './store.js'
 import { UUID_RE, sendValidation, rejectUnknownFields } from '../httpValidation.js'
 import { validateEmoji } from '../emojiField.js'
+import { hasEmoji } from '../nameField.js'
 import { QUANTITIES, isQuantity, type Quantity } from '../quantity.js'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
@@ -66,6 +67,11 @@ function parseNewSighting(body: unknown):
     } else {
       optionals[field] = value
     }
+  }
+
+  // The critter carries its own emoji; keep emoji out of the text name.
+  if (typeof optionals.name === 'string' && hasEmoji(optionals.name)) {
+    details.name = 'must not contain emoji'
   }
 
   // Bucketed count: absent/null/'' → '1' (the single-critter default); otherwise
