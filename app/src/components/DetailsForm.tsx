@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { NewSightingInput, Profile } from '../api'
 import { normalizedName } from '../lib/critters'
+import { hasEmoji } from '../lib/hasEmoji'
 import { nowClockTime } from '../lib/format'
 import { QUANTITIES, type Quantity } from '../lib/quantity'
 import { CritterGlyph } from './CritterGlyph'
@@ -66,7 +67,12 @@ export function DetailsForm({
   const liveFriend =
     sourceFriend != null && normalizedName(sourceFriend.name) === normalizedName(name) ? sourceFriend : null
 
+  // The critter already carries its own emoji, so its name is for words. Block
+  // saving (and mirror on the server) when the name field holds emoji.
+  const nameHasEmoji = hasEmoji(name)
+
   function save() {
+    if (nameHasEmoji) return
     const fields: NewSightingInput = { emoji, sightedOn }
     // Trim name/place: they feed friend identity (emoji, name) downstream.
     const trimmedName = name.trim()
@@ -109,6 +115,9 @@ export function DetailsForm({
         <label className="field grow">
           Critter name
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Critter name" />
+          {nameHasEmoji && (
+            <span className="field-hint field-error">Names can't include emoji — the critter already has one.</span>
+          )}
         </label>
       </div>
       <div className="field">
@@ -192,7 +201,7 @@ export function DetailsForm({
         <button type="button" className="btn-secondary" onClick={onBack}>
           Back
         </button>
-        <button type="button" className="btn-primary" onClick={save} disabled={saving || sightedOn === '' || sightedOn > today()}>
+        <button type="button" className="btn-primary" onClick={save} disabled={saving || nameHasEmoji || sightedOn === '' || sightedOn > today()}>
           Save sighting
         </button>
       </div>

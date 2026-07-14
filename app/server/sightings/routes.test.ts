@@ -146,6 +146,7 @@ describe('POST /api/sightings', () => {
     ['impossible sightedOn', { ...VALID, sightedOn: '2026-02-30' }, 'sightedOn'],
     ['name too long', { ...VALID, name: 'x'.repeat(101) }, 'name'],
     ['name wrong type', { ...VALID, name: 42 }, 'name'],
+    ['emoji in name', { ...VALID, name: 'Buzzy 🐝' }, 'name'],
     ['comment too long', { ...VALID, comment: 'x'.repeat(1001) }, 'comment'],
     ['invalid quantity', { ...VALID, quantity: '4' }, 'quantity'],
     ['quantity wrong type', { ...VALID, quantity: 2 }, 'quantity'],
