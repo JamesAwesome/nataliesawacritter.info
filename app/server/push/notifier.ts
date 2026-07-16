@@ -35,10 +35,10 @@ export function payloadFor(sighting: Sighting): string {
       : `${glyph} Natalie saw ${sighting.name}${qty}!`
   const details = [sighting.place, sighting.comment].filter((part) => part !== null).join(' — ')
   const photo = sighting.photoPath
-  // 📷 marker so recipients know a photo is attached even where the hero image
+  // 📸 marker so recipients know a photo is attached even where the hero image
   // itself doesn't render (notably iOS web push); the image shows big on
   // platforms that support it (Chrome/Android).
-  const body = photo === null ? details : details === '' ? '📷' : `${details} 📷`
+  const body = photo === null ? details : details === '' ? '📸' : `${details} 📸`
   const payload = photo === null ? { title, body, url: '/' } : { title, body, url: '/', image: photo }
   return JSON.stringify(payload)
 }
