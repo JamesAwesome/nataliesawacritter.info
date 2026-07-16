@@ -10,6 +10,8 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(data.title || '🐾 Natalie saw a critter!', {
       body: data.body || '',
       icon: '/icons/icon-192.png',
+      // Hero image when a photo is attached (shown on Chrome/Android; iOS ignores it).
+      image: data.image || undefined,
       data: { url: data.url || '/' },
     }),
   )

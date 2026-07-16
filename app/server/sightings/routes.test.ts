@@ -30,7 +30,7 @@ function fakeStore(overrides: Partial<SightingsStore> = {}): SightingsStore {
 
 const passGate: RequestHandler = (_req, _res, next) => next()
 
-function appWith(store: SightingsStore, gate: RequestHandler = passGate, onCreated: (s: Sighting) => void = () => {}): Express {
+function appWith(store: SightingsStore, gate: RequestHandler = passGate, onCreated: (s: Sighting, hasPhoto: boolean) => void = () => {}): Express {
   const app = express()
   app.use(express.json())
   app.use('/api/sightings', sightingsRouter(store, gate, '/tmp/unused-photos', onCreated))
@@ -104,6 +104,27 @@ describe('POST /api/sightings', () => {
       expect(store.create).toHaveBeenCalledWith({
         emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox', sightedTime: 'dusk', place: 'trail', comment: 'so fluffy', quantity: '1',
       })
+    })
+  })
+
+  it('threads hasPhoto to onCreated without persisting it', async () => {
+    const store = fakeStore()
+    const onCreated = vi.fn()
+    await withServer(appWith(store, passGate, onCreated), async (base) => {
+      const res = await post(base, { ...VALID, name: 'Fox', hasPhoto: true })
+      expect(res.status).toBe(201)
+      // hasPhoto is a notification hint, not a column — it must not reach the store.
+      expect(store.create).toHaveBeenCalledWith(expect.not.objectContaining({ hasPhoto: expect.anything() }))
+      expect(onCreated).toHaveBeenCalledWith(expect.objectContaining({ id: FIXED_ID }), true)
+    })
+  })
+
+  it('reports hasPhoto=false to onCreated when the flag is absent', async () => {
+    const store = fakeStore()
+    const onCreated = vi.fn()
+    await withServer(appWith(store, passGate, onCreated), async (base) => {
+      await post(base, VALID)
+      expect(onCreated).toHaveBeenCalledWith(expect.anything(), false)
     })
   })
 
@@ -227,7 +248,7 @@ describe('POST /api/sightings', () => {
         body: JSON.stringify(VALID),
       })
       expect(res.status).toBe(201)
-      expect(onCreated).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: FIXED_ID, emoji: '🦊' }))
+      expect(onCreated).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: FIXED_ID, emoji: '🦊' }), false)
 
       const bad = await fetch(`${base}/api/sightings`, {
         method: 'POST',

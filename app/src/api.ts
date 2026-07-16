@@ -21,6 +21,10 @@ export type NewSightingInput = {
   place?: string
   comment?: string
   quantity?: Quantity
+  /** Signals a photo will be uploaded next, so the server holds the push
+   *  notification until the photo attaches (see server createSightingNotify).
+   *  Not persisted. */
+  hasPhoto?: boolean
 }
 
 export class ApiError extends Error {

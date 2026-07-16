@@ -1,9 +1,12 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { useFakeClock } from '../test/helpers'
 import { DetailsForm } from './DetailsForm'
+
+const downscalePhoto = vi.hoisted(() => vi.fn())
+vi.mock('../lib/photo', () => ({ downscalePhoto }))
 
 describe('DetailsForm', () => {
   useFakeClock()
@@ -63,6 +66,27 @@ describe('DetailsForm', () => {
     await userEvent.type(name, 'Buzzy')
     expect(screen.queryByText(/can't include emoji/i)).not.toBeInTheDocument()
     expect(save).not.toBeDisabled()
+  })
+
+  it('flags hasPhoto to onSave when a photo is attached (so the push waits for it)', async () => {
+    downscalePhoto.mockResolvedValueOnce(new Blob(['img'], { type: 'image/jpeg' }))
+    const onSave = vi.fn()
+    render(
+      <DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} photoControl />,
+    )
+    await userEvent.upload(screen.getByLabelText(/add a photo/i), new File(['raw'], 'p.jpg', { type: 'image/jpeg' }))
+    await waitFor(() => expect(screen.getByText('✓ Photo added')).toBeInTheDocument())
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ hasPhoto: true }), expect.anything())
+  })
+
+  it('does not flag hasPhoto when no photo is attached', async () => {
+    const onSave = vi.fn()
+    render(
+      <DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} photoControl />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
+    expect(onSave).toHaveBeenCalledWith(expect.not.objectContaining({ hasPhoto: expect.anything() }), expect.anything())
   })
 
   it('warns that the place field is public', () => {

@@ -73,6 +73,28 @@ describe('payloadFor', () => {
     const payload = JSON.parse(payloadFor(sighting({ emoji: 'custom:robin', name: 'Robin' }))) as { title: string }
     expect(payload.title).toBe('🐦 Natalie saw Robin!')
   })
+
+  it('adds a 📷 marker and the image when a photo is attached', () => {
+    const payload = JSON.parse(
+      payloadFor(sighting({ place: 'the garden', comment: 'so fluffy', photoPath: '/api/photos/abc.jpg' })),
+    ) as { body: string; image?: string }
+    expect(payload.body).toBe('the garden — so fluffy 📷')
+    expect(payload.image).toBe('/api/photos/abc.jpg')
+  })
+
+  it('body is just the 📷 marker when a photo is attached with no place/comment', () => {
+    const payload = JSON.parse(payloadFor(sighting({ photoPath: '/api/photos/abc.jpg' }))) as {
+      body: string
+      image?: string
+    }
+    expect(payload.body).toBe('📷')
+    expect(payload.image).toBe('/api/photos/abc.jpg')
+  })
+
+  it('omits the image field entirely when there is no photo', () => {
+    const payload = JSON.parse(payloadFor(sighting())) as Record<string, unknown>
+    expect('image' in payload).toBe(false)
+  })
 })
 
 describe('notifySighting', () => {

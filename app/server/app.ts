@@ -11,6 +11,7 @@ import type { EmojiRequestsStore } from './emojiRequests/store.js'
 import type { RequestAlerter } from './emojiRequests/alerter.js'
 import type { ProfilesStore } from './profiles/store.js'
 import type { Notifier } from './push/notifier.js'
+import { createSightingNotify } from './push/sightingNotify.js'
 import { pushRouter } from './push/routes.js'
 import type { PushStore } from './push/store.js'
 import { photoFileRouter, sightingPhotoRouter } from './sightings/photoRoutes.js'
@@ -124,13 +125,13 @@ export function createApp(deps: AppDeps): Express {
     res.status(204).end()
   })
 
-  app.use(
-    '/api/sightings',
-    sightingsRouter(deps.sightingsStore, writeGate, deps.photosDir, (sighting) => {
-      void deps.notifier.notifySighting(sighting) // fire-and-forget; notifier never rejects
-    }),
-  )
-  app.use('/api/sightings', sightingPhotoRouter(deps.sightingsStore, writeGate, deps.photosDir))
+  // A sighting logged with a photo defers its push until the photo attaches, so
+  // the notification carries the image; one without notifies immediately.
+  const sightingNotify = createSightingNotify((sighting) => {
+    void deps.notifier.notifySighting(sighting) // fire-and-forget; notifier never rejects
+  })
+  app.use('/api/sightings', sightingsRouter(deps.sightingsStore, writeGate, deps.photosDir, sightingNotify.onCreated))
+  app.use('/api/sightings', sightingPhotoRouter(deps.sightingsStore, writeGate, deps.photosDir, sightingNotify.onPhotoAttached))
   app.use('/api/photos', photoFileRouter(deps.photosDir))
   app.use('/api/profiles', profilesRouter(deps.profilesStore, writeGate))
   app.use(
