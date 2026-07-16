@@ -55,9 +55,13 @@ beforeEach(async () => {
 
 const passGate: RequestHandler = (_req, _res, next) => next()
 
-function appWith(store: SightingsStore, gate: RequestHandler = passGate): Express {
+function appWith(
+  store: SightingsStore,
+  gate: RequestHandler = passGate,
+  onPhotoAttached: (s: Sighting) => void = () => {},
+): Express {
   const app = express()
-  app.use('/api/sightings', sightingPhotoRouter(store, gate, photosDir))
+  app.use('/api/sightings', sightingPhotoRouter(store, gate, photosDir, onPhotoAttached))
   app.use('/api/photos', photoFileRouter(photosDir))
   app.use(errorHandler)
   return app
@@ -101,6 +105,26 @@ describe('PUT /api/sightings/:id/photo', () => {
       // not byte-equal to the input.
       const written = await readFile(path.join(photosDir, filename))
       expect((await sharp(written).metadata()).format).toBe('jpeg')
+    })
+  })
+
+  it('calls onPhotoAttached with the updated sighting after a successful upload', async () => {
+    const store = fakeStore()
+    const onPhotoAttached = vi.fn()
+    await withServer(appWith(store, passGate, onPhotoAttached), async (base) => {
+      expect((await put(base, ID, JPEG)).status).toBe(200)
+      expect(onPhotoAttached).toHaveBeenCalledTimes(1)
+      expect(onPhotoAttached.mock.calls[0][0]).toMatchObject({ id: ID })
+      expect(onPhotoAttached.mock.calls[0][0].photoPath).toMatch(/^\/api\/photos\//)
+    })
+  })
+
+  it('does not call onPhotoAttached when the upload is rejected', async () => {
+    const store = fakeStore()
+    const onPhotoAttached = vi.fn()
+    await withServer(appWith(store, passGate, onPhotoAttached), async (base) => {
+      expect((await put(base, ID, Buffer.from('nope'))).status).toBe(400)
+      expect(onPhotoAttached).not.toHaveBeenCalled()
     })
   })
 

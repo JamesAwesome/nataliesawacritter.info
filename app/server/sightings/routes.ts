@@ -33,10 +33,12 @@ function maxAllowedDate(): string {
 
 const OPTIONAL_LIMITS = { name: 100, sightedTime: 100, place: 100, comment: 1000 } as const
 type OptionalField = keyof typeof OPTIONAL_LIMITS
-const KNOWN_FIELDS = new Set(['emoji', 'sightedOn', 'quantity', ...Object.keys(OPTIONAL_LIMITS)])
+// hasPhoto is a notification-timing hint (a photo will be uploaded next), not a
+// stored column — see createSightingNotify.
+const KNOWN_FIELDS = new Set(['emoji', 'sightedOn', 'quantity', 'hasPhoto', ...Object.keys(OPTIONAL_LIMITS)])
 
 function parseNewSighting(body: unknown):
-  | { ok: true; fields: NewSighting }
+  | { ok: true; fields: NewSighting; hasPhoto: boolean }
   | { ok: false; details: Record<string, string> } {
   const details = Object.create(null) as Record<string, string>
   if (typeof body !== 'object' || body === null || Array.isArray(body)) {
@@ -87,10 +89,11 @@ function parseNewSighting(body: unknown):
   return {
     ok: true,
     fields: { emoji: emoji as string, sightedOn: sightedOn as string, ...optionals, quantity },
+    hasPhoto: record.hasPhoto === true,
   }
 }
 
-export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler, photosDir: string, onCreated: (sighting: Sighting) => void): Router {
+export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler, photosDir: string, onCreated: (sighting: Sighting, hasPhoto: boolean) => void): Router {
   const router = Router()
 
   router.get('/', async (req, res) => {
@@ -122,7 +125,7 @@ export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler
       return
     }
     const created = await store.create(parsed.fields)
-    onCreated(created)
+    onCreated(created, parsed.hasPhoto)
     res.status(201).json(created)
   })
 

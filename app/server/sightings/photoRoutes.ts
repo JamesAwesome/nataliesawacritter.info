@@ -4,7 +4,7 @@ import path from 'node:path'
 import express, { Router, type RequestHandler } from 'express'
 import { UUID_RE, sendValidation } from '../httpValidation.js'
 import { stripJpegExif } from './stripJpeg.js'
-import type { SightingsStore } from './store.js'
+import type { Sighting, SightingsStore } from './store.js'
 
 // The `-<epoch>` suffix is optional so pre-existing on-disk photos
 // (`<uuid>-<epoch>.jpg`, from before filenames were randomized) still serve.
@@ -25,6 +25,7 @@ export function sightingPhotoRouter(
   store: SightingsStore,
   writeGate: RequestHandler,
   photosDir: string,
+  onPhotoAttached: (sighting: Sighting) => void = () => {},
 ): Router {
   const router = Router()
 
@@ -61,6 +62,7 @@ export function sightingPhotoRouter(
       return
     }
     await removePhotoFile(photosDir, existing.photoPath)
+    onPhotoAttached(updated)
     res.json(updated)
   })
 

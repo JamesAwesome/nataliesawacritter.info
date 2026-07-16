@@ -86,6 +86,9 @@ export function DetailsForm({
     if (comment !== '') fields.comment = comment
     // Default single-critter case sends nothing; server defaults absent → '1'.
     if (quantity !== '1') fields.quantity = quantity
+    // Tell the server a photo is coming so it holds the push until the photo
+    // uploads (below) and the notification can carry the image.
+    if (photoControl && photo !== null) fields.hasPhoto = true
     if (friendToggle || photoControl) {
       onSave(fields, {
         saveAsFriend: friendToggle === true && saveAsFriend && trimmedName !== '' && liveFriend === null,
