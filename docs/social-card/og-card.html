@@ -1,0 +1,80 @@
+<!doctype html>
+<!--
+  Social preview card (Open Graph / Twitter) for nataliesawacritter.info — 1200x630.
+  Rendered to app/public/og-card.png. Art paths are relative to this file.
+
+  Regenerate:
+    CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    "$CHROME" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
+      --allow-file-access-from-files --window-size=1200,630 --virtual-time-budget=3000 \
+      --screenshot=app/public/og-card.png docs/social-card/og-card.html
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Quicksand:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Mirrors the app's Rainbow Sherbet tokens — app/src/index.css :root */
+      :root {
+        --ink: #4a3b63;
+        --ink2: #8a7fa6;
+        --rainbow: linear-gradient(90deg, #ffd1dc, #ffe1b8, #fff6b8, #d7f5c8, #c8f0e4, #c7e3fa, #d9cff2);
+        --tint-peach: #ffe1b8;
+        --tint-mint: #d7f5c8;
+        --tint-aqua: #c8f0e4;
+        --tint-sky: #c7e3fa;
+        --tint-lav: #d9cff2;
+      }
+      * { margin: 0; box-sizing: border-box; }
+      body {
+        width: 1200px; height: 630px; overflow: hidden;
+        font-family: 'Quicksand', sans-serif; color: var(--ink);
+      }
+      .card {
+        width: 1200px; height: 630px; position: relative; overflow: hidden;
+        background: linear-gradient(180deg, #eaf6ff, #fdf1ff);
+        display: flex; align-items: center; justify-content: center;
+      }
+      /* A critter's paw trail wandering behind the card. */
+      .paw { position: absolute; font-size: 52px; line-height: 1; }
+      .title { font-family: 'Fredoka', sans-serif; font-weight: 600; }
+      .tile {
+        width: 132px; height: 132px; border-radius: 28px;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 14px rgba(90, 100, 150, 0.1);
+      }
+      .tile img { width: 96px; height: 96px; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="paw" style="left: 38px; top: 44px; transform: rotate(34deg); opacity: 0.34">🐾</div>
+      <div class="paw" style="left: 118px; top: 118px; transform: rotate(30deg); opacity: 0.3">🐾</div>
+      <div class="paw" style="left: 66px; top: 196px; transform: rotate(38deg); opacity: 0.26">🐾</div>
+      <div class="paw" style="right: 60px; bottom: 48px; transform: rotate(34deg); opacity: 0.34">🐾</div>
+      <div class="paw" style="right: 140px; bottom: 120px; transform: rotate(30deg); opacity: 0.3">🐾</div>
+      <div class="paw" style="right: 70px; bottom: 196px; transform: rotate(38deg); opacity: 0.26">🐾</div>
+
+      <div style="width: 1000px; background: #fff; border-radius: 40px; box-shadow: 0 30px 70px rgba(70, 90, 140, 0.22); overflow: hidden">
+        <div style="background: var(--rainbow); padding: 44px; text-align: center">
+          <div class="title" style="font-size: 74px; color: var(--ink)">🐾 Natalie Saw a Critter!</div>
+        </div>
+        <div style="padding: 50px 40px 54px; text-align: center">
+          <div style="display: flex; gap: 28px; justify-content: center; margin-bottom: 32px">
+            <div class="tile" style="background: var(--tint-sky)"><img src="../../app/public/custom-emoji/cardinal.svg" /></div>
+            <div class="tile" style="background: var(--tint-peach)"><img src="../../app/public/custom-emoji/blue-jay.svg" /></div>
+            <div class="tile" style="background: var(--tint-mint)"><img src="../../app/public/custom-emoji/red-panda.svg" /></div>
+            <div class="tile" style="background: var(--tint-lav)"><img src="../../app/public/custom-emoji/monarch-butterfly.svg" /></div>
+            <div class="tile" style="background: var(--tint-aqua)"><img src="../../app/public/custom-emoji/axolotl.svg" /></div>
+          </div>
+          <div style="font-size: 34px; font-weight: 600; color: var(--ink2)">A field journal of Natalie's backyard critters</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
