@@ -1157,6 +1157,11 @@ button.day-cell {
   margin-left: 4px;
 }
 
+.row-photo {
+  font-size: 11px;
+  margin-left: 4px;
+}
+
 /* Segmented "How many?" picker in the log form: [1] [2] [3] [Many]. */
 .qty-picker {
   display: flex;
