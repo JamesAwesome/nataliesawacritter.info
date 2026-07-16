@@ -31,6 +31,28 @@ describe('starred', () => {
   })
 })
 
+describe('photo indicator', () => {
+  it('renders the 📸 and an accessible suffix when the sighting has a photo', () => {
+    render(
+      <ul>
+        <SightingRow sighting={makeSighting({ name: 'Mr Fox', photoPath: '/api/photos/x.jpg' })} onSelect={vi.fn()} />
+      </ul>,
+    )
+    expect(screen.getByRole('button', { name: /Mr Fox.*has photo/ })).toBeInTheDocument()
+    expect(screen.getByText('📸')).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('renders no photo artifacts when there is no photo', () => {
+    render(
+      <ul>
+        <SightingRow sighting={makeSighting({ name: 'Mr Fox', photoPath: null })} onSelect={vi.fn()} />
+      </ul>,
+    )
+    expect(screen.queryByText('📸')).not.toBeInTheDocument()
+    expect(screen.queryByText(', has photo')).not.toBeInTheDocument()
+  })
+})
+
 describe('quantity badge', () => {
   it('shows ×2 for a quantity of 2', () => {
     render(<SightingRow sighting={makeSighting({ name: 'Deer', quantity: '2' })} onSelect={() => {}} />)

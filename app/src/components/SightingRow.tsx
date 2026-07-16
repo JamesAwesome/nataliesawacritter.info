@@ -22,6 +22,12 @@ export function SightingRow({ sighting, onSelect, starred }: Props) {
               <span className="visually-hidden">, friend</span>
             </>
           )}
+          {sighting.photoPath !== null && (
+            <>
+              <span className="row-photo" aria-hidden="true">📸</span>
+              <span className="visually-hidden">, has photo</span>
+            </>
+          )}
         </span>
         <span className="recent-meta">{formatWhen(sighting.sightedOn, sighting.sightedTime)}</span>
       </span>
