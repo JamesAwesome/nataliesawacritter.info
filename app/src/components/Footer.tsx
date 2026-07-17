@@ -3,7 +3,7 @@ export function Footer() {
   return (
     <footer className="app-footer">
       © {year} ·{' '}
-      <a href="https://github.com/JamesAwesome" target="_blank" rel="noopener noreferrer">
+      <a href="https://github.com/JamesAwesome/nataliesawacritter.info" target="_blank" rel="noopener noreferrer">
         James Awesome
       </a>{' '}
       ·{' '}

@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest'
 import { Footer } from './Footer'
 
 describe('Footer', () => {
-  it('links the author name to their GitHub in a new tab', () => {
+  it('links the author name to the project repo in a new tab', () => {
     render(<Footer />)
     const link = screen.getByRole('link', { name: 'James Awesome' })
-    expect(link).toHaveAttribute('href', 'https://github.com/JamesAwesome')
+    expect(link).toHaveAttribute('href', 'https://github.com/JamesAwesome/nataliesawacritter.info')
     expect(link).toHaveAttribute('target', '_blank')
     expect(link.getAttribute('rel')).toContain('noopener')
   })
