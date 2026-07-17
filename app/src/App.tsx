@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { deletePhoto, uploadPhoto } from './api'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { deletePhoto, likeSighting, unlikeSighting, uploadPhoto, type Sighting } from './api'
 import { CalendarPane } from './components/CalendarPane'
 import { DayDetail } from './components/DayDetail'
 import { Footer } from './components/Footer'
@@ -18,6 +18,7 @@ import { useProfiles } from './hooks/useProfiles'
 import { useSightings } from './hooks/useSightings'
 import { friendKeys } from './lib/friends'
 import { leaderboard, recentEmoji } from './lib/insights'
+import { deviceId, hasLiked, markLiked, markUnliked } from './lib/likes'
 import { sheetIsValid, type SheetState } from './lib/sheet'
 
 export default function App() {
@@ -55,6 +56,27 @@ export default function App() {
 
   const openSighting = (id: string, fromDay?: string) => setSheet({ kind: 'sighting', id, fromDay })
 
+  const toggleLike = useCallback(
+    async (s: Sighting) => {
+      const liked = hasLiked(s.id)
+      // optimistic: flip local heart + count now, reconcile with the server after
+      if (liked) markUnliked(s.id)
+      else markLiked(s.id)
+      applySighting({ ...s, likeCount: Math.max(0, s.likeCount + (liked ? -1 : 1)) })
+      try {
+        const { likeCount } = liked
+          ? await unlikeSighting(s.id, deviceId())
+          : await likeSighting(s.id, deviceId())
+        applySighting({ ...s, likeCount })
+      } catch {
+        if (liked) markLiked(s.id)
+        else markUnliked(s.id)
+        applySighting(s) // roll back
+      }
+    },
+    [applySighting],
+  )
+
   const logButton = (
     <button type="button" className="log-button" onClick={() => setSheet({ kind: 'log' })}>
       + Log a sighting
@@ -85,12 +107,18 @@ export default function App() {
                   status={status}
                   onRetry={retry}
                   onSelect={(id) => openSighting(id)}
+                  onToggleLike={toggleLike}
                   friendKeys={keys}
                 />
               )}
             </div>
             <div role="tabpanel" id="pane-history" hidden={activeTab !== 'history'}>
-              <HistoryPane sightings={sightings} onSelect={(id) => openSighting(id)} friendKeys={keys} />
+              <HistoryPane
+                sightings={sightings}
+                onSelect={(id) => openSighting(id)}
+                onToggleLike={toggleLike}
+                friendKeys={keys}
+              />
             </div>
             <div role="tabpanel" id="pane-leaderboard" hidden={activeTab !== 'leaderboard'}>
               <TopCrittersPane sightings={sightings} />
@@ -104,6 +132,7 @@ export default function App() {
                 status={status}
                 onRetry={retry}
                 onSelect={(id) => openSighting(id)}
+                onToggleLike={toggleLike}
                 friendKeys={keys}
               />
             )}
@@ -140,6 +169,7 @@ export default function App() {
             sightings={sightings.filter((s) => s.sightedOn === sheet.date)}
             onSelect={(id) => openSighting(id, sheet.date)}
             onClose={() => setSheet(null)}
+            onToggleLike={toggleLike}
             friendKeys={keys}
           />
         </Sheet>
@@ -167,6 +197,7 @@ export default function App() {
                   await deletePhoto(id, authHeader)
                   applySighting({ ...selected, photoPath: null })
                 }}
+                onToggleLike={toggleLike}
               />
             </Sheet>
           )

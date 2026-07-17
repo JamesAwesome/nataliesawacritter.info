@@ -4,9 +4,14 @@ import { isFriendSighting } from '../lib/friends'
 import { filterByRange } from '../lib/insights'
 import { SightingRow } from './SightingRow'
 
-type Props = { sightings: Sighting[]; onSelect: (id: string) => void; friendKeys: Set<string> }
+type Props = {
+  sightings: Sighting[]
+  onSelect: (id: string) => void
+  friendKeys: Set<string>
+  onToggleLike?: (s: Sighting) => void
+}
 
-export function HistoryPane({ sightings, onSelect, friendKeys }: Props) {
+export function HistoryPane({ sightings, onSelect, friendKeys, onToggleLike }: Props) {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [friendsOnly, setFriendsOnly] = useState(false)
@@ -66,7 +71,13 @@ export function HistoryPane({ sightings, onSelect, friendKeys }: Props) {
       ) : (
         <ul className="recent-list">
           {filtered.map((s) => (
-            <SightingRow key={s.id} sighting={s} onSelect={onSelect} starred={isFriendSighting(s, friendKeys)} />
+            <SightingRow
+              key={s.id}
+              sighting={s}
+              onSelect={onSelect}
+              onToggleLike={onToggleLike}
+              starred={isFriendSighting(s, friendKeys)}
+            />
           ))}
         </ul>
       )}

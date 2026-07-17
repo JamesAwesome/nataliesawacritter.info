@@ -47,7 +47,9 @@ describe('stale-sheet self-heal (App.tsx adjust-during-render)', () => {
     const { rerender } = render(<App />)
 
     const recent = await screen.findByTestId('recent-critters')
-    await userEvent.click(within(recent).getByRole('button', { name: /fox/i }))
+    // Anchored: the row-open button's name starts with the critter name;
+    // the sibling like button's name starts with "Like"/"Unlike" instead.
+    await userEvent.click(within(recent).getByRole('button', { name: /^fox/i }))
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
 
     // The sighting the open sheet points at is now gone.
