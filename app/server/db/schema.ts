@@ -1,4 +1,4 @@
-import { date, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { date, pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core'
 import type { Quantity } from '../quantity.js'
 import type { Outcome } from '../emojiRequests/outcome.js'
 
@@ -48,3 +48,18 @@ export const pushSubscriptions = pgTable('push_subscriptions', {
   auth: text('auth').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
+
+export const sightingLikes = pgTable(
+  'sighting_likes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    sightingId: uuid('sighting_id')
+      .notNull()
+      .references(() => sightings.id, { onDelete: 'cascade' }),
+    // Anonymous per-browser id (client-generated UUID) — dedup key, never PII.
+    deviceId: text('device_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  // sighting_id leads, so this unique index also serves COUNT ... GROUP BY sighting_id.
+  (t) => ({ uniqDeviceSighting: unique('sighting_likes_sighting_device').on(t.sightingId, t.deviceId) }),
+)
