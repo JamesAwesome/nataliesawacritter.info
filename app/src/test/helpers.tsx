@@ -16,6 +16,7 @@ export function makeSighting(overrides: Partial<Sighting> = {}): Sighting {
     quantity: '1',
     photoPath: null,
     createdAt: '2026-07-02T12:00:00.000Z',
+    likeCount: 0,
     ...overrides,
   }
 }

@@ -11,6 +11,7 @@ export type Sighting = {
   quantity: Quantity
   photoPath: string | null
   createdAt: string
+  likeCount: number
 }
 
 export type NewSightingInput = {

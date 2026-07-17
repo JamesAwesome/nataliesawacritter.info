@@ -126,7 +126,7 @@ export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler
     }
     const created = await store.create(parsed.fields)
     onCreated(created, parsed.hasPhoto)
-    res.status(201).json(created)
+    res.status(201).json({ ...created, likeCount: 0 })
   })
 
   router.delete('/:id', writeGate, async (req, res) => {

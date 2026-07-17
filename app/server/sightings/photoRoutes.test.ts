@@ -59,9 +59,10 @@ function appWith(
   store: SightingsStore,
   gate: RequestHandler = passGate,
   onPhotoAttached: (s: Sighting) => void = () => {},
+  countLikes: (id: string) => Promise<number> = async () => 0,
 ): Express {
   const app = express()
-  app.use('/api/sightings', sightingPhotoRouter(store, gate, photosDir, onPhotoAttached))
+  app.use('/api/sightings', sightingPhotoRouter(store, gate, photosDir, onPhotoAttached, countLikes))
   app.use('/api/photos', photoFileRouter(photosDir))
   app.use(errorHandler)
   return app
@@ -93,12 +94,14 @@ describe('PHOTO_FILENAME_RE', () => {
 describe('PUT /api/sightings/:id/photo', () => {
   it('writes the file, updates the store, and returns the updated sighting', async () => {
     const store = fakeStore()
-    await withServer(appWith(store), async (base) => {
+    const app = appWith(store, passGate, vi.fn(), async () => 7)
+    await withServer(app, async (base) => {
       const res = await put(base, ID, JPEG)
       expect(res.status).toBe(200)
-      const body = (await res.json()) as { photoPath: string }
+      const body = (await res.json()) as { photoPath: string; likeCount: number }
       expect(body.photoPath).toMatch(new RegExp(`^/api/photos/${UUID_RE_SRC}\\.jpg$`))
       expect(path.basename(body.photoPath)).not.toBe(`${ID}.jpg`) // random, not the sighting id
+      expect(body.likeCount).toBe(7)
       const filename = path.basename(body.photoPath)
       expect(store.setPhotoPath).toHaveBeenCalledWith(ID, `/api/photos/${filename}`)
       // The stored file is the sharp re-encode of the upload — a valid JPEG,

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { createTestDb } from '../testDb.js'
 import { createDb } from '../db/index.js'
 import { sightings } from '../db/schema.js'
+import { createLikesStore } from '../likes/store.js'
 import { createSightingsStore, type SightingsStore } from './store.js'
 
 describe('sightings store', () => {
@@ -67,5 +68,16 @@ describe('sightings store', () => {
     expect(await store.remove(row.id)).toBe(true)
     expect(await store.list()).toEqual([])
     expect(await store.remove('00000000-0000-0000-0000-000000000000')).toBe(false)
+  })
+
+  it('list() includes likeCount per sighting (0 when unliked)', async () => {
+    const liked = await store.create(fox({ name: 'Liked' }))
+    const unliked = await store.create(fox({ name: 'Unliked' }))
+    const likes = createLikesStore(handle.db)
+    await likes.like(liked.id, '33333333-3333-4333-8333-333333333333')
+
+    const rows = await store.list()
+    expect(rows.find((r) => r.id === liked.id)?.likeCount).toBe(1)
+    expect(rows.find((r) => r.id === unliked.id)?.likeCount).toBe(0)
   })
 })
