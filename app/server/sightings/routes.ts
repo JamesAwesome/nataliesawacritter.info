@@ -115,6 +115,11 @@ export function sightingsRouter(store: SightingsStore, writeGate: RequestHandler
       sendValidation(res, details)
       return
     }
+    // Uniform public payload (device-independent by design), so Cloudflare's edge
+    // can absorb most reads; counts go eventually-consistent by ≤15s, which the
+    // optimistic client heart already papers over. Spike findings: docs/superpowers/
+    // specs/2026-07-16-sighting-likes-spike-findings.md
+    res.setHeader('Cache-Control', 'public, max-age=15')
     res.json((await store.list({ from, to })).map(toPublicSighting))
   })
 

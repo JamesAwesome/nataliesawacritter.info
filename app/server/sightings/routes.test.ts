@@ -84,6 +84,13 @@ describe('GET /api/sightings', () => {
       expect(((await res.json()) as ValidationEnvelope).details.from).toBe('must be on or before to')
     })
   })
+
+  it('serves the public list with a short edge-cache header', async () => {
+    await withServer(appWith(fakeStore()), async (base) => {
+      const res = await fetch(`${base}/api/sightings`)
+      expect(res.headers.get('cache-control')).toBe('public, max-age=15')
+    })
+  })
 })
 
 describe('POST /api/sightings', () => {
