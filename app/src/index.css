@@ -214,6 +214,11 @@ body {
   gap: 10px;
   flex: 1;
   min-width: 0;
+}
+
+/* Only the interactive (button) variant gets the pointer cursor — the plain
+   <div> variant (no onSelect) isn't clickable and shouldn't look it. */
+button.row-open {
   cursor: pointer;
 }
 

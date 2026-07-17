@@ -8,6 +8,7 @@ export type SightingsState = {
   addSighting(fields: NewSightingInput, authHeader: string): Promise<Sighting>
   removeSighting(id: string, authHeader: string): Promise<void>
   applySighting(updated: Sighting): void
+  patchSighting(id: string, patch: (current: Sighting) => Sighting): void
   retry(): void
 }
 
@@ -103,5 +104,13 @@ export function useSightings(): SightingsState {
     setSightings((current) => current.map((s) => (s.id === updated.id ? updated : s)))
   }, [])
 
-  return { sightings, status, addSighting, removeSighting, applySighting, retry }
+  // Unlike applySighting (which replaces a row with a caller-held snapshot),
+  // patchSighting derives the update from whatever is CURRENTLY in state — so a
+  // refresh that lands between "capture" and "apply" (e.g. useVisibilityRefresh)
+  // can't be stomped by a stale click-time object.
+  const patchSighting = useCallback((id: string, patch: (current: Sighting) => Sighting) => {
+    setSightings((current) => sorted(current.map((row) => (row.id === id ? patch(row) : row))))
+  }, [])
+
+  return { sightings, status, addSighting, removeSighting, applySighting, patchSighting, retry }
 }

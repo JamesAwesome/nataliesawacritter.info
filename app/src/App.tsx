@@ -22,7 +22,7 @@ import { deviceId, hasLiked, markLiked, markUnliked } from './lib/likes'
 import { sheetIsValid, type SheetState } from './lib/sheet'
 
 export default function App() {
-  const { sightings, status, addSighting, removeSighting, applySighting, retry } = useSightings()
+  const { sightings, status, addSighting, removeSighting, applySighting, patchSighting, retry } = useSightings()
   const { profiles, addProfile, removeProfile } = useProfiles()
   const isDesktop = useIsDesktop()
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
@@ -56,25 +56,38 @@ export default function App() {
 
   const openSighting = (id: string, fromDay?: string) => setSheet({ kind: 'sighting', id, fromDay })
 
+  // Guards against a double-tap firing two concurrent like requests for the
+  // same sighting (the last response landing would otherwise win, leaving the
+  // heart/count inconsistent). The first tap stays instant; taps that land
+  // while a request is already in flight for that id are ignored.
+  const likesInFlight = useRef(new Set<string>())
+
   const toggleLike = useCallback(
     async (s: Sighting) => {
+      if (likesInFlight.current.has(s.id)) return
       const liked = hasLiked(s.id)
-      // optimistic: flip local heart + count now, reconcile with the server after
+      const delta = liked ? -1 : 1
+      // optimistic: flip local heart + count now, reconcile with the server after.
+      // patchSighting derives from the CURRENT row rather than the `s` snapshot
+      // captured at click time, so a concurrent refresh can't be stomped.
       if (liked) markUnliked(s.id)
       else markLiked(s.id)
-      applySighting({ ...s, likeCount: Math.max(0, s.likeCount + (liked ? -1 : 1)) })
+      patchSighting(s.id, (row) => ({ ...row, likeCount: Math.max(0, row.likeCount + delta) }))
+      likesInFlight.current.add(s.id)
       try {
         const { likeCount } = liked
           ? await unlikeSighting(s.id, deviceId())
           : await likeSighting(s.id, deviceId())
-        applySighting({ ...s, likeCount })
+        patchSighting(s.id, (row) => ({ ...row, likeCount }))
       } catch {
         if (liked) markLiked(s.id)
         else markUnliked(s.id)
-        applySighting(s) // roll back
+        patchSighting(s.id, (row) => ({ ...row, likeCount: Math.max(0, row.likeCount - delta) })) // roll back
+      } finally {
+        likesInFlight.current.delete(s.id)
       }
     },
-    [applySighting],
+    [patchSighting],
   )
 
   const logButton = (
