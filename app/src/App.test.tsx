@@ -167,7 +167,7 @@ describe('App shell', () => {
     render(<App />)
     expect(screen.getByRole('link', { name: 'James Awesome' })).toHaveAttribute(
       'href',
-      'https://github.com/JamesAwesome',
+      'https://github.com/JamesAwesome/nataliesawacritter.info',
     )
   })
 })
