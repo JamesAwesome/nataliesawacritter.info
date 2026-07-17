@@ -55,6 +55,51 @@ describe('HistoryPane', () => {
   })
 })
 
+describe('text filter', () => {
+  const NAMED = [
+    makeSighting({ id: 'a', name: 'Mr Fox', emoji: '🦊', sightedOn: '2026-07-20', place: 'backyard' }),
+    makeSighting({ id: 'b', name: null, emoji: '🐙', sightedOn: '2026-07-10' }), // species: Octopus
+    makeSighting({ id: 'c', name: 'Hoppy', emoji: '🐸', sightedOn: '2026-07-01', place: 'creek trail' }),
+  ]
+
+  it('filters by given name, case-insensitively', async () => {
+    render(<HistoryPane sightings={NAMED} onSelect={() => {}} friendKeys={new Set<string>()} />)
+    await userEvent.type(screen.getByLabelText('Filter critters'), 'hoppy')
+    expect(screen.getAllByRole('listitem')).toHaveLength(1)
+    expect(screen.getByText('Hoppy')).toBeInTheDocument()
+  })
+
+  it('matches the species name for an unnamed sighting (like the picker filter)', async () => {
+    render(<HistoryPane sightings={NAMED} onSelect={() => {}} friendKeys={new Set<string>()} />)
+    await userEvent.type(screen.getByLabelText('Filter critters'), 'octopus')
+    expect(screen.getAllByRole('listitem')).toHaveLength(1)
+    expect(screen.getByText('Octopus')).toBeInTheDocument()
+  })
+
+  it('matches the place', async () => {
+    render(<HistoryPane sightings={NAMED} onSelect={() => {}} friendKeys={new Set<string>()} />)
+    await userEvent.type(screen.getByLabelText('Filter critters'), 'creek')
+    expect(screen.getAllByRole('listitem')).toHaveLength(1)
+    expect(screen.getByText('Hoppy')).toBeInTheDocument()
+  })
+
+  it('composes with the date range and shows the no-match message', async () => {
+    render(<HistoryPane sightings={NAMED} onSelect={() => {}} friendKeys={new Set<string>()} />)
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-07-15' } })
+    await userEvent.type(screen.getByLabelText('Filter critters'), 'hoppy') // exists, but out of range
+    expect(screen.getByText(/No critters match “hoppy”/)).toBeInTheDocument()
+  })
+
+  it('Clear resets the text along with the other filters', async () => {
+    render(<HistoryPane sightings={NAMED} onSelect={() => {}} friendKeys={new Set<string>()} />)
+    await userEvent.type(screen.getByLabelText('Filter critters'), 'fox')
+    expect(screen.getAllByRole('listitem')).toHaveLength(1)
+    await userEvent.click(screen.getByRole('button', { name: /clear/i }))
+    expect(screen.getAllByRole('listitem')).toHaveLength(3)
+    expect(screen.getByLabelText('Filter critters')).toHaveValue('')
+  })
+})
+
 describe('friends filter', () => {
   const FOX = makeSighting({ emoji: '🦊', name: 'Mr Fox', sightedOn: '2026-07-01' })
   const OWL = makeSighting({ emoji: '🦉', name: 'Prof Hoot', sightedOn: '2026-07-02' })
