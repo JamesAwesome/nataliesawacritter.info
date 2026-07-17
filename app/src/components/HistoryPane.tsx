@@ -1,8 +1,16 @@
 import { useMemo, useState } from 'react'
 import type { Sighting } from '../api'
+import { nameFor } from '../lib/critters'
 import { isFriendSighting } from '../lib/friends'
 import { filterByRange } from '../lib/insights'
 import { SightingRow } from './SightingRow'
+
+/** Case-insensitive match against what the row shows: the given name (or its
+ *  species name, same source as the picker filter) and the place. */
+function matchesQuery(s: Sighting, q: string): boolean {
+  const haystack = [s.name ?? nameFor(s.emoji), s.place]
+  return haystack.some((part) => part !== null && part !== undefined && part.toLowerCase().includes(q))
+}
 
 type Props = {
   sightings: Sighting[]
@@ -15,17 +23,27 @@ export function HistoryPane({ sightings, onSelect, friendKeys, onToggleLike }: P
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [friendsOnly, setFriendsOnly] = useState(false)
+  const [query, setQuery] = useState('')
+  const q = query.trim().toLowerCase()
   // Memoized: the pane stays mounted (hidden) on other tabs; only re-filter when
   // the sightings or a bound changes, not on every unrelated App re-render.
   const ranged = useMemo(() => filterByRange(sightings, from, to), [sightings, from, to])
-  const filtered = useMemo(
-    () => (friendsOnly ? ranged.filter((s) => isFriendSighting(s, friendKeys)) : ranged),
-    [ranged, friendsOnly, friendKeys],
-  )
-  const hasFilter = from !== '' || to !== '' || friendsOnly
+  const filtered = useMemo(() => {
+    const byFriends = friendsOnly ? ranged.filter((s) => isFriendSighting(s, friendKeys)) : ranged
+    return q === '' ? byFriends : byFriends.filter((s) => matchesQuery(s, q))
+  }, [ranged, friendsOnly, friendKeys, q])
+  const hasFilter = from !== '' || to !== '' || friendsOnly || query !== ''
 
   return (
     <section className="history-pane">
+      <input
+        type="search"
+        className="picker-filter"
+        placeholder="Filter critters…"
+        aria-label="Filter critters"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
       <div className="history-filter">
         <input
           type="date"
@@ -58,6 +76,7 @@ export function HistoryPane({ sightings, onSelect, friendKeys, onToggleLike }: P
               setFrom('')
               setTo('')
               setFriendsOnly(false)
+              setQuery('')
             }}
           >
             Clear
@@ -67,7 +86,13 @@ export function HistoryPane({ sightings, onSelect, friendKeys, onToggleLike }: P
       {sightings.length === 0 ? (
         <p className="muted">No critters logged yet 🐾</p>
       ) : filtered.length === 0 ? (
-        <p className="muted">{friendsOnly ? 'No friend sightings here 😿' : 'No critters in that range 😿'}</p>
+        <p className="muted">
+          {q !== ''
+            ? `No critters match “${query.trim()}” 😿`
+            : friendsOnly
+              ? 'No friend sightings here 😿'
+              : 'No critters in that range 😿'}
+        </p>
       ) : (
         <ul className="recent-list">
           {filtered.map((s) => (
