@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createApp, type AppDeps } from './app.js'
+import type { LikesStore } from './likes/store.js'
 import type { ProfilesStore } from './profiles/store.js'
 import type { SightingsStore } from './sightings/store.js'
 import { basic, fakePushStore, nullNotifier, withServer } from './testUtils.js'
@@ -26,6 +27,10 @@ function fakeProfilesStore(): ProfilesStore {
   }
 }
 
+function fakeLikesStore(): LikesStore {
+  return { like: vi.fn(async () => {}), unlike: vi.fn(async () => {}), countFor: vi.fn(async () => 0) }
+}
+
 function deps(overrides: Partial<AppDeps> = {}): AppDeps {
   return {
     checkDb: async () => {},
@@ -43,6 +48,7 @@ function deps(overrides: Partial<AppDeps> = {}): AppDeps {
     pushStore: fakePushStore(),
     notifier: nullNotifier(),
     siteUrl: 'https://example.test',
+    likesStore: fakeLikesStore(),
     ...overrides,
   }
 }
@@ -141,6 +147,39 @@ describe('sightings wiring', () => {
   })
 })
 
+describe('likes wiring', () => {
+  const SID = '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa'
+  const DEV = '11111111-1111-4111-8111-111111111111'
+
+  function existingStore(): SightingsStore {
+    const store = fakeStore()
+    store.getById = vi.fn(async () => ({ id: SID }) as never)
+    return store
+  }
+
+  it('serves POST/DELETE /api/sightings/:id/like through the app', async () => {
+    const likes = fakeLikesStore()
+    likes.countFor = vi.fn(async () => 2)
+    const app = createApp(deps({ sightingsStore: existingStore(), likesStore: likes }))
+    await withServer(app, async (base) => {
+      const post = await fetch(`${base}/api/sightings/${SID}/like`, {
+        method: 'POST',
+        headers: { 'X-Device-Id': DEV },
+      })
+      expect(post.status).toBe(200)
+      expect(await post.json()).toEqual({ likeCount: 2 })
+      expect(likes.like).toHaveBeenCalledWith(SID, DEV)
+
+      const del = await fetch(`${base}/api/sightings/${SID}/like`, {
+        method: 'DELETE',
+        headers: { 'X-Device-Id': DEV },
+      })
+      expect(del.status).toBe(200)
+      expect(likes.unlike).toHaveBeenCalledWith(SID, DEV)
+    })
+  })
+})
+
 describe('GET /api/auth/check', () => {
   it('204s with valid credentials, 401s with wrong or missing', async () => {
     const app = createApp(deps({ writeCredentials: { user: 'natalie', password: 'sekrit' } }))
@@ -232,6 +271,48 @@ describe('rate limiting', () => {
       expect((await badAuth()).status).toBe(401)
       expect((await badAuth()).status).toBe(401)
       expect((await badAuth()).status).toBe(429) // 3rd failed attempt limited despite mutationPerMin=100
+    })
+  })
+
+  it('429s likes past their own likePerMin ceiling, independent of mutationPerMin', async () => {
+    const SID = '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa'
+    const sightingsStore = fakeStore()
+    sightingsStore.getById = vi.fn(async () => ({ id: SID }) as never)
+    // mutationPerMin is looser than likePerMin here — if the like path fell
+    // through to the mutation limiter instead of its own, this test wouldn't
+    // catch a mixed-up budget. likePerMin: 2 forces the like-specific ceiling.
+    const app = createApp(
+      deps({ sightingsStore, rateLimits: { authPerMin: 100, mutationPerMin: 100, likePerMin: 2 } }),
+    )
+    await withServer(app, async (base) => {
+      const like = () =>
+        fetch(`${base}/api/sightings/${SID}/like`, {
+          method: 'POST',
+          headers: { 'X-Device-Id': '11111111-1111-4111-8111-111111111111', 'cf-connecting-ip': '203.0.113.20' },
+        })
+      expect((await like()).status).not.toBe(429)
+      expect((await like()).status).not.toBe(429)
+      expect((await like()).status).toBe(429) // third like from the same IP is limited
+    })
+  })
+
+  it('does not let anonymous like traffic exhaust the authed-write mutation budget', async () => {
+    const SID = '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa'
+    const sightingsStore = fakeStore()
+    sightingsStore.getById = vi.fn(async () => ({ id: SID }) as never)
+    // mutationPerMin is tiny; if likes counted against it, the 3rd like would 429.
+    const app = createApp(
+      deps({ sightingsStore, rateLimits: { authPerMin: 100, mutationPerMin: 1, likePerMin: 100 } }),
+    )
+    await withServer(app, async (base) => {
+      const like = () =>
+        fetch(`${base}/api/sightings/${SID}/like`, {
+          method: 'POST',
+          headers: { 'X-Device-Id': '11111111-1111-4111-8111-111111111111', 'cf-connecting-ip': '203.0.113.21' },
+        })
+      expect((await like()).status).not.toBe(429)
+      expect((await like()).status).not.toBe(429)
+      expect((await like()).status).not.toBe(429)
     })
   })
 })

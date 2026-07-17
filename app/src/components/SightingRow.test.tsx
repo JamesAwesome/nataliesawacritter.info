@@ -1,6 +1,8 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { makeSighting } from '../test/helpers'
+import { markLiked } from '../lib/likes'
 import { SightingRow } from './SightingRow'
 
 describe('starred', () => {
@@ -68,5 +70,39 @@ describe('quantity badge', () => {
     render(<SightingRow sighting={makeSighting({ name: 'Fox', quantity: '1' })} onSelect={() => {}} />)
     expect(screen.queryByText('×1')).not.toBeInTheDocument()
     expect(screen.queryByText(/Many/)).not.toBeInTheDocument()
+  })
+})
+
+describe('like button', () => {
+  beforeEach(() => localStorage.clear())
+
+  it('renders heart + count as a separate control from the row-open button', async () => {
+    const onSelect = vi.fn()
+    const onToggleLike = vi.fn()
+    const s = makeSighting({ name: 'Mr Fox', likeCount: 2 })
+    render(<ul><SightingRow sighting={s} onSelect={onSelect} onToggleLike={onToggleLike} /></ul>)
+
+    const like = screen.getByRole('button', { name: 'Like Mr Fox' })
+    expect(like).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByText('2')).toBeInTheDocument()
+    // separate controls: liking must not open the sighting
+    await userEvent.click(like)
+    expect(onToggleLike).toHaveBeenCalledWith(s)
+    expect(onSelect).not.toHaveBeenCalled()
+    // no nesting (a11y): the like button is not inside the open button
+    expect(screen.getByRole('button', { name: /^Mr Fox/ }).contains(like)).toBe(false)
+  })
+
+  it('shows a filled pressed heart when this device liked it, and hides a 0 count', () => {
+    const s = makeSighting({ name: 'Mr Fox', likeCount: 0 })
+    markLiked(s.id)
+    render(<ul><SightingRow sighting={s} onToggleLike={vi.fn()} /></ul>)
+    expect(screen.getByRole('button', { name: 'Unlike Mr Fox' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByText('0')).not.toBeInTheDocument()
+  })
+
+  it('renders no like button without onToggleLike', () => {
+    render(<ul><SightingRow sighting={makeSighting({ likeCount: 5 })} onSelect={vi.fn()} /></ul>)
+    expect(screen.queryByRole('button', { name: /like/i })).not.toBeInTheDocument()
   })
 })

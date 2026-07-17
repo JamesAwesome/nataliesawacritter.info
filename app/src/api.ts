@@ -11,6 +11,7 @@ export type Sighting = {
   quantity: Quantity
   photoPath: string | null
   createdAt: string
+  likeCount: number
 }
 
 export type NewSightingInput = {
@@ -157,6 +158,18 @@ export async function deletePhoto(id: string, authHeader: string): Promise<void>
     headers: { authorization: authHeader },
   })
   if (!res.ok) throw new ApiError(res.status)
+}
+
+export async function likeSighting(id: string, deviceId: string): Promise<{ likeCount: number }> {
+  const res = await fetch(`/api/sightings/${id}/like`, { method: 'POST', headers: { 'X-Device-Id': deviceId } })
+  if (!res.ok) throw new ApiError(res.status)
+  return (await res.json()) as { likeCount: number }
+}
+
+export async function unlikeSighting(id: string, deviceId: string): Promise<{ likeCount: number }> {
+  const res = await fetch(`/api/sightings/${id}/like`, { method: 'DELETE', headers: { 'X-Device-Id': deviceId } })
+  if (!res.ok) throw new ApiError(res.status)
+  return (await res.json()) as { likeCount: number }
 }
 
 export async function checkAuth(authHeader: string): Promise<void> {

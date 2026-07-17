@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api'
 import { setCredentials } from '../auth'
+import { markLiked } from '../lib/likes'
 import { makeSighting, useFakeClock } from '../test/helpers'
 import { SightingDetail } from './SightingDetail'
 
@@ -250,5 +251,33 @@ describe('photo block', () => {
   it('the replace input is visually hidden, not display:none', () => {
     renderDetail({ sighting: makeSighting({ photoPath: '/api/photos/a-1.jpg' }) })
     expect(screen.getByLabelText('Replace photo')).toHaveClass('visually-hidden-input')
+  })
+})
+
+describe('like button', () => {
+  afterEach(() => localStorage.clear())
+
+  it('renders near the title, driven by onToggleLike and this sighting', async () => {
+    const onToggleLike = vi.fn()
+    const sighting = makeSighting({ name: 'Mr Fox', likeCount: 4 })
+    renderDetail({ sighting, onToggleLike })
+    const like = screen.getByRole('button', { name: 'Like Mr Fox' })
+    expect(like).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByText('4')).toBeInTheDocument()
+    await userEvent.click(like)
+    expect(onToggleLike).toHaveBeenCalledWith(sighting)
+  })
+
+  it('shows a filled pressed heart when this device liked it, and hides a 0 count', () => {
+    const sighting = makeSighting({ name: 'Mr Fox', likeCount: 0 })
+    markLiked(sighting.id)
+    renderDetail({ sighting, onToggleLike: vi.fn() })
+    expect(screen.getByRole('button', { name: 'Unlike Mr Fox' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByText('0')).not.toBeInTheDocument()
+  })
+
+  it('renders no like button without onToggleLike', () => {
+    renderDetail({ sighting: makeSighting({ likeCount: 5 }) })
+    expect(screen.queryByRole('button', { name: /like/i })).not.toBeInTheDocument()
   })
 })

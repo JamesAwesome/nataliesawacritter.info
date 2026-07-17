@@ -1,7 +1,7 @@
-import { and, desc, eq, gte, lte } from 'drizzle-orm'
+import { and, desc, eq, getTableColumns, gte, lte, sql } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import * as schema from '../db/schema.js'
-import { sightings } from '../db/schema.js'
+import { sightingLikes, sightings } from '../db/schema.js'
 import type { Quantity } from '../quantity.js'
 
 export type NewSighting = {
@@ -15,17 +15,23 @@ export type NewSighting = {
 }
 
 export type Sighting = typeof sightings.$inferSelect
+/** A sighting as the read API serves it: row + derived like count. */
+export type SightingWithLikes = Sighting & { likeCount: number }
 
 export function createSightingsStore(db: NodePgDatabase<typeof schema>) {
   return {
-    async list(range: { from?: string; to?: string } = {}): Promise<Sighting[]> {
+    async list(range: { from?: string; to?: string } = {}): Promise<SightingWithLikes[]> {
       const conditions = []
       if (range.from !== undefined) conditions.push(gte(sightings.sightedOn, range.from))
       if (range.to !== undefined) conditions.push(lte(sightings.sightedOn, range.to))
+      // Derived count (spike-validated): the (sighting_id, device_id) unique index
+      // serves the GROUP BY; no denormalized counter to drift.
       return db
-        .select()
+        .select({ ...getTableColumns(sightings), likeCount: sql<number>`count(${sightingLikes.id})::int` })
         .from(sightings)
+        .leftJoin(sightingLikes, eq(sightingLikes.sightingId, sightings.id))
         .where(conditions.length ? and(...conditions) : undefined)
+        .groupBy(sightings.id)
         .orderBy(desc(sightings.sightedOn), desc(sightings.createdAt))
     },
 

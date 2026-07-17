@@ -17,6 +17,8 @@ import type { PushStore } from './push/store.js'
 import { photoFileRouter, sightingPhotoRouter } from './sightings/photoRoutes.js'
 import { sightingsRouter } from './sightings/routes.js'
 import type { SightingsStore } from './sightings/store.js'
+import { likesRouter } from './likes/routes.js'
+import type { LikesStore } from './likes/store.js'
 
 export interface AppDeps {
   /** Resolves if the database is reachable, throws otherwise. */
@@ -32,8 +34,9 @@ export interface AppDeps {
   /** publicKey null → push endpoints 503 and notifySighting no-ops. */
   notifier: Notifier
   siteUrl: string
+  likesStore: LikesStore
   /** Rate-limit ceilings per minute per client IP. Defaults applied in createApp. */
-  rateLimits?: { authPerMin: number; mutationPerMin: number }
+  rateLimits?: { authPerMin: number; mutationPerMin: number; likePerMin?: number }
 }
 
 const writesDisabled: RequestHandler = (_req, res) => {
@@ -70,6 +73,7 @@ export function createApp(deps: AppDeps): Express {
   })
 
   const limits = deps.rateLimits ?? { authPerMin: 10, mutationPerMin: 30 }
+  const likePerMin = limits.likePerMin ?? 40
   // Origin is tunnel-only, so CF-Connecting-IP (set by Cloudflare) is trustworthy;
   // fall back to req.ip for local/dev.
   const clientKey = (req: express.Request): string => {
@@ -77,11 +81,22 @@ export function createApp(deps: AppDeps): Express {
     return (typeof cf === 'string' ? cf : req.ip) ?? 'unknown'
   }
   const validate = { trustProxy: false, xForwardedForHeader: false }
+  // Likes are the one public write; give them their own budget so anonymous
+  // like traffic can never exhaust the authed-write (mutation) budget.
+  const LIKE_PATH_RE = /^\/api\/sightings\/[0-9a-f-]{36}\/like$/i
+  const likeLimiter = rateLimit({
+    windowMs: 60_000,
+    limit: likePerMin,
+    keyGenerator: clientKey,
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate,
+  })
   const mutationLimiter = rateLimit({
     windowMs: 60_000,
     limit: limits.mutationPerMin,
     keyGenerator: clientKey,
-    skip: (req) => req.method === 'GET', // public reads/feed unaffected
+    skip: (req) => req.method === 'GET' || LIKE_PATH_RE.test(req.path), // public reads/feed and likes (own limiter) unaffected
     standardHeaders: true,
     legacyHeaders: false,
     validate,
@@ -131,7 +146,17 @@ export function createApp(deps: AppDeps): Express {
     void deps.notifier.notifySighting(sighting) // fire-and-forget; notifier never rejects
   })
   app.use('/api/sightings', sightingsRouter(deps.sightingsStore, writeGate, deps.photosDir, sightingNotify.onCreated))
-  app.use('/api/sightings', sightingPhotoRouter(deps.sightingsStore, writeGate, deps.photosDir, sightingNotify.onPhotoAttached))
+  app.use(
+    '/api/sightings',
+    sightingPhotoRouter(
+      deps.sightingsStore,
+      writeGate,
+      deps.photosDir,
+      sightingNotify.onPhotoAttached,
+      (id) => deps.likesStore.countFor(id),
+    ),
+  )
+  app.use('/api/sightings', likesRouter(deps.likesStore, deps.sightingsStore, likeLimiter))
   app.use('/api/photos', photoFileRouter(deps.photosDir))
   app.use('/api/profiles', profilesRouter(deps.profilesStore, writeGate))
   app.use(

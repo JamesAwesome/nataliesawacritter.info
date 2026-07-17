@@ -192,6 +192,8 @@ body {
   gap: 8px;
 }
 
+/* Row card: always the <li>, holding two sibling controls (the open target
+   and the like button) so neither nests inside the other. */
 .recent-row {
   display: flex;
   align-items: center;
@@ -202,8 +204,45 @@ body {
   padding: 10px 12px;
 }
 
+/* The open target: an unstyled flex control (or plain div when there's no
+   onSelect) filling the row alongside the like button. */
+.row-open {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Only the interactive (button) variant gets the pointer cursor — the plain
+   <div> variant (no onSelect) isn't clickable and shouldn't look it. */
+button.row-open {
+  cursor: pointer;
+}
+
+.like-button {
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.like-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+}
+
 .recent-emoji { font-size: 20px; }
-.recent-main { flex: 1; display: flex; flex-direction: column; }
+.recent-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .recent-name { font-size: 13px; font-weight: 700; }
 .recent-meta { font-size: 11px; color: var(--ink-secondary); }
 .recent-chevron { color: #c6d2ee; font-size: 18px; }
@@ -786,6 +825,13 @@ button.day-cell {
   display: block;
 }
 
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
 .detail-head h2 {
   margin: 6px 0 2px;
   font-family: 'Fredoka', sans-serif;
@@ -826,20 +872,6 @@ button.day-cell {
 
 .btn-danger.confirming {
   outline: 2px solid var(--danger-text);
-}
-
-.row-button {
-  all: unset;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-hairline);
-  border-radius: 14px;
-  background: #fff;
-  cursor: pointer;
 }
 
 .history-pane {

@@ -42,7 +42,7 @@ const VALID = { emoji: '🦊', sightedOn: '2026-07-03' }
 
 describe('GET /api/sightings', () => {
   it('returns the store list as JSON with ISO createdAt', async () => {
-    const store = fakeStore({ list: vi.fn(async () => [rowFor({ ...VALID, name: 'Fox', sightedTime: null, place: null, comment: null, quantity: '1' })]) })
+    const store = fakeStore({ list: vi.fn(async () => [{ ...rowFor({ ...VALID, name: 'Fox', sightedTime: null, place: null, comment: null, quantity: '1' }), likeCount: 0 }]) })
     await withServer(appWith(store), async (base) => {
       const res = await fetch(`${base}/api/sightings`)
       expect(res.status).toBe(200)
@@ -84,6 +84,13 @@ describe('GET /api/sightings', () => {
       expect(((await res.json()) as ValidationEnvelope).details.from).toBe('must be on or before to')
     })
   })
+
+  it('serves the public list with a short edge-cache header', async () => {
+    await withServer(appWith(fakeStore()), async (base) => {
+      const res = await fetch(`${base}/api/sightings`)
+      expect(res.headers.get('cache-control')).toBe('public, max-age=15')
+    })
+  })
 })
 
 describe('POST /api/sightings', () => {
@@ -100,7 +107,9 @@ describe('POST /api/sightings', () => {
     await withServer(appWith(store), async (base) => {
       const res = await post(base, { ...VALID, name: 'Fox', sightedTime: 'dusk', place: 'trail', comment: 'so fluffy' })
       expect(res.status).toBe(201)
-      expect(((await res.json()) as SightingJson).id).toBe(FIXED_ID)
+      const body = (await res.json()) as SightingJson & { likeCount: number }
+      expect(body.id).toBe(FIXED_ID)
+      expect(body.likeCount).toBe(0)
       expect(store.create).toHaveBeenCalledWith({
         emoji: '🦊', sightedOn: '2026-07-03', name: 'Fox', sightedTime: 'dusk', place: 'trail', comment: 'so fluffy', quantity: '1',
       })

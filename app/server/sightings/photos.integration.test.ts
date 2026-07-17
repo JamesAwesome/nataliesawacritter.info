@@ -7,6 +7,7 @@ import { createApp } from '../app.js'
 import type { createDb } from '../db/index.js'
 import { createProfilesStore } from '../profiles/store.js'
 import { createEmojiRequestsStore } from "../emojiRequests/store.js"
+import { createLikesStore } from '../likes/store.js'
 import { createTestDb } from '../testDb.js'
 import { basic, fakePushStore, nullNotifier, withServer } from '../testUtils.js'
 import { createSightingsStore } from './store.js'
@@ -40,6 +41,7 @@ describe('photo lifecycle against real postgres + disk', () => {
       sightingsStore: createSightingsStore(handle.db),
       profilesStore: createProfilesStore(handle.db),
       emojiRequestsStore: createEmojiRequestsStore(handle.db),
+      likesStore: createLikesStore(handle.db),
       requestAlerter: { notify: async () => {} },
       writeCredentials: { user: 'natalie', password: 'sekrit' },
       photosDir,

@@ -3,6 +3,7 @@ import { createApp } from '../app.js'
 import type { createDb } from '../db/index.js'
 import { createSightingsStore } from '../sightings/store.js'
 import { createEmojiRequestsStore } from '../emojiRequests/store.js'
+import { createLikesStore } from '../likes/store.js'
 import { createTestDb } from '../testDb.js'
 import { basic, fakePushStore, nullNotifier, withServer } from '../testUtils.js'
 import { createProfilesStore } from './store.js'
@@ -28,6 +29,7 @@ describe('profiles API against real postgres', () => {
       sightingsStore: createSightingsStore(handle.db),
       profilesStore: createProfilesStore(handle.db),
       emojiRequestsStore: createEmojiRequestsStore(handle.db),
+      likesStore: createLikesStore(handle.db),
       requestAlerter: { notify: async () => {} },
       writeCredentials: { user: 'natalie', password: 'sekrit' },
       photosDir: '/tmp/unused-photos',

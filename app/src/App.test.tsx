@@ -181,7 +181,9 @@ describe('calendar navigation and delete', () => {
     render(<App />)
     await userEvent.click(await screen.findByRole('button', { name: /jul 2,/i }))
     expect(screen.getByRole('dialog')).toHaveTextContent('Jul 2')
-    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /fox/i }))
+    // Anchored: the row-open button's name starts with the critter name; the
+    // sibling like button's name starts with "Like"/"Unlike" instead.
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^fox/i }))
     expect(screen.getByRole('dialog')).toHaveTextContent('Jul 2 · dusk')
     await userEvent.click(screen.getByRole('button', { name: /back/i }))
     expect(screen.getByRole('dialog')).toHaveTextContent('Jul 2')
@@ -193,7 +195,7 @@ describe('calendar navigation and delete', () => {
     const s = makeSighting({ name: 'Owl', emoji: '🦉', sightedOn: '2026-07-01' })
     stubFetchQueue([{ status: 200, body: [s] }])
     render(<App />)
-    await userEvent.click(await screen.findByRole('button', { name: /owl/i }))
+    await userEvent.click(await screen.findByRole('button', { name: /^owl/i }))
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /back/i }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -211,7 +213,7 @@ describe('calendar navigation and delete', () => {
     })
     render(<App />)
     await userEvent.click(await screen.findByRole('button', { name: /jul 2,/i }))
-    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /fox/i }))
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^fox/i }))
     await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
     await userEvent.click(screen.getByRole('button', { name: 'Really delete?' }))
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
@@ -228,7 +230,7 @@ describe('calendar navigation and delete', () => {
     render(<App />)
     const recent = screen.getAllByTestId('recent-critters')[0]
     expect(await within(recent).findByRole('button', { name: /Mr Fox.*, friend/ })).toBeInTheDocument()
-    expect(within(recent).getByRole('button', { name: /Prof Hoot/ })).not.toHaveAccessibleName(/, friend/)
+    expect(within(recent).getByRole('button', { name: /^Prof Hoot/ })).not.toHaveAccessibleName(/, friend/)
     await userEvent.click(screen.getByRole('tab', { name: 'History' }))
     await userEvent.click(screen.getByRole('button', { name: '⭐ Friends' }))
     const history = document.getElementById('pane-history')!

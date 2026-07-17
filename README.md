@@ -8,11 +8,12 @@ wildlife sightings — with photos, how many she saw (1·2·3·many), saved "cri
 friends," and hand-drawn custom emoji for local critters that Unicode forgot
 (robins, a groundhog, an Atlantic puffin…) — and view them as a calendar, a
 filterable history, and a Top Critters leaderboard grouped by the names she
-gives them. The emoji picker sorts everything into categories (Birds, Mammals,
-Sea Life…), and she can **request a new critter emoji** right from the picker —
-optionally, a coding agent turns each request into a pull request (see below).
-Friends can keep up with new sightings as they happen via push notifications (it
-installs as a PWA on phones) or an RSS feed. Live at nataliesawacritter.info.
+gives them. Friends can heart sightings (with per-device dedup). The emoji
+picker sorts everything into categories (Birds, Mammals, Sea Life…), and she can
+**request a new critter emoji** right from the picker — optionally, a coding
+agent turns each request into a pull request (see below). Friends can keep up with
+new sightings as they happen via push notifications (it installs as a PWA on phones)
+or an RSS feed. Live at nataliesawacritter.info.
 
 ## Stack
 
@@ -163,6 +164,10 @@ password). Hardening in place:
   `sharp`, which strips all metadata (EXIF/GPS/XMP/IPTC/COM/ICC) and validates the
   bytes are a real image (rejecting malformed/non-image uploads), on top of the
   client's canvas re-encode. Filenames are random tokens.
+- **Likes: abuse posture** — app-only baseline uses per-device dedup (unique
+  sighting + device ID per like) and a dedicated per-IP like limiter. Deferred
+  Cloudflare escalation levers available if needed: Bot Fight Mode, the free edge
+  Rate Limiting rule on `/api/sightings/*/like`, and Turnstile (last resort).
 - **Push SSRF allowlist** — subscription endpoints are restricted to real
   push-service hosts (FCM/Mozilla/Apple/WNS).
 - **Privacy** — sightings are public, so the log form warns against entering a
@@ -178,6 +183,8 @@ re-validation, shorter photo cache TTL.
     GET    /api/sightings?from=YYYY-MM-DD&to=YYYY-MM-DD   # public; filters optional/inclusive
     POST   /api/sightings                                 # basic auth (WRITE_USER/WRITE_PASSWORD)
     DELETE /api/sightings/:id                             # basic auth
+    POST   /api/sightings/:id/like                        # public; rate-limited per device
+    DELETE /api/sightings/:id/like                        # public; rate-limited per device
     PUT    /api/sightings/:id/photo                       # basic auth; raw image/jpeg body (≤6MB)
     DELETE /api/sightings/:id/photo                       # basic auth
     GET    /api/photos/:filename                          # public; immutable cache

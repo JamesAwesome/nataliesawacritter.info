@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { deletePhoto, uploadPhoto } from './api'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { deletePhoto, likeSighting, unlikeSighting, uploadPhoto, type Sighting } from './api'
 import { CalendarPane } from './components/CalendarPane'
 import { DayDetail } from './components/DayDetail'
 import { Footer } from './components/Footer'
@@ -18,10 +18,11 @@ import { useProfiles } from './hooks/useProfiles'
 import { useSightings } from './hooks/useSightings'
 import { friendKeys } from './lib/friends'
 import { leaderboard, recentEmoji } from './lib/insights'
+import { deviceId, hasLiked, markLiked, markUnliked } from './lib/likes'
 import { sheetIsValid, type SheetState } from './lib/sheet'
 
 export default function App() {
-  const { sightings, status, addSighting, removeSighting, applySighting, retry } = useSightings()
+  const { sightings, status, addSighting, removeSighting, applySighting, patchSighting, retry } = useSightings()
   const { profiles, addProfile, removeProfile } = useProfiles()
   const isDesktop = useIsDesktop()
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
@@ -55,6 +56,40 @@ export default function App() {
 
   const openSighting = (id: string, fromDay?: string) => setSheet({ kind: 'sighting', id, fromDay })
 
+  // Guards against a double-tap firing two concurrent like requests for the
+  // same sighting (the last response landing would otherwise win, leaving the
+  // heart/count inconsistent). The first tap stays instant; taps that land
+  // while a request is already in flight for that id are ignored.
+  const likesInFlight = useRef(new Set<string>())
+
+  const toggleLike = useCallback(
+    async (s: Sighting) => {
+      if (likesInFlight.current.has(s.id)) return
+      const liked = hasLiked(s.id)
+      const delta = liked ? -1 : 1
+      // optimistic: flip local heart + count now, reconcile with the server after.
+      // patchSighting derives from the CURRENT row rather than the `s` snapshot
+      // captured at click time, so a concurrent refresh can't be stomped.
+      if (liked) markUnliked(s.id)
+      else markLiked(s.id)
+      patchSighting(s.id, (row) => ({ ...row, likeCount: Math.max(0, row.likeCount + delta) }))
+      likesInFlight.current.add(s.id)
+      try {
+        const { likeCount } = liked
+          ? await unlikeSighting(s.id, deviceId())
+          : await likeSighting(s.id, deviceId())
+        patchSighting(s.id, (row) => ({ ...row, likeCount }))
+      } catch {
+        if (liked) markLiked(s.id)
+        else markUnliked(s.id)
+        patchSighting(s.id, (row) => ({ ...row, likeCount: Math.max(0, row.likeCount - delta) })) // roll back
+      } finally {
+        likesInFlight.current.delete(s.id)
+      }
+    },
+    [patchSighting],
+  )
+
   const logButton = (
     <button type="button" className="log-button" onClick={() => setSheet({ kind: 'log' })}>
       + Log a sighting
@@ -85,12 +120,18 @@ export default function App() {
                   status={status}
                   onRetry={retry}
                   onSelect={(id) => openSighting(id)}
+                  onToggleLike={toggleLike}
                   friendKeys={keys}
                 />
               )}
             </div>
             <div role="tabpanel" id="pane-history" hidden={activeTab !== 'history'}>
-              <HistoryPane sightings={sightings} onSelect={(id) => openSighting(id)} friendKeys={keys} />
+              <HistoryPane
+                sightings={sightings}
+                onSelect={(id) => openSighting(id)}
+                onToggleLike={toggleLike}
+                friendKeys={keys}
+              />
             </div>
             <div role="tabpanel" id="pane-leaderboard" hidden={activeTab !== 'leaderboard'}>
               <TopCrittersPane sightings={sightings} />
@@ -104,6 +145,7 @@ export default function App() {
                 status={status}
                 onRetry={retry}
                 onSelect={(id) => openSighting(id)}
+                onToggleLike={toggleLike}
                 friendKeys={keys}
               />
             )}
@@ -140,6 +182,7 @@ export default function App() {
             sightings={sightings.filter((s) => s.sightedOn === sheet.date)}
             onSelect={(id) => openSighting(id, sheet.date)}
             onClose={() => setSheet(null)}
+            onToggleLike={toggleLike}
             friendKeys={keys}
           />
         </Sheet>
@@ -167,6 +210,7 @@ export default function App() {
                   await deletePhoto(id, authHeader)
                   applySighting({ ...selected, photoPath: null })
                 }}
+                onToggleLike={toggleLike}
               />
             </Sheet>
           )

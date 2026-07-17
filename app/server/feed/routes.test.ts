@@ -1,12 +1,12 @@
 import express, { type Express } from 'express'
 import { describe, expect, it, vi } from 'vitest'
-import type { Sighting, SightingsStore } from '../sightings/store.js'
+import type { SightingsStore, SightingWithLikes } from '../sightings/store.js'
 import { withServer } from '../testUtils.js'
 import { feedRouter } from './routes.js'
 
 const SITE = 'https://example.test'
 
-function row(overrides: Partial<Sighting> = {}): Sighting {
+function row(overrides: Partial<SightingWithLikes> = {}): SightingWithLikes {
   return {
     id: '3f9a26cc-1c0e-4c3a-9b52-08a1c2f4d9aa',
     emoji: '🦊',
@@ -18,11 +18,12 @@ function row(overrides: Partial<Sighting> = {}): Sighting {
     quantity: '1',
     photoPath: null,
     createdAt: new Date('2026-07-05T12:00:00Z'),
+    likeCount: 0,
     ...overrides,
   }
 }
 
-function fakeStore(list: Sighting[]): SightingsStore {
+function fakeStore(list: SightingWithLikes[]): SightingsStore {
   return {
     list: vi.fn(async () => list),
     create: vi.fn(async () => { throw new Error('unused') }),

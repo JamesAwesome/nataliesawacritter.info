@@ -8,9 +8,10 @@ type Props = {
   onRetry: () => void
   onSelect?: (id: string) => void
   friendKeys: Set<string>
+  onToggleLike?: (s: Sighting) => void
 }
 
-export function RecentCritters({ sightings, status, onRetry, onSelect, friendKeys }: Props) {
+export function RecentCritters({ sightings, status, onRetry, onSelect, friendKeys, onToggleLike }: Props) {
   return (
     <section className="recent-critters" data-testid="recent-critters">
       <h2>Recent Critters</h2>
@@ -29,7 +30,13 @@ export function RecentCritters({ sightings, status, onRetry, onSelect, friendKey
       {status === 'ready' && sightings.length > 0 && (
         <ul className="recent-list">
           {sightings.slice(0, 4).map((s) => (
-            <SightingRow key={s.id} sighting={s} onSelect={onSelect} starred={isFriendSighting(s, friendKeys)} />
+            <SightingRow
+              key={s.id}
+              sighting={s}
+              onSelect={onSelect}
+              onToggleLike={onToggleLike}
+              starred={isFriendSighting(s, friendKeys)}
+            />
           ))}
         </ul>
       )}

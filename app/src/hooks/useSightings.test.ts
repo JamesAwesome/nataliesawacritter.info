@@ -181,6 +181,28 @@ describe('useSightings', () => {
     expect(result.current.sightings).toEqual([updated])
   })
 
+  it('patchSighting merges onto the current row, not a stale snapshot from before a refresh', async () => {
+    const original = makeSighting({ comment: null, likeCount: 2 })
+    // A visibility refetch lands between "click time" and the patch call, changing
+    // a field (comment) the patch itself never touches.
+    const refreshed = { ...original, comment: 'updated elsewhere' }
+    stubFetchQueue([
+      { status: 200, body: [original] },
+      { status: 200, body: [refreshed] },
+    ])
+    const { result } = renderHook(() => useSightings())
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+    await waitFor(() => expect(result.current.sightings[0].comment).toBe('updated elsewhere'))
+
+    act(() => result.current.patchSighting(original.id, (row) => ({ ...row, likeCount: row.likeCount + 1 })))
+
+    // The refreshed comment survives; only likeCount changed, applied to the CURRENT row.
+    expect(result.current.sightings).toEqual([{ ...refreshed, likeCount: 3 }])
+  })
+
   it('refetches silently when the page becomes visible again', async () => {
     const fresh = makeSighting({ id: '00000000-0000-4000-8000-000000000002', emoji: '🦝' })
     stubFetchQueue([

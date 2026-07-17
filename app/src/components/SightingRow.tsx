@@ -1,18 +1,26 @@
 import type { Sighting } from '../api'
 import { nameFor } from '../lib/critters'
 import { formatWhen } from '../lib/format'
+import { hasLiked } from '../lib/likes'
 import { quantityLabel } from '../lib/quantity'
 import { CritterGlyph } from './CritterGlyph'
 
-type Props = { sighting: Sighting; onSelect?: (id: string) => void; starred?: boolean }
+type Props = {
+  sighting: Sighting
+  onSelect?: (id: string) => void
+  starred?: boolean
+  onToggleLike?: (sighting: Sighting) => void
+}
 
-export function SightingRow({ sighting, onSelect, starred }: Props) {
+export function SightingRow({ sighting, onSelect, starred, onToggleLike }: Props) {
+  const displayName = sighting.name ?? (nameFor(sighting.emoji) ?? sighting.emoji)
+  const liked = onToggleLike !== undefined && hasLiked(sighting.id)
   const body = (
     <>
       <CritterGlyph emoji={sighting.emoji} className="recent-emoji" />
       <span className="recent-main">
         <span className="recent-name">
-          {sighting.name ?? (nameFor(sighting.emoji) ?? sighting.emoji)}
+          {displayName}
           {quantityLabel(sighting.quantity) !== '' && (
             <span className="qty-badge">{quantityLabel(sighting.quantity)}</span>
           )}
@@ -35,12 +43,24 @@ export function SightingRow({ sighting, onSelect, starred }: Props) {
     </>
   )
   return (
-    <li className={onSelect === undefined ? 'recent-row' : undefined}>
+    <li className="recent-row">
       {onSelect === undefined ? (
-        body
+        <div className="row-open">{body}</div>
       ) : (
-        <button type="button" className="recent-row row-button" onClick={() => onSelect(sighting.id)}>
+        <button type="button" className="row-open" onClick={() => onSelect(sighting.id)}>
           {body}
+        </button>
+      )}
+      {onToggleLike !== undefined && (
+        <button
+          type="button"
+          className={liked ? 'like-button liked' : 'like-button'}
+          aria-pressed={liked}
+          aria-label={liked ? `Unlike ${displayName}` : `Like ${displayName}`}
+          onClick={() => onToggleLike(sighting)}
+        >
+          <span aria-hidden="true">{liked ? '❤️' : '🤍'}</span>
+          {sighting.likeCount > 0 && <span className="like-count">{sighting.likeCount}</span>}
         </button>
       )}
     </li>

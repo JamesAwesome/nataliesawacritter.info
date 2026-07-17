@@ -26,6 +26,7 @@ export function sightingPhotoRouter(
   writeGate: RequestHandler,
   photosDir: string,
   onPhotoAttached: (sighting: Sighting) => void = () => {},
+  countLikes: (id: string) => Promise<number> = async () => 0,
 ): Router {
   const router = Router()
 
@@ -63,7 +64,7 @@ export function sightingPhotoRouter(
     }
     await removePhotoFile(photosDir, existing.photoPath)
     onPhotoAttached(updated)
-    res.json(updated)
+    res.json({ ...updated, likeCount: await countLikes(id) })
   })
 
   router.delete('/:id/photo', writeGate, async (req, res) => {
