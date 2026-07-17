@@ -241,6 +241,26 @@ button.row-open {
   color: var(--ink-secondary);
 }
 
+/* inline-block so transform applies; a new like pops the heart (transform only,
+   so it can't reflow the row). See docs/…/2026-07-17-satisfying-like-tap-design.md */
+.like-heart {
+  display: inline-block;
+}
+@keyframes like-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.4); }
+  60% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+.like-button.popping .like-heart {
+  animation: like-pop 280ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .like-button.popping .like-heart {
+    animation: none;
+  }
+}
+
 .recent-emoji { font-size: 20px; }
 .recent-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .recent-name { font-size: 13px; font-weight: 700; }

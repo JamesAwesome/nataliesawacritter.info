@@ -1,9 +1,9 @@
 import type { Sighting } from '../api'
 import { nameFor } from '../lib/critters'
 import { formatWhen } from '../lib/format'
-import { hasLiked } from '../lib/likes'
 import { quantityLabel } from '../lib/quantity'
 import { CritterGlyph } from './CritterGlyph'
+import { LikeButton } from './LikeButton'
 
 type Props = {
   sighting: Sighting
@@ -14,7 +14,6 @@ type Props = {
 
 export function SightingRow({ sighting, onSelect, starred, onToggleLike }: Props) {
   const displayName = sighting.name ?? (nameFor(sighting.emoji) ?? sighting.emoji)
-  const liked = onToggleLike !== undefined && hasLiked(sighting.id)
   const body = (
     <>
       <CritterGlyph emoji={sighting.emoji} className="recent-emoji" />
@@ -51,18 +50,7 @@ export function SightingRow({ sighting, onSelect, starred, onToggleLike }: Props
           {body}
         </button>
       )}
-      {onToggleLike !== undefined && (
-        <button
-          type="button"
-          className={liked ? 'like-button liked' : 'like-button'}
-          aria-pressed={liked}
-          aria-label={liked ? `Unlike ${displayName}` : `Like ${displayName}`}
-          onClick={() => onToggleLike(sighting)}
-        >
-          <span aria-hidden="true">{liked ? '❤️' : '🤍'}</span>
-          {sighting.likeCount > 0 && <span className="like-count">{sighting.likeCount}</span>}
-        </button>
-      )}
+      {onToggleLike !== undefined && <LikeButton sighting={sighting} onToggle={onToggleLike} />}
     </li>
   )
 }

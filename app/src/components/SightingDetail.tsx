@@ -3,10 +3,10 @@ import type { NewProfileInput, Profile, Sighting } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
 import { nameFor, normalizedName } from '../lib/critters'
 import { formatWhen } from '../lib/format'
-import { hasLiked } from '../lib/likes'
 import { quantityLabel } from '../lib/quantity'
 import { downscalePhoto } from '../lib/photo'
 import { CritterGlyph } from './CritterGlyph'
+import { LikeButton } from './LikeButton'
 import { PasswordPrompt } from './PasswordPrompt'
 import { PhotoControl } from './PhotoControl'
 
@@ -48,7 +48,6 @@ export function SightingDetail({
           (p) => p.emoji === sighting.emoji && normalizedName(p.name) === normalizedName(sighting.name as string),
         )
   const displayName = sighting.name ?? (nameFor(sighting.emoji) ?? sighting.emoji)
-  const liked = onToggleLike !== undefined && hasLiked(sighting.id)
   const [confirming, setConfirming] = useState(false)
   const confirmTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -118,18 +117,7 @@ export function SightingDetail({
               <span className="qty-badge">{quantityLabel(sighting.quantity)}</span>
             )}
           </h2>
-          {onToggleLike !== undefined && (
-            <button
-              type="button"
-              className={liked ? 'like-button liked' : 'like-button'}
-              aria-pressed={liked}
-              aria-label={liked ? `Unlike ${displayName}` : `Like ${displayName}`}
-              onClick={() => onToggleLike(sighting)}
-            >
-              <span aria-hidden="true">{liked ? '❤️' : '🤍'}</span>
-              {sighting.likeCount > 0 && <span className="like-count">{sighting.likeCount}</span>}
-            </button>
-          )}
+          {onToggleLike !== undefined && <LikeButton sighting={sighting} onToggle={onToggleLike} />}
         </div>
         <p className="detail-meta">{formatWhen(sighting.sightedOn, sighting.sightedTime)}</p>
       </div>
