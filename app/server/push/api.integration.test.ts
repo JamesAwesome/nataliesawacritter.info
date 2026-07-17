@@ -4,6 +4,7 @@ import type { createDb } from '../db/index.js'
 import { createProfilesStore } from '../profiles/store.js'
 import { createEmojiRequestsStore } from "../emojiRequests/store.js"
 import { createSightingsStore } from '../sightings/store.js'
+import { createLikesStore } from '../likes/store.js'
 import { createTestDb } from '../testDb.js'
 import { basic, withServer } from '../testUtils.js'
 import { createNotifier, type PushTarget } from './notifier.js'
@@ -44,6 +45,7 @@ describe('push delivery through the sightings API', () => {
       sightingsStore: createSightingsStore(handle.db),
       profilesStore: createProfilesStore(handle.db),
       emojiRequestsStore: createEmojiRequestsStore(handle.db),
+      likesStore: createLikesStore(handle.db),
       requestAlerter: { notify: async () => {} },
       writeCredentials: { user: 'natalie', password: 'sekrit' },
       photosDir: '/tmp/unused-photos',

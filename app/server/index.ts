@@ -9,6 +9,7 @@ import { createRequestAlerter } from './emojiRequests/alerter.js'
 import { createNotifier, type SendPush } from './push/notifier.js'
 import { createPushStore } from './push/store.js'
 import { createSightingsStore } from './sightings/store.js'
+import { createLikesStore } from './likes/store.js'
 
 const connectionString = process.env.DATABASE_URL
 if (!connectionString) {
@@ -89,6 +90,7 @@ const app = createApp({
     await pool.query('SELECT 1')
   },
   sightingsStore: createSightingsStore(db),
+  likesStore: createLikesStore(db),
   profilesStore: createProfilesStore(db),
   emojiRequestsStore: createEmojiRequestsStore(db),
   requestAlerter,
