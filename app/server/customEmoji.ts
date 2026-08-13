@@ -37,6 +37,7 @@ const STAND_INS: Record<string, string> = {
   'lantern-fly': '🦗',
   emu: '🐦',
   wren: '🐦',
+  crow: '🐦‍⬛',
 }
 
 export const KNOWN_SLUGS = new Set(Object.keys(STAND_INS))
