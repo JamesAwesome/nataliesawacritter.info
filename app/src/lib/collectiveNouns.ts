@@ -1,3 +1,5 @@
+import { emojiKey } from './emojiKey'
+
 /** Collective nouns for the shipped critters: a "many" sighting of crows is a
  *  murder, of rabbits a fluffle. Keyed by the stored emoji token — a Unicode
  *  emoji or a `custom:<slug>` — with `[noun, plural]` so the phrase reads
@@ -90,10 +92,11 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   '🕊️': ['dule', 'doves'],
   '🦢': ['bevy', 'swans'],
   '🪿': ['gaggle', 'geese'],
+  '🦤': ['flock', 'dodos'],
   '🦩': ['flamboyance', 'flamingos'],
   '🦚': ['ostentation', 'peacocks'],
   '🦜': ['pandemonium', 'parrots'],
-  '🐦‍⬛': ['murder', 'crows'],
+  '🐦‍⬛': ['cloud', 'blackbirds'],
 
   // Reptiles & amphibians
   '🐊': ['bask', 'crocodiles'],
@@ -101,6 +104,7 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   '🐉': ['flight', 'dragons'],
   '🐲': ['flight', 'dragons'],
   '🦕': ['herd', 'dinosaurs'],
+  '🦖': ['herd', 'dinosaurs'],
 
   // Sea life
   '🐳': ['pod', 'whales'],
@@ -148,6 +152,7 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:loon': ['asylum', 'loons'],
   'custom:puffin': ['circus', 'puffins'],
   'custom:grouse': ['covey', 'grouse'],
+  'custom:firefly': ['swarm', 'fireflies'],
   'custom:meerkat': ['mob', 'meerkats'],
   'custom:lemur': ['conspiracy', 'lemurs'],
   'custom:crane': ['sedge', 'cranes'],
@@ -159,17 +164,32 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:pelican': ['squadron', 'pelicans'],
   'custom:horseshoe-crab': ['cast', 'horseshoe crabs'],
   'custom:stingray': ['fever', 'stingrays'],
+  'custom:hawk': ['kettle', 'hawks'],
+  'custom:lantern-fly': ['swarm', 'lantern flies'],
+  'custom:emu': ['mob', 'emus'],
+  'custom:wren': ['herd', 'wrens'],
+  'custom:crow': ['murder', 'crows'],
+  'custom:dragonfly': ['cluster', 'dragonflies'],
+}
+
+/** Keyed without the variation selector, so both spellings of '🐿️' resolve.
+ *  A Map also keeps `['toString']` from answering with Object.prototype's — the
+ *  emoji column holds arbitrary text, and a plain object would. */
+const BY_KEY = new Map(Object.entries(COLLECTIVE_NOUNS).map(([key, entry]) => [emojiKey(key), entry]))
+
+function entryFor(emoji: string): readonly [string, string] | null {
+  return BY_KEY.get(emojiKey(emoji)) ?? null
 }
 
 /** The collective noun for a critter, or null when it hasn't got one. */
 export function nounFor(emoji: string): string | null {
-  return COLLECTIVE_NOUNS[emoji]?.[0] ?? null
+  return entryFor(emoji)?.[0] ?? null
 }
 
 /** The full phrase — "a murder of crows", "an army of frogs" — or null. */
 export function phraseFor(emoji: string): string | null {
-  const entry = COLLECTIVE_NOUNS[emoji]
-  if (entry === undefined) return null
+  const entry = entryFor(emoji)
+  if (entry === null) return null
   const [noun, plural] = entry
   const article = 'aeiou'.includes(noun[0]) ? 'an' : 'a'
   return `${article} ${noun} of ${plural}`

@@ -150,19 +150,25 @@ All paths under `app/`. Pick `slug` (lowercase-hyphen), `name` (display),
 and `standIn` (a Unicode glyph for text-only surfaces like RSS/push; a related
 real emoji, e.g. `🦔` for a hedgehog — needn't be unique).
 
-1. **RED — pin the slug in both tests first, watch them fail:**
+1. **RED — pin the slug in all three tests first, watch them fail:**
    - `src/lib/customEmoji.test.ts` — append the slug to the **ordered** list.
    - `server/customEmoji.test.ts` — add the slug to the **sorted** list.
-2. **GREEN — add the three pieces:**
+   - `src/lib/collectiveNouns.test.ts` — nothing to add yet; its coverage test
+     fails on the new slug until step 2's noun (or `NOUNLESS` entry) lands.
+2. **GREEN — add the four pieces:**
    - `public/custom-emoji/<slug>.svg` — the art: generate + matte (see above)
      if available, else hand-draw per Rule 2's style guidance.
    - `src/lib/customEmoji.ts` — a `CUSTOM` entry `{ slug, name, standIn, category }` (append **in the same order** as the client test).
    - `server/customEmoji.ts` — a `STAND_INS` entry `<slug>: '<standIn>'`.
-   - **Optional, but do it if the critter has one:** a collective noun —
-     `'custom:<slug>': ['<noun>', '<plural>']` in **both** `src/lib/collectiveNouns.ts`
-     and `server/collectiveNouns.ts` (the two tables are compared entry-for-entry,
-     so add to both or neither). A "many" sighting then reads "Fluffle" in the
-     badge and "a fluffle of rabbits" in RSS/push; leave it out and it stays "Many".
+   - **A collective noun** — `'custom:<slug>': ['<noun>', '<plural>']` in **both**
+     `src/lib/collectiveNouns.ts` and `server/collectiveNouns.ts` (the two tables
+     are compared entry-for-entry, so add to both or neither). A "many" sighting
+     then reads "Murder" in the badge and "a murder of crows" in RSS/push. If the
+     critter genuinely hasn't got one (a mascot, a solitary animal), add its token
+     to the `NOUNLESS` set in `src/lib/collectiveNouns.test.ts` instead — that test
+     fails until you do one or the other, so nothing silently defaults to "Many".
+     Keep the entry in catalogue order, and give the plural the critter's own name
+     ("a kettle of hawks") — a test checks both.
 3. **Verify:** `pnpm test` (or `test:coverage`), `pnpm lint`, `pnpm typecheck`.
    Drift-guard tests assert client ⇔ server ⇔ on-disk agree; `emojiCategories`
    auto-derives the picker group and is coverage-checked — no edit needed there.
@@ -182,13 +188,16 @@ automatically once the entry exists).
 | `docs/renders/<slug>-source.png` | kept source PNG (generated art only) |
 | `src/lib/customEmoji.ts` | `CUSTOM` entry (ordered) |
 | `server/customEmoji.ts` | `STAND_INS` entry |
-| `src/lib/collectiveNouns.ts` + `server/collectiveNouns.ts` | `[noun, plural]` entry, if the critter has a collective noun (both files or neither) |
+| `src/lib/collectiveNouns.ts` + `server/collectiveNouns.ts` | `[noun, plural]` entry (both files or neither) — or add the token to the test's `nounless` set |
 | `src/lib/customEmoji.test.ts` | pinned **ordered** slug list |
 | `server/customEmoji.test.ts` | pinned **sorted** slug list |
 
 ## Common mistakes
 
 - Editing only the client or only the server catalogue → drift guard fails.
+- Writing the collective-noun entry against a copy of the catalogue read outside
+  the worktree. Read the files you are about to edit; seven critters (crow among
+  them) shipped as "Many" because the table was written against a stale copy.
 - Client `CUSTOM` order not matching the client pinned test's order → fails
   (server list is order-insensitive; client is not).
 - Adding a Unicode animal (e.g. `🦔`) to the picker instead of a `custom:` token

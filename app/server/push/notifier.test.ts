@@ -70,8 +70,11 @@ describe('payloadFor', () => {
   })
 
   it('appends · Many to the title when the critter has no collective noun', () => {
-    const payload = JSON.parse(payloadFor(sighting({ name: 'Firefly', emoji: 'custom:firefly', quantity: 'many' }))) as { title: string }
-    expect(payload.title).toBe('🪲 Natalie saw Firefly · Many!')
+    // custom:red-panda is nounless, but its stand-in 🐼 is not — so keying the
+    // suffix on the stand-in instead of the stored token would say "an
+    // embarrassment of pandas" here rather than fall back.
+    const payload = JSON.parse(payloadFor(sighting({ name: 'Rusty', emoji: 'custom:red-panda', quantity: 'many' }))) as { title: string }
+    expect(payload.title).toBe('🐼 Natalie saw Rusty · Many!')
   })
 
   it('uses the stand-in for a custom emoji in the push title', () => {

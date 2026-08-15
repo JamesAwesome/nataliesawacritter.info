@@ -13,7 +13,7 @@ describe('quantity', () => {
   })
 
   it('many is the critter’s collective noun, capitalised', () => {
-    expect(quantityLabel('many', '🐦‍⬛')).toBe('Murder')
+    expect(quantityLabel('many', 'custom:crow')).toBe('Murder')
     expect(quantityLabel('many', '🐇')).toBe('Fluffle')
     expect(quantityLabel('many', 'custom:meerkat')).toBe('Mob')
   })

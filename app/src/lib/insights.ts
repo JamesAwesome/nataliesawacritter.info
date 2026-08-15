@@ -1,5 +1,6 @@
 import type { Sighting } from '../api'
 import { normalizedName } from './critters'
+import { emojiKey } from './emojiKey'
 
 /** Inclusive on both bounds; empty/undefined bound = open. Preserves input order. */
 export function filterByRange(sightings: Sighting[], from?: string, to?: string): Sighting[] {
@@ -31,7 +32,9 @@ export function leaderboard(sightings: Sighting[]): LeaderRow[] {
   const groups = new Map<string, { emoji: string; name: string | null; count: number; latest: string }>()
   for (const s of sightings) {
     const norm = normalizedName(s.name ?? '')
-    const key = `${s.emoji} ${norm}`
+    // Keyed without the variation selector, so both spellings of '🐿️' are one
+    // critter rather than two half-ranked rows.
+    const key = `${emojiKey(s.emoji)} ${norm}`
     const display = norm === '' ? null : s.name
     const g = groups.get(key)
     if (g === undefined) {

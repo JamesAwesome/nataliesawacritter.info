@@ -90,8 +90,10 @@ describe('buildFeed', () => {
   })
 
   it('appends · Many in the title when the critter has no collective noun', () => {
-    const xml = buildFeed([sighting({ emoji: 'custom:firefly', name: 'Firefly', quantity: 'many' })], SITE)
-    expect(xml).toContain('<title>🪲 Natalie saw Firefly · Many — July 5, 2026</title>')
+    // Nounless critter whose stand-in 🐼 does have a noun, so keying off the
+    // stand-in would read "an embarrassment of pandas" instead of falling back.
+    const xml = buildFeed([sighting({ emoji: 'custom:red-panda', name: 'Rusty', quantity: 'many' })], SITE)
+    expect(xml).toContain('<title>🐼 Natalie saw Rusty · Many — July 5, 2026</title>')
   })
 
   it('appends the time after the date in the title when a time is present', () => {

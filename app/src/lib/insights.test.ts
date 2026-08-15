@@ -31,6 +31,16 @@ describe('filterByRange', () => {
 })
 
 describe('leaderboard', () => {
+  // Both spellings of '🐿️' are the same squirrel, so they must not split the
+  // row (and halve its rank) just because one lacks the variation selector.
+  it('groups both spellings of a variation-selector emoji as one critter', () => {
+    const rows = [
+      makeSighting({ emoji: '🐿️', name: null }),
+      makeSighting({ emoji: '🐿', name: null }),
+    ]
+    expect(leaderboard(rows)).toEqual([{ emoji: '🐿️', name: null, count: 2 }])
+  })
+
   it('counts by emoji for unnamed sightings, descending', () => {
     const rows = [
       makeSighting({ emoji: '🦊', name: null }),

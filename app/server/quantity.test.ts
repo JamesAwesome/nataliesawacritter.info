@@ -13,7 +13,7 @@ describe('server quantity', () => {
   })
 
   it('many spells out the collective-noun phrase', () => {
-    expect(quantityTextSuffix('many', '🐦‍⬛')).toBe(' · a murder of crows')
+    expect(quantityTextSuffix('many', 'custom:crow')).toBe(' · a murder of crows')
     expect(quantityTextSuffix('many', '🐸')).toBe(' · an army of frogs')
   })
 
