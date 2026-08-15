@@ -1,3 +1,5 @@
+import { emojiKey } from './emojiKey'
+
 /** Collective nouns for the shipped critters: a "many" sighting of crows is a
  *  murder, of rabbits a fluffle. Keyed by the stored emoji token — a Unicode
  *  emoji or a `custom:<slug>` — with `[noun, plural]` so the phrase reads
@@ -170,10 +172,13 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:dragonfly': ['cluster', 'dragonflies'],
 }
 
-/** Own-property lookup: the emoji column holds arbitrary text, and a plain
- *  object answers `['toString']` with a function rather than undefined. */
+/** Keyed without the variation selector, so both spellings of '🐿️' resolve.
+ *  A Map also keeps `['toString']` from answering with Object.prototype's — the
+ *  emoji column holds arbitrary text, and a plain object would. */
+const BY_KEY = new Map(Object.entries(COLLECTIVE_NOUNS).map(([key, entry]) => [emojiKey(key), entry]))
+
 function entryFor(emoji: string): readonly [string, string] | null {
-  return Object.hasOwn(COLLECTIVE_NOUNS, emoji) ? COLLECTIVE_NOUNS[emoji] : null
+  return BY_KEY.get(emojiKey(emoji)) ?? null
 }
 
 /** The collective noun for a critter, or null when it hasn't got one. */

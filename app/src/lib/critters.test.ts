@@ -49,6 +49,11 @@ describe('nameFor', () => {
     expect(nameFor('🍎')).toBeNull() // not a critter
   })
 
+  it('names an emoji written without its variation selector', () => {
+    expect(nameFor('🐿')).toBe('Squirrel') // curated, stored as '🐿️'
+    expect(nameFor('🕊')).toBe('Dove') // extended, stored as '🕊️'
+  })
+
   it('resolves custom-emoji names from their token', () => {
     expect(nameFor('custom:robin')).toBe('Robin')
     expect(nameFor('custom:blue-jay')).toBe('Blue Jay')

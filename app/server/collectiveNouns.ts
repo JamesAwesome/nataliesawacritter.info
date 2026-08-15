@@ -170,12 +170,21 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:dragonfly': ['cluster', 'dragonflies'],
 }
 
+/** Mirrors src/lib/emojiKey.ts — inline so this module stays import-free and
+ *  the client's drift-guard test can load it. */
+function emojiKey(emoji: string): string {
+  return emoji.replace(/\uFE0F/g, '')
+}
+
+/** Keyed without the variation selector, so both spellings of '🐿️' resolve.
+ *  A Map also keeps `['toString']` from answering with Object.prototype's — the
+ *  emoji column holds arbitrary text, and a plain object would. */
+const BY_KEY = new Map(Object.entries(COLLECTIVE_NOUNS).map(([key, entry]) => [emojiKey(key), entry]))
+
 /** The full phrase — "a murder of crows", "an army of frogs" — or null.
  *  Server-only counterpart to the client's phraseFor. */
 export function phraseFor(emoji: string): string | null {
-  // Own-property lookup: the emoji column holds arbitrary text, and a plain
-  // object answers `['toString']` with a function rather than undefined.
-  const entry = Object.hasOwn(COLLECTIVE_NOUNS, emoji) ? COLLECTIVE_NOUNS[emoji] : null
+  const entry = BY_KEY.get(emojiKey(emoji)) ?? null
   if (entry === null) return null
   const [noun, plural] = entry
   const article = 'aeiou'.includes(noun[0]) ? 'an' : 'a'

@@ -1,4 +1,5 @@
 import { customFor } from './customEmoji'
+import { emojiKey } from './emojiKey'
 
 export type Critter = { emoji: string; name: string; tint: string }
 
@@ -58,10 +59,16 @@ export const EMOJI_NAMES: Record<string, string> = {
   '🦗': 'Cricket', '🪳': 'Cockroach', '🕷️': 'Spider', '🦂': 'Scorpion', '🦟': 'Mosquito', '🪰': 'Fly', '🪱': 'Worm',
 }
 
+const EXTENDED_NAMES = new Map(
+  Object.entries(EMOJI_NAMES).map(([emoji, name]) => [emojiKey(emoji), name]),
+)
+
 export function nameFor(emoji: string): string | null {
   const custom = customFor(emoji)
   if (custom !== null) return custom.name
-  return CURATED.find((c) => c.emoji === emoji)?.name ?? EMOJI_NAMES[emoji] ?? null
+  // Keyed without the variation selector, so '🐿' names the same critter as '🐿️'.
+  const key = emojiKey(emoji)
+  return CURATED.find((c) => emojiKey(c.emoji) === key)?.name ?? EXTENDED_NAMES.get(key) ?? null
 }
 
 /** Friend identity comparisons ignore case and surrounding whitespace

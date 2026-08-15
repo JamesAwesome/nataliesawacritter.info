@@ -65,6 +65,15 @@ describe('collectiveNouns catalogue', () => {
     expect(phraseFor('🐼')).toBe('an embarrassment of pandas')
   })
 
+  // Four keys carry a trailing variation selector ('🐿️', '🕊️', '🕷️', '🐻‍❄️').
+  // The emoji column takes arbitrary text, so a row written by anything but the
+  // in-app picker can hold the bare form; it must not silently read "Many".
+  it('resolves an emoji written without its variation selector', () => {
+    expect(nounFor('🕊')).toBe('dule')
+    expect(phraseFor('🐿')).toBe('a scurry of squirrels')
+    expect(phraseFor('🕷')).toBe('a cluster of spiders')
+  })
+
   it('returns null for critters with no collective noun', () => {
     expect(nounFor('🐽')).toBeNull() // pig nose — not a critter you see a group of
     expect(phraseFor('custom:gritty')).toBeNull()

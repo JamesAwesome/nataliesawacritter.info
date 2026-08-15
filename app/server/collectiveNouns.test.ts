@@ -8,6 +8,13 @@ describe('collectiveNouns (server copy)', () => {
     expect(phraseFor('custom:cardinal')).toBe('a college of cardinals')
   })
 
+  // Matches the client: a stored emoji missing its variation selector still
+  // resolves, so RSS and push don't fall back to "Many" where the badge doesn't.
+  it('resolves an emoji written without its variation selector', () => {
+    expect(phraseFor('🕊')).toBe('a dule of doves')
+    expect(phraseFor('🐿')).toBe('a scurry of squirrels')
+  })
+
   it('uses "an" before a vowel-initial noun', () => {
     expect(phraseFor('🐸')).toBe('an army of frogs')
   })
