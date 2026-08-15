@@ -19,7 +19,7 @@ describe('quantity', () => {
   })
 
   it('many falls back to Many for a critter with no collective noun', () => {
-    expect(quantityLabel('many', 'custom:gritty')).toBe('Many')
+    expect(quantityLabel('many', 'custom:phanatic')).toBe('Many')
   })
 
   it('isQuantity accepts only the four tokens', () => {

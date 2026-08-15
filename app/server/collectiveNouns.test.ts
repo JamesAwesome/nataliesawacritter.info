@@ -27,7 +27,7 @@ describe('collectiveNouns (server copy)', () => {
   })
 
   it('returns null for a critter with no collective noun', () => {
-    expect(phraseFor('custom:gritty')).toBeNull()
+    expect(phraseFor('custom:phanatic')).toBeNull()
     expect(phraseFor('🐽')).toBeNull()
   })
 })

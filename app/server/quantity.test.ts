@@ -18,7 +18,7 @@ describe('server quantity', () => {
   })
 
   it('many falls back to " · Many" for a critter with no collective noun', () => {
-    expect(quantityTextSuffix('many', 'custom:gritty')).toBe(' · Many')
+    expect(quantityTextSuffix('many', 'custom:phanatic')).toBe(' · Many')
   })
 
   it('isQuantity accepts only the four tokens', () => {

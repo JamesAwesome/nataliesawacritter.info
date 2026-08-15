@@ -68,7 +68,7 @@ describe('quantity badge', () => {
   })
 
   it('shows Many for a quantity of many when the critter has no collective noun', () => {
-    render(<SightingRow sighting={makeSighting({ emoji: 'custom:gritty', name: 'Gritty', quantity: 'many' })} onSelect={() => {}} />)
+    render(<SightingRow sighting={makeSighting({ emoji: 'custom:phanatic', name: 'Phanatic', quantity: 'many' })} onSelect={() => {}} />)
     expect(screen.getByText('Many')).toBeInTheDocument()
   })
 
