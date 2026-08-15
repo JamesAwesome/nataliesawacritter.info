@@ -90,10 +90,11 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   '🕊️': ['dule', 'doves'],
   '🦢': ['bevy', 'swans'],
   '🪿': ['gaggle', 'geese'],
+  '🦤': ['flock', 'dodos'],
   '🦩': ['flamboyance', 'flamingos'],
   '🦚': ['ostentation', 'peacocks'],
   '🦜': ['pandemonium', 'parrots'],
-  '🐦‍⬛': ['murder', 'crows'],
+  '🐦‍⬛': ['cloud', 'blackbirds'],
 
   // Reptiles & amphibians
   '🐊': ['bask', 'crocodiles'],
@@ -101,6 +102,7 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   '🐉': ['flight', 'dragons'],
   '🐲': ['flight', 'dragons'],
   '🦕': ['herd', 'dinosaurs'],
+  '🦖': ['herd', 'dinosaurs'],
 
   // Sea life
   '🐳': ['pod', 'whales'],
@@ -148,6 +150,7 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:loon': ['asylum', 'loons'],
   'custom:puffin': ['circus', 'puffins'],
   'custom:grouse': ['covey', 'grouse'],
+  'custom:firefly': ['swarm', 'fireflies'],
   'custom:meerkat': ['mob', 'meerkats'],
   'custom:lemur': ['conspiracy', 'lemurs'],
   'custom:crane': ['sedge', 'cranes'],
@@ -159,13 +162,21 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:pelican': ['squadron', 'pelicans'],
   'custom:horseshoe-crab': ['cast', 'horseshoe crabs'],
   'custom:stingray': ['fever', 'stingrays'],
+  'custom:hawk': ['kettle', 'hawks'],
+  'custom:lantern-fly': ['swarm', 'lantern flies'],
+  'custom:emu': ['mob', 'emus'],
+  'custom:wren': ['herd', 'wrens'],
+  'custom:crow': ['murder', 'crows'],
+  'custom:dragonfly': ['cluster', 'dragonflies'],
 }
 
 /** The full phrase — "a murder of crows", "an army of frogs" — or null.
  *  Server-only counterpart to the client's phraseFor. */
 export function phraseFor(emoji: string): string | null {
-  const entry = COLLECTIVE_NOUNS[emoji]
-  if (entry === undefined) return null
+  // Own-property lookup: the emoji column holds arbitrary text, and a plain
+  // object answers `['toString']` with a function rather than undefined.
+  const entry = Object.hasOwn(COLLECTIVE_NOUNS, emoji) ? COLLECTIVE_NOUNS[emoji] : null
+  if (entry === null) return null
   const [noun, plural] = entry
   const article = 'aeiou'.includes(noun[0]) ? 'an' : 'a'
   return `${article} ${noun} of ${plural}`

@@ -90,10 +90,11 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   '🕊️': ['dule', 'doves'],
   '🦢': ['bevy', 'swans'],
   '🪿': ['gaggle', 'geese'],
+  '🦤': ['flock', 'dodos'],
   '🦩': ['flamboyance', 'flamingos'],
   '🦚': ['ostentation', 'peacocks'],
   '🦜': ['pandemonium', 'parrots'],
-  '🐦‍⬛': ['murder', 'crows'],
+  '🐦‍⬛': ['cloud', 'blackbirds'],
 
   // Reptiles & amphibians
   '🐊': ['bask', 'crocodiles'],
@@ -101,6 +102,7 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   '🐉': ['flight', 'dragons'],
   '🐲': ['flight', 'dragons'],
   '🦕': ['herd', 'dinosaurs'],
+  '🦖': ['herd', 'dinosaurs'],
 
   // Sea life
   '🐳': ['pod', 'whales'],
@@ -148,6 +150,7 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:loon': ['asylum', 'loons'],
   'custom:puffin': ['circus', 'puffins'],
   'custom:grouse': ['covey', 'grouse'],
+  'custom:firefly': ['swarm', 'fireflies'],
   'custom:meerkat': ['mob', 'meerkats'],
   'custom:lemur': ['conspiracy', 'lemurs'],
   'custom:crane': ['sedge', 'cranes'],
@@ -159,17 +162,29 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:pelican': ['squadron', 'pelicans'],
   'custom:horseshoe-crab': ['cast', 'horseshoe crabs'],
   'custom:stingray': ['fever', 'stingrays'],
+  'custom:hawk': ['kettle', 'hawks'],
+  'custom:lantern-fly': ['swarm', 'lantern flies'],
+  'custom:emu': ['mob', 'emus'],
+  'custom:wren': ['herd', 'wrens'],
+  'custom:crow': ['murder', 'crows'],
+  'custom:dragonfly': ['cluster', 'dragonflies'],
+}
+
+/** Own-property lookup: the emoji column holds arbitrary text, and a plain
+ *  object answers `['toString']` with a function rather than undefined. */
+function entryFor(emoji: string): readonly [string, string] | null {
+  return Object.hasOwn(COLLECTIVE_NOUNS, emoji) ? COLLECTIVE_NOUNS[emoji] : null
 }
 
 /** The collective noun for a critter, or null when it hasn't got one. */
 export function nounFor(emoji: string): string | null {
-  return COLLECTIVE_NOUNS[emoji]?.[0] ?? null
+  return entryFor(emoji)?.[0] ?? null
 }
 
 /** The full phrase — "a murder of crows", "an army of frogs" — or null. */
 export function phraseFor(emoji: string): string | null {
-  const entry = COLLECTIVE_NOUNS[emoji]
-  if (entry === undefined) return null
+  const entry = entryFor(emoji)
+  if (entry === null) return null
   const [noun, plural] = entry
   const article = 'aeiou'.includes(noun[0]) ? 'an' : 'a'
   return `${article} ${noun} of ${plural}`

@@ -15,7 +15,7 @@ describe('QuantityBadge', () => {
   })
 
   it('renders the collective noun with the phrase as title and for screen readers', () => {
-    render(<QuantityBadge quantity="many" emoji="🐦‍⬛" />)
+    render(<QuantityBadge quantity="many" emoji="custom:crow" />)
     const badge = screen.getByText('Murder')
     expect(badge).toHaveAttribute('title', 'a murder of crows')
     expect(badge).toHaveAttribute('aria-hidden', 'true')
