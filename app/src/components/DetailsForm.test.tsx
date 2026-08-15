@@ -107,7 +107,7 @@ describe('DetailsForm', () => {
   })
 
   it('labels the many option Many for a critter with no collective noun', () => {
-    render(<DetailsForm emoji="custom:gritty" initialName="Gritty" onBack={() => {}} onSave={vi.fn()} saving={false} />)
+    render(<DetailsForm emoji="custom:phanatic" initialName="Phanatic" onBack={() => {}} onSave={vi.fn()} saving={false} />)
     expect(screen.getByRole('button', { name: 'Many' })).toBeInTheDocument()
   })
 

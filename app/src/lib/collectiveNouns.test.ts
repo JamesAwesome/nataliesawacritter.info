@@ -19,7 +19,6 @@ const CATALOGUE = [
 // critter fails the coverage test until someone decides which it is.
 const NOUNLESS = new Set([
   '🐽', // pig nose — not a critter you see a group of
-  'custom:gritty',
   'custom:phanatic',
   'custom:troll', // mascots and folklore, not animals
   'custom:aardvark',
@@ -45,6 +44,11 @@ describe('collectiveNouns catalogue', () => {
     expect(nounFor('🦉')).toBe('parliament')
     expect(nounFor('custom:crow')).toBe('murder')
     expect(nounFor('custom:cardinal')).toBe('college')
+  })
+
+  it('gives Gritty a chaos', () => {
+    expect(nounFor('custom:gritty')).toBe('chaos')
+    expect(phraseFor('custom:gritty')).toBe('a chaos of Grittys')
   })
 
   // The catalogue calls 🐦‍⬛ a Blackbird and ships a drawn Crow of its own, so
@@ -76,7 +80,7 @@ describe('collectiveNouns catalogue', () => {
 
   it('returns null for critters with no collective noun', () => {
     expect(nounFor('🐽')).toBeNull() // pig nose — not a critter you see a group of
-    expect(phraseFor('custom:gritty')).toBeNull()
+    expect(phraseFor('custom:phanatic')).toBeNull()
     expect(nounFor('custom:unknown')).toBeNull()
     expect(nounFor('🍕')).toBeNull()
   })
@@ -142,7 +146,7 @@ describe('collectiveNouns catalogue', () => {
     for (const emoji of Object.keys(COLLECTIVE_NOUNS)) {
       expect(serverPhraseFor(emoji)).toBe(phraseFor(emoji))
     }
-    expect(serverPhraseFor('custom:gritty')).toBe(phraseFor('custom:gritty'))
+    expect(serverPhraseFor('custom:phanatic')).toBe(phraseFor('custom:phanatic'))
   })
 
   // The table was first written by hand against a catalogue read outside the

@@ -151,6 +151,7 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:puffin': ['circus', 'puffins'],
   'custom:grouse': ['covey', 'grouse'],
   'custom:firefly': ['swarm', 'fireflies'],
+  'custom:gritty': ['chaos', 'Grittys'],
   'custom:meerkat': ['mob', 'meerkats'],
   'custom:lemur': ['conspiracy', 'lemurs'],
   'custom:crane': ['sedge', 'cranes'],

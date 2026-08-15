@@ -23,7 +23,7 @@ describe('QuantityBadge', () => {
   })
 
   it('falls back to a plain Many badge for a critter with no collective noun', () => {
-    render(<QuantityBadge quantity="many" emoji="custom:gritty" />)
+    render(<QuantityBadge quantity="many" emoji="custom:phanatic" />)
     const badge = screen.getByText('Many')
     expect(badge).not.toHaveAttribute('title')
     expect(badge).not.toHaveAttribute('aria-hidden')
