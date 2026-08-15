@@ -6,11 +6,20 @@ describe('quantity', () => {
     expect(QUANTITIES).toEqual(['1', '2', '3', 'many'])
   })
 
-  it('labels: 1 is blank (no badge), 2/3 are ×N, many is Many', () => {
-    expect(quantityLabel('1')).toBe('')
-    expect(quantityLabel('2')).toBe('×2')
-    expect(quantityLabel('3')).toBe('×3')
-    expect(quantityLabel('many')).toBe('Many')
+  it('labels: 1 is blank (no badge), 2/3 are ×N', () => {
+    expect(quantityLabel('1', '🦊')).toBe('')
+    expect(quantityLabel('2', '🦊')).toBe('×2')
+    expect(quantityLabel('3', '🦊')).toBe('×3')
+  })
+
+  it('many is the critter’s collective noun, capitalised', () => {
+    expect(quantityLabel('many', '🐦‍⬛')).toBe('Murder')
+    expect(quantityLabel('many', '🐇')).toBe('Fluffle')
+    expect(quantityLabel('many', 'custom:meerkat')).toBe('Mob')
+  })
+
+  it('many falls back to Many for a critter with no collective noun', () => {
+    expect(quantityLabel('many', 'custom:gritty')).toBe('Many')
   })
 
   it('isQuantity accepts only the four tokens', () => {

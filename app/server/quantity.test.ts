@@ -6,11 +6,19 @@ describe('server quantity', () => {
     expect(QUANTITIES).toEqual(['1', '2', '3', 'many'])
   })
 
-  it('text suffix: blank for 1, " ×N" for 2/3, " · Many" for many', () => {
-    expect(quantityTextSuffix('1')).toBe('')
-    expect(quantityTextSuffix('2')).toBe(' ×2')
-    expect(quantityTextSuffix('3')).toBe(' ×3')
-    expect(quantityTextSuffix('many')).toBe(' · Many')
+  it('text suffix: blank for 1, " ×N" for 2/3', () => {
+    expect(quantityTextSuffix('1', '🦊')).toBe('')
+    expect(quantityTextSuffix('2', '🦊')).toBe(' ×2')
+    expect(quantityTextSuffix('3', '🦊')).toBe(' ×3')
+  })
+
+  it('many spells out the collective-noun phrase', () => {
+    expect(quantityTextSuffix('many', '🐦‍⬛')).toBe(' · a murder of crows')
+    expect(quantityTextSuffix('many', '🐸')).toBe(' · an army of frogs')
+  })
+
+  it('many falls back to " · Many" for a critter with no collective noun', () => {
+    expect(quantityTextSuffix('many', 'custom:gritty')).toBe(' · Many')
   })
 
   it('isQuantity accepts only the four tokens', () => {

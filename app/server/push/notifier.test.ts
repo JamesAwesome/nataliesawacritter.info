@@ -64,8 +64,13 @@ describe('payloadFor', () => {
     expect(payload.title).toBe('🦌 Natalie saw Deer ×2!')
   })
 
-  it('appends · Many to the title for a quantity of many', () => {
-    const payload = JSON.parse(payloadFor(sighting({ name: 'Firefly', emoji: '🪲', quantity: 'many' }))) as { title: string }
+  it('spells out the collective noun in the title for a quantity of many', () => {
+    const payload = JSON.parse(payloadFor(sighting({ name: 'Beetle', emoji: '🪲', quantity: 'many' }))) as { title: string }
+    expect(payload.title).toBe('🪲 Natalie saw Beetle · a swarm of beetles!')
+  })
+
+  it('appends · Many to the title when the critter has no collective noun', () => {
+    const payload = JSON.parse(payloadFor(sighting({ name: 'Firefly', emoji: 'custom:firefly', quantity: 'many' }))) as { title: string }
     expect(payload.title).toBe('🪲 Natalie saw Firefly · Many!')
   })
 

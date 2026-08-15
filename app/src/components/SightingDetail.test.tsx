@@ -44,6 +44,11 @@ describe('SightingDetail', () => {
     expect(screen.getByText('×2')).toBeInTheDocument()
   })
 
+  it('shows the collective noun in the head for a quantity of many', () => {
+    renderDetail({ sighting: makeSighting({ emoji: '🦉', name: 'Owl', quantity: 'many' }) })
+    expect(screen.getByText('Parliament')).toHaveAttribute('title', 'a parliament of owls')
+  })
+
   it('shows no count badge when quantity is one', () => {
     renderDetail({ sighting: makeSighting({ name: 'Fox', quantity: '1' }) })
     expect(screen.queryByText('×1')).not.toBeInTheDocument()

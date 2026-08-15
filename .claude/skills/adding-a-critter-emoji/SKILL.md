@@ -158,6 +158,11 @@ real emoji, e.g. `🦔` for a hedgehog — needn't be unique).
      if available, else hand-draw per Rule 2's style guidance.
    - `src/lib/customEmoji.ts` — a `CUSTOM` entry `{ slug, name, standIn, category }` (append **in the same order** as the client test).
    - `server/customEmoji.ts` — a `STAND_INS` entry `<slug>: '<standIn>'`.
+   - **Optional, but do it if the critter has one:** a collective noun —
+     `'custom:<slug>': ['<noun>', '<plural>']` in **both** `src/lib/collectiveNouns.ts`
+     and `server/collectiveNouns.ts` (the two tables are compared entry-for-entry,
+     so add to both or neither). A "many" sighting then reads "Fluffle" in the
+     badge and "a fluffle of rabbits" in RSS/push; leave it out and it stays "Many".
 3. **Verify:** `pnpm test` (or `test:coverage`), `pnpm lint`, `pnpm typecheck`.
    Drift-guard tests assert client ⇔ server ⇔ on-disk agree; `emojiCategories`
    auto-derives the picker group and is coverage-checked — no edit needed there.
@@ -177,6 +182,7 @@ automatically once the entry exists).
 | `docs/renders/<slug>-source.png` | kept source PNG (generated art only) |
 | `src/lib/customEmoji.ts` | `CUSTOM` entry (ordered) |
 | `server/customEmoji.ts` | `STAND_INS` entry |
+| `src/lib/collectiveNouns.ts` + `server/collectiveNouns.ts` | `[noun, plural]` entry, if the critter has a collective noun (both files or neither) |
 | `src/lib/customEmoji.test.ts` | pinned **ordered** slug list |
 | `server/customEmoji.test.ts` | pinned **sorted** slug list |
 

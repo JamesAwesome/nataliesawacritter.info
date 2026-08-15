@@ -3,7 +3,8 @@ import type { NewSightingInput, Profile } from '../api'
 import { normalizedName } from '../lib/critters'
 import { hasEmoji } from '../lib/hasEmoji'
 import { nowClockTime } from '../lib/format'
-import { QUANTITIES, type Quantity } from '../lib/quantity'
+import { phraseFor } from '../lib/collectiveNouns'
+import { QUANTITIES, quantityLabel, type Quantity } from '../lib/quantity'
 import { CritterGlyph } from './CritterGlyph'
 import { PhotoControl } from './PhotoControl'
 
@@ -132,9 +133,10 @@ export function DetailsForm({
               type="button"
               className={q === quantity ? 'qty-option selected' : 'qty-option'}
               aria-pressed={q === quantity}
+              title={q === 'many' ? (phraseFor(emoji) ?? undefined) : undefined}
               onClick={() => setQuantity(q)}
             >
-              {q === 'many' ? 'Many' : q}
+              {q === 'many' ? quantityLabel(q, emoji) : q}
             </button>
           ))}
         </div>

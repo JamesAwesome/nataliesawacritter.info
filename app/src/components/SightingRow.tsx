@@ -1,9 +1,9 @@
 import type { Sighting } from '../api'
 import { nameFor } from '../lib/critters'
 import { formatWhen } from '../lib/format'
-import { quantityLabel } from '../lib/quantity'
 import { CritterGlyph } from './CritterGlyph'
 import { LikeButton } from './LikeButton'
+import { QuantityBadge } from './QuantityBadge'
 
 type Props = {
   sighting: Sighting
@@ -20,9 +20,7 @@ export function SightingRow({ sighting, onSelect, starred, onToggleLike }: Props
       <span className="recent-main">
         <span className="recent-name">
           {displayName}
-          {quantityLabel(sighting.quantity) !== '' && (
-            <span className="qty-badge">{quantityLabel(sighting.quantity)}</span>
-          )}
+          <QuantityBadge quantity={sighting.quantity} emoji={sighting.emoji} />
           {starred === true && (
             <>
               <span className="row-star" aria-hidden="true">⭐</span>

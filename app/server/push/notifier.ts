@@ -28,7 +28,7 @@ function utcYesterday(todayIso: string): string {
 
 export function payloadFor(sighting: Sighting): string {
   const glyph = standInFor(sighting.emoji)
-  const qty = quantityTextSuffix(sighting.quantity)
+  const qty = quantityTextSuffix(sighting.quantity, sighting.emoji)
   const title =
     sighting.name === null
       ? `${glyph} Natalie saw a critter${qty}!`
