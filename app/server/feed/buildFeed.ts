@@ -58,7 +58,7 @@ function whenSuffix(s: Sighting): string {
 
 function titleFor(s: Sighting): string {
   const glyph = standInFor(s.emoji)
-  const qty = quantityTextSuffix(s.quantity)
+  const qty = quantityTextSuffix(s.quantity, s.emoji)
   // With a count the article reads wrong ("a Deer ×2"), so drop it and append
   // the badge; the single-critter default keeps the natural "a/an <name>".
   const base =

@@ -98,13 +98,23 @@ describe('DetailsForm', () => {
   it('defaults the How many? control to 1', () => {
     render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={vi.fn()} saving={false} />)
     expect(screen.getByRole('button', { name: '1' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: 'Many' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Skulk' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('labels the many option with the critter’s collective noun', () => {
+    render(<DetailsForm emoji="🦉" initialName="Owl" onBack={() => {}} onSave={vi.fn()} saving={false} />)
+    expect(screen.getByRole('button', { name: 'Parliament' })).toHaveAttribute('title', 'a parliament of owls')
+  })
+
+  it('labels the many option Many for a critter with no collective noun', () => {
+    render(<DetailsForm emoji="custom:gritty" initialName="Gritty" onBack={() => {}} onSave={vi.fn()} saving={false} />)
+    expect(screen.getByRole('button', { name: 'Many' })).toBeInTheDocument()
   })
 
   it('sends the chosen quantity in the payload', async () => {
     const onSave = vi.fn()
     render(<DetailsForm emoji="🦊" initialName="Fox" onBack={() => {}} onSave={onSave} saving={false} />)
-    await userEvent.click(screen.getByRole('button', { name: 'Many' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Skulk' }))
     await userEvent.click(screen.getByRole('button', { name: /save sighting/i }))
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ quantity: 'many' }))
   })

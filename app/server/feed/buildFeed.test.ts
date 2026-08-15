@@ -79,9 +79,19 @@ describe('buildFeed', () => {
     expect(xml).toContain('<title>🦊 Natalie saw Deer ×2 — July 5, 2026</title>')
   })
 
-  it('appends · Many in the title for a quantity of many', () => {
-    const xml = buildFeed([sighting({ name: 'Firefly', quantity: 'many' })], SITE)
-    expect(xml).toContain('<title>🦊 Natalie saw Firefly · Many — July 5, 2026</title>')
+  it('spells out the collective noun in the title for a quantity of many', () => {
+    const xml = buildFeed([sighting({ name: 'Foxy', quantity: 'many' })], SITE)
+    expect(xml).toContain('<title>🦊 Natalie saw Foxy · a skulk of foxes — July 5, 2026</title>')
+  })
+
+  it('uses the custom critter’s own collective noun, not its stand-in’s', () => {
+    const xml = buildFeed([sighting({ emoji: 'custom:cardinal', name: 'Red', quantity: 'many' })], SITE)
+    expect(xml).toContain('<title>🐦 Natalie saw Red · a college of cardinals — July 5, 2026</title>')
+  })
+
+  it('appends · Many in the title when the critter has no collective noun', () => {
+    const xml = buildFeed([sighting({ emoji: 'custom:firefly', name: 'Firefly', quantity: 'many' })], SITE)
+    expect(xml).toContain('<title>🪲 Natalie saw Firefly · Many — July 5, 2026</title>')
   })
 
   it('appends the time after the date in the title when a time is present', () => {

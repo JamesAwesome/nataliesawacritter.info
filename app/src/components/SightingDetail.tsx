@@ -3,10 +3,10 @@ import type { NewProfileInput, Profile, Sighting } from '../api'
 import { useWriteAction } from '../hooks/useWriteAction'
 import { nameFor, normalizedName } from '../lib/critters'
 import { formatWhen } from '../lib/format'
-import { quantityLabel } from '../lib/quantity'
 import { downscalePhoto } from '../lib/photo'
 import { CritterGlyph } from './CritterGlyph'
 import { LikeButton } from './LikeButton'
+import { QuantityBadge } from './QuantityBadge'
 import { PasswordPrompt } from './PasswordPrompt'
 import { PhotoControl } from './PhotoControl'
 
@@ -113,9 +113,7 @@ export function SightingDetail({
         <div className="detail-title-row">
           <h2>
             {displayName}
-            {quantityLabel(sighting.quantity) !== '' && (
-              <span className="qty-badge">{quantityLabel(sighting.quantity)}</span>
-            )}
+            <QuantityBadge quantity={sighting.quantity} emoji={sighting.emoji} />
           </h2>
           {onToggleLike !== undefined && <LikeButton sighting={sighting} onToggle={onToggleLike} />}
         </div>

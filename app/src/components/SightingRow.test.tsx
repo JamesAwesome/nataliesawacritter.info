@@ -61,8 +61,14 @@ describe('quantity badge', () => {
     expect(screen.getByText('×2')).toBeInTheDocument()
   })
 
-  it('shows Many for a quantity of many', () => {
-    render(<SightingRow sighting={makeSighting({ name: 'Firefly', quantity: 'many' })} onSelect={() => {}} />)
+  it('shows the collective noun for a quantity of many', () => {
+    render(<SightingRow sighting={makeSighting({ emoji: '🐇', name: 'Rabbit', quantity: 'many' })} onSelect={() => {}} />)
+    expect(screen.getByText('Fluffle')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Rabbit, a fluffle of rabbits/ })).toBeInTheDocument()
+  })
+
+  it('shows Many for a quantity of many when the critter has no collective noun', () => {
+    render(<SightingRow sighting={makeSighting({ emoji: 'custom:firefly', name: 'Firefly', quantity: 'many' })} onSelect={() => {}} />)
     expect(screen.getByText('Many')).toBeInTheDocument()
   })
 

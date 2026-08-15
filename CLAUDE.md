@@ -60,6 +60,11 @@ sync by a drift-guard test.
   five data-driven groups (Birds, Mammals, Reptiles & Amphibians, Sea Life, Bugs).
   Each group is `[…custom tokens for that category, …that category's Unicode]`. A
   coverage test asserts the groups cover `CURATED ∪ EXTENDED` exactly once.
+- **Collective nouns** (`src/lib/collectiveNouns.ts` + `server/collectiveNouns.ts`):
+  emoji token → `[noun, plural]`, so a `many` sighting shows the critter's own word
+  — `Murder` in the badge, "a murder of crows" on hover / in RSS and push. Critters
+  without one are absent from the table and fall back to `Many`. The two tables are
+  a deliberate client/server duplicate; a test compares them entry-for-entry.
 - **Sighting time**: stored as sortable 24h `HH:MM` (`sightedTime`), formatted for
   display at the edge (`formatClockTime` client, `formatClock` in `buildFeed`).
   Recent Critters / the list are ordered client-side in `useSightings` by
