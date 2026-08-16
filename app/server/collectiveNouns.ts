@@ -170,6 +170,7 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:crow': ['murder', 'crows'],
   'custom:dragonfly': ['cluster', 'dragonflies'],
   'custom:hummingbird': ['glittering', 'hummingbirds'],
+  'custom:grasshopper': ['cloud', 'grasshoppers'],
 }
 
 /** Mirrors src/lib/emojiKey.ts — inline so this module stays import-free and
