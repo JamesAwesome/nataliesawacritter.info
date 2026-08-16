@@ -173,6 +173,7 @@ export const COLLECTIVE_NOUNS: Record<string, readonly [noun: string, plural: st
   'custom:dragonfly': ['cluster', 'dragonflies'],
   'custom:hummingbird': ['glittering', 'hummingbirds'],
   'custom:grasshopper': ['cloud', 'grasshoppers'],
+  'custom:mockingbird': ['mockery', 'mockingbirds'],
 }
 
 /** Keyed without the variation selector, so both spellings of '🐿️' resolve.
