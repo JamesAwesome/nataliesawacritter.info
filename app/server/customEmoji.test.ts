@@ -35,6 +35,7 @@ describe('server customEmoji', () => {
         'gritty', 'phanatic', 'anteater', 'red-panda', 'meerkat', 'lemur', 'aardvark', 'crane', 'canada-goose', 'pigeon',
         'highland-cow', 'capybara', 'monarch-butterfly', 'pelican', 'horseshoe-crab', 'stingray', 'axolotl', 'hawk',
         'lantern-fly', 'emu', 'wren', 'crow', 'troll', 'dragonfly', 'hummingbird', 'grasshopper', 'mockingbird',
+        'pony',
       ].sort(),
     )
   })

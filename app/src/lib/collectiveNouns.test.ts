@@ -37,6 +37,7 @@ const IRREGULAR_PLURALS = new Set([
   '🦋', '🪰', 'custom:monarch-butterfly', 'custom:dragonfly',
   'custom:firefly', 'custom:lantern-fly', // fly → flies
   '🦖', // T-Rex → dinosaurs
+  'custom:pony', // pony → ponies
 ])
 
 describe('collectiveNouns catalogue', () => {
