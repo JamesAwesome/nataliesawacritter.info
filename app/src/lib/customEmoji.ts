@@ -47,6 +47,7 @@ export const CUSTOM: CustomEmoji[] = [
   { slug: 'mockingbird', name: 'Mockingbird', standIn: '🐦', category: 'birds' },
   { slug: 'pony', name: 'Pony', standIn: '🐴', category: 'mammals' },
   { slug: 'millipede', name: 'Millipede', standIn: '🐛', category: 'bugs' },
+  { slug: 'praying-mantis', name: 'Praying Mantis', standIn: '🦗', category: 'bugs' },
 ]
 
 const BY_SLUG = new Map(CUSTOM.map((c) => [c.slug, c]))

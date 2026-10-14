@@ -45,6 +45,7 @@ const STAND_INS: Record<string, string> = {
   mockingbird: '🐦',
   pony: '🐴',
   millipede: '🐛',
+  'praying-mantis': '🦗',
 }
 
 export const KNOWN_SLUGS = new Set(Object.keys(STAND_INS))
