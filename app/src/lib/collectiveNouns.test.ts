@@ -26,6 +26,7 @@ const NOUNLESS = new Set([
   'custom:axolotl',
   'custom:red-panda', // solitary — no collective noun in use
   'custom:millipede', // no established collective noun
+  'custom:praying-mantis', // no established collective noun
 ])
 
 // Plurals that don't contain the critter's own name, so the "plural names its
