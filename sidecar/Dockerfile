@@ -1,6 +1,6 @@
 # Optional emoji-request sidecar. Heavy image (node + git + gh + chromium +
 # claude CLI) — built only when you opt in: `docker compose --profile sidecar up`.
-FROM node:26-bookworm
+FROM node:26.12.1-bookworm
 
 # git, curl, the GitHub CLI, and chromium (for the skill's render gate) + emoji
 # fonts so rendered SVGs look right.
