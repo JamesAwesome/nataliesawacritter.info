@@ -5,3 +5,6 @@ coverage/
 *.tsbuildinfo
 .DS_Store
 .superpowers/
+
+# Local git worktrees
+.worktrees/
