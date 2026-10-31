@@ -71,7 +71,7 @@ jobs:
   deploy:
     needs: [app, sidecar, docker, deploy-script]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: self-hosted
+    runs-on: nataliesawacritter
     environment: production
     permissions:
       contents: read
